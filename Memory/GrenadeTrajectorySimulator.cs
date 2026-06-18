@@ -110,7 +110,6 @@ public sealed class GrenadeTrajectorySimulator
     }
 
     public static bool TryComputeThrowState(
-        MapVisibilityChecker mapChecker,
         Vector3 eyePosition,
         float pitchDegrees,
         float yawDegrees,
@@ -135,12 +134,36 @@ public sealed class GrenadeTrajectorySimulator
 
         start = eyePosition;
         start.Z += power * 12f - 12f;
+        start += forward * (options.ThrowForwardTraceUnits - options.ThrowStartPullbackUnits);
 
-        if (mapChecker.TryRaycast(start, forward, options.ThrowForwardTraceUnits, out var hitPoint, out _, out _))
-            start = hitPoint - forward * options.ThrowStartPullbackUnits;
-        else
-            start += forward * (options.ThrowForwardTraceUnits - options.ThrowStartPullbackUnits);
+        velocity = forward * speed + playerVelocity * options.PlayerVelocityScale;
+        return velocity.LengthSquared() >= 100f;
+    }
 
+    public static bool TryBuildThrowFromPosition(
+        Vector3 throwPosition,
+        float pitchDegrees,
+        float yawDegrees,
+        float throwStrength,
+        ushort weaponId,
+        Vector3 playerVelocity,
+        GrenadeOptions options,
+        out Vector3 start,
+        out Vector3 velocity)
+    {
+        start = default;
+        velocity = default;
+
+        if (!IsFinite(throwPosition))
+            return false;
+
+        pitchDegrees = AdjustThrowPitch(pitchDegrees);
+        var power = Math.Clamp(throwStrength, 0f, 1f);
+        var baseSpeed = Models.GameOffsets.GetGrenadeThrowVelocity(weaponId) * 0.9f;
+        var speed = baseSpeed * (options.MinThrowSpeedScale + options.MaxThrowSpeedScale * power);
+        var forward = DirectionFromAngles(pitchDegrees, yawDegrees);
+
+        start = throwPosition;
         velocity = forward * speed + playerVelocity * options.PlayerVelocityScale;
         return velocity.LengthSquared() >= 100f;
     }
@@ -186,7 +209,7 @@ public sealed class GrenadeTrajectorySimulator
         IReadOnlyList<ModelVector3> points,
         float minHorizontalTravelUnits)
     {
-        if (points.Count < 4)
+        if (points.Count < 3)
             return false;
 
         var start = points[0];

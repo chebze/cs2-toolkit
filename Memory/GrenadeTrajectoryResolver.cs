@@ -6,6 +6,7 @@ namespace Cs2Toolkit.Memory;
 
 public sealed class GrenadeTrajectoryResolver
 {
+    private const float MinThrowSpeedSquared = 10_000f;
     private readonly GrenadeTrajectorySimulator _simulator;
     private readonly GrenadeOptions _options;
 
@@ -36,13 +37,11 @@ public sealed class GrenadeTrajectoryResolver
         if (!pinPulled)
             return Inactive();
 
-        if (TryReadManualSimulation(memory, offsets, mapChecker, localPawn, weaponId, throwStrength, out var manualSnapshot))
-            return manualSnapshot;
+        throwStrength = NormalizeThrowStrength(throwStrength);
 
-        if (offsets.M_bGrenadeParametersStashed != nint.Zero
-            && memory.Read<byte>(localPawn + offsets.M_bGrenadeParametersStashed) != 0
-            && TryReadStashedSimulation(memory, offsets, mapChecker, localPawn, weaponId, out var stashedSnapshot))
-            return stashedSnapshot;
+        if (TryReadEyeAngles(memory, offsets, localPawn, out var pitch, out var yaw)
+            && TryBuildSimulation(memory, offsets, mapChecker, localPawn, weaponId, throwStrength, pitch, yaw, out var snapshot))
+            return snapshot;
 
         if (TryReadProjectileTrail(memory, offsets, entityList, out var projectileTrail)
             && IsRichGameTrail(projectileTrail)
@@ -52,76 +51,115 @@ public sealed class GrenadeTrajectoryResolver
         return Inactive();
     }
 
-    private bool TryReadStashedSimulation(
-        ProcessMemory memory,
-        GameOffsets offsets,
-        MapVisibilityChecker mapChecker,
-        nint localPawn,
-        ushort weaponId,
-        out GrenadeTrajectorySnapshot snapshot)
-    {
-        snapshot = Inactive();
-
-        if (offsets.M_vecStashedGrenadeThrowPosition == nint.Zero || offsets.M_vecStashedVelocity == nint.Zero)
-            return false;
-
-        var start = ReadNumericVector(memory, localPawn + offsets.M_vecStashedGrenadeThrowPosition);
-        var velocity = ReadNumericVector(memory, localPawn + offsets.M_vecStashedVelocity);
-        if (!IsUsableVector(start) || velocity.LengthSquared() < 10_000f)
-            return false;
-
-        if (!_simulator.TrySimulate(mapChecker, start, velocity, out var points, out var landing, out var bounces))
-            return false;
-
-        if (!GrenadeTrajectorySimulator.IsPlausibleTrajectory(points, _options.MinTrajectoryHorizontalTravelUnits))
-            return false;
-
-        snapshot = BuildSnapshot(GrenadeTrajectorySource.StashedSimulation, weaponId, points, landing, bounces);
-        return true;
-    }
-
-    private bool TryReadManualSimulation(
+    private bool TryBuildSimulation(
         ProcessMemory memory,
         GameOffsets offsets,
         MapVisibilityChecker mapChecker,
         nint localPawn,
         ushort weaponId,
         float throwStrength,
+        float pitch,
+        float yaw,
         out GrenadeTrajectorySnapshot snapshot)
     {
         snapshot = Inactive();
-
-        if (!TryReadThrowAngles(memory, offsets, localPawn, out var pitch, out var yaw))
-            return false;
-
-        if (!TryReadEyePosition(memory, offsets, localPawn, out var eyePosition))
-            return false;
 
         var playerVelocity = offsets.M_vecAbsVelocity != nint.Zero
             ? ReadNumericVector(memory, localPawn + offsets.M_vecAbsVelocity)
             : System.Numerics.Vector3.Zero;
 
-        if (!GrenadeTrajectorySimulator.TryComputeThrowState(
-                mapChecker,
-                ToNumeric(eyePosition),
-                pitch,
-                yaw,
-                throwStrength,
-                weaponId,
-                playerVelocity,
-                _options,
-                out var start,
-                out var throwVelocity))
+        System.Numerics.Vector3 start;
+        System.Numerics.Vector3 velocity;
+        GrenadeTrajectorySource source;
+
+        if (TryReadStashedThrow(memory, offsets, localPawn, out var stashedStart, out var stashedVelocity))
+        {
+            start = stashedStart;
+            velocity = stashedVelocity;
+            source = GrenadeTrajectorySource.StashedSimulation;
+        }
+        else if (TryReadStashedThrowPosition(memory, offsets, localPawn, out var stashedPosition)
+                 && GrenadeTrajectorySimulator.TryBuildThrowFromPosition(
+                     stashedPosition,
+                     pitch,
+                     yaw,
+                     throwStrength,
+                     weaponId,
+                     playerVelocity,
+                     _options,
+                     out start,
+                     out velocity))
+        {
+            source = GrenadeTrajectorySource.ManualSimulation;
+        }
+        else
+        {
+            if (!TryReadEyePosition(memory, offsets, localPawn, out var eyePosition))
+                return false;
+
+            if (!GrenadeTrajectorySimulator.TryComputeThrowState(
+                    ToNumeric(eyePosition),
+                    pitch,
+                    yaw,
+                    throwStrength,
+                    weaponId,
+                    playerVelocity,
+                    _options,
+                    out start,
+                    out velocity))
+                return false;
+
+            source = GrenadeTrajectorySource.ManualSimulation;
+        }
+
+        if (!_simulator.TrySimulate(mapChecker, start, velocity, out var points, out var landing, out var bounces))
             return false;
 
-        if (!_simulator.TrySimulate(mapChecker, start, throwVelocity, out var points, out var landing, out var bounces))
+        if (source != GrenadeTrajectorySource.StashedSimulation
+            && !GrenadeTrajectorySimulator.IsPlausibleTrajectory(points, _options.MinTrajectoryHorizontalTravelUnits))
             return false;
 
-        if (!GrenadeTrajectorySimulator.IsPlausibleTrajectory(points, _options.MinTrajectoryHorizontalTravelUnits))
-            return false;
-
-        snapshot = BuildSnapshot(GrenadeTrajectorySource.ManualSimulation, weaponId, points, landing, bounces);
+        snapshot = BuildSnapshot(source, weaponId, points, landing, bounces);
         return true;
+    }
+
+    private bool TryReadStashedThrow(
+        ProcessMemory memory,
+        GameOffsets offsets,
+        nint localPawn,
+        out System.Numerics.Vector3 start,
+        out System.Numerics.Vector3 velocity)
+    {
+        start = default;
+        velocity = default;
+
+        if (offsets.M_bGrenadeParametersStashed == nint.Zero
+            || memory.Read<byte>(localPawn + offsets.M_bGrenadeParametersStashed) == 0
+            || offsets.M_vecStashedGrenadeThrowPosition == nint.Zero
+            || offsets.M_vecStashedVelocity == nint.Zero)
+            return false;
+
+        start = ReadNumericVector(memory, localPawn + offsets.M_vecStashedGrenadeThrowPosition);
+        velocity = ReadNumericVector(memory, localPawn + offsets.M_vecStashedVelocity);
+
+        return IsUsableVector(start) && velocity.LengthSquared() >= MinThrowSpeedSquared;
+    }
+
+    private static bool TryReadStashedThrowPosition(
+        ProcessMemory memory,
+        GameOffsets offsets,
+        nint localPawn,
+        out System.Numerics.Vector3 position)
+    {
+        position = default;
+
+        if (offsets.M_bGrenadeParametersStashed == nint.Zero
+            || memory.Read<byte>(localPawn + offsets.M_bGrenadeParametersStashed) == 0
+            || offsets.M_vecStashedGrenadeThrowPosition == nint.Zero)
+            return false;
+
+        position = ReadNumericVector(memory, localPawn + offsets.M_vecStashedGrenadeThrowPosition);
+        return IsUsableVector(position);
     }
 
     private bool TryResimulateFromTrail(
@@ -138,10 +176,10 @@ public sealed class GrenadeTrajectoryResolver
         var start = ToNumeric(trail[0]);
         var dt = Math.Max(_options.TickIntervalSeconds, 1e-4f);
         var velocity = (ToNumeric(trail[1]) - start) / dt;
-        if (velocity.LengthSquared() < 10_000f && trail.Count >= 3)
+        if (velocity.LengthSquared() < MinThrowSpeedSquared && trail.Count >= 3)
             velocity = (ToNumeric(trail[2]) - start) / (dt * 2f);
 
-        if (velocity.LengthSquared() < 10_000f)
+        if (velocity.LengthSquared() < MinThrowSpeedSquared)
             return false;
 
         if (!_simulator.TrySimulate(mapChecker, start, velocity, out var points, out var landing, out var bounces))
@@ -154,7 +192,7 @@ public sealed class GrenadeTrajectoryResolver
         return true;
     }
 
-    private bool TryReadThrowAngles(
+    private static bool TryReadEyeAngles(
         ProcessMemory memory,
         GameOffsets offsets,
         nint localPawn,
@@ -164,15 +202,6 @@ public sealed class GrenadeTrajectoryResolver
         pitch = 0f;
         yaw = 0f;
 
-        if (offsets.M_bGrenadeParametersStashed != nint.Zero
-            && memory.Read<byte>(localPawn + offsets.M_bGrenadeParametersStashed) != 0
-            && offsets.M_angStashedShootAngles != nint.Zero)
-        {
-            pitch = memory.Read<float>(localPawn + offsets.M_angStashedShootAngles);
-            yaw = memory.Read<float>(localPawn + offsets.M_angStashedShootAngles + 4);
-            return true;
-        }
-
         if (offsets.M_angEyeAngles == nint.Zero)
             return false;
 
@@ -180,6 +209,9 @@ public sealed class GrenadeTrajectoryResolver
         yaw = memory.Read<float>(localPawn + offsets.M_angEyeAngles + 4);
         return true;
     }
+
+    private static float NormalizeThrowStrength(float throwStrength) =>
+        throwStrength <= 0.01f ? 1f : Math.Clamp(throwStrength, 0f, 1f);
 
     private bool TryReadProjectileTrail(
         ProcessMemory memory,
@@ -381,7 +413,7 @@ public sealed class GrenadeTrajectoryResolver
             Source = source,
             WeaponId = weaponId,
             Points = points,
-            LandingPoint = landingPoint,
+            LandingPoint = landingPoint.IsValid ? landingPoint : points[^1],
             BounceCount = bounceCount
         };
 

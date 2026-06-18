@@ -6,7 +6,9 @@ public readonly struct Vector3(float x, float y, float z)
     public float Y { get; } = y;
     public float Z { get; } = z;
 
-    public bool IsValid => Math.Abs(X) > 1f || Math.Abs(Y) > 1f;
+    public bool IsValid =>
+        !float.IsNaN(X) && !float.IsNaN(Y) && !float.IsNaN(Z)
+        && (MathF.Abs(X) > 1f || MathF.Abs(Y) > 1f || MathF.Abs(Z) > 1f);
 
     public float DistanceTo(Vector3 other)
     {

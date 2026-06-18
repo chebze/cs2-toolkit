@@ -31,22 +31,28 @@ internal static class GrenadeArcDrawer
             EndCap = LineCap.Round
         };
 
-        var projected = new List<PointF>(snapshot.Points.Count);
+        PointF? previous = null;
         foreach (var point in snapshot.Points)
         {
-            if (WorldToScreenHelper.TryProject(point, viewMatrix, screenWidth, screenHeight, out var screen))
-                projected.Add(screen);
+            if (!WorldToScreenHelper.TryProject(point, viewMatrix, screenWidth, screenHeight, out var screen))
+            {
+                previous = null;
+                continue;
+            }
+
+            if (previous is { } last)
+                graphics.DrawLine(arcPen, last, screen);
+
+            previous = screen;
         }
 
-        for (var i = 1; i < projected.Count; i++)
-            graphics.DrawLine(arcPen, projected[i - 1], projected[i]);
-
-        if (!snapshot.LandingPoint.IsValid)
-            return;
+        var landingPoint = snapshot.LandingPoint.IsValid
+            ? snapshot.LandingPoint
+            : snapshot.Points[^1];
 
         DrawLandingMarker(
             graphics,
-            snapshot.LandingPoint,
+            landingPoint,
             viewMatrix,
             screenWidth,
             screenHeight,
@@ -65,6 +71,13 @@ internal static class GrenadeArcDrawer
         GrenadeOverlayOptions overlayOptions,
         float landingMarkerRadiusUnits)
     {
+        if (WorldToScreenHelper.TryProject(landingPoint, viewMatrix, screenWidth, screenHeight, out var center))
+        {
+            var radius = Math.Max(3f, overlayOptions.LandingLineWidth * 2f);
+            using var fill = new SolidBrush(color);
+            graphics.FillEllipse(fill, center.X - radius, center.Y - radius, radius * 2f, radius * 2f);
+        }
+
         Span<PointF> polygon = stackalloc PointF[Math.Max(3, overlayOptions.LandingRingSegments)];
         if (!WorldToScreenHelper.TryProjectGroundRing(
                 landingPoint,
@@ -79,11 +92,5 @@ internal static class GrenadeArcDrawer
 
         using var pen = new Pen(color, overlayOptions.LandingLineWidth);
         graphics.DrawPolygon(pen, polygon[..pointCount].ToArray());
-
-        if (WorldToScreenHelper.TryProject(landingPoint, viewMatrix, screenWidth, screenHeight, out var center))
-        {
-            var radius = Math.Max(3f, overlayOptions.LandingLineWidth * 2f);
-            graphics.FillEllipse(new SolidBrush(color), center.X - radius, center.Y - radius, radius * 2f, radius * 2f);
-        }
     }
 }
