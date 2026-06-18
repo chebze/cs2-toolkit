@@ -202,8 +202,6 @@ public sealed class SkeletonOverlayOptions
 {
     public string Color { get; set; } = "#FF6B6B";
     public float LineWidth { get; set; } = 1.5f;
-    public bool LogDiagnostics { get; set; } = false;
-    public int LogDiagnosticsIntervalMs { get; set; } = 2000;
 }
 
 public sealed class TextPanelOptions

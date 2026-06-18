@@ -199,7 +199,7 @@ public sealed class EnemyLastSeenTracker
     {
         snapshot = default!;
 
-        if (!BoneHelper.TryReadSkeleton(_memory, _offsets!, pawn, _boneScratch, out _))
+        if (!BoneHelper.TryReadSkeleton(_memory, _offsets!, pawn, _boneScratch))
             return false;
 
         snapshot = new EnemyLastSeenSnapshot

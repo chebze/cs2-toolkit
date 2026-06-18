@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Central in-process event bus. Decouples publishers (runtime, memory reader, input loop) from subscribers (overlays, future features).
+Central in-process event bus. Decouples publishers (runtime, memory reader, input loop) from subscribers (overlays, toggle services).
 
 ## Events
 
@@ -16,12 +16,24 @@ Central in-process event bus. Decouples publishers (runtime, memory reader, inpu
 | `OnMemoryRead` | `MemoryReadEventArgs` | `GameMemoryReader` |
 | `OnInjectionStatusChanged` | `InjectionStatusEventArgs` | `ToolkitRuntime` |
 
+`EnemySoundTracker.OnEnemyNoise` is a separate direct event (not on the bus).
+
 ## Publish methods
 
 - `PublishKeyDown` / `PublishKeyUp` / `PublishKeyPress`
 - `PublishMousePress` / `PublishMouseMove`
 - `PublishMemoryRead(MemoryState state)`
 - `PublishInjectionStatus(InjectionStatus status, string message)`
+
+## Subscribers (representative)
+
+| Subscriber | Events |
+|------------|--------|
+| `MenuOverlay` | `OnKeyPress`, `OnMouseMove` |
+| `EnemyOverlay`, stat overlays | `OnMemoryRead` |
+| `RcsToggleService`, `TbToggleService`, `AimHelperToggleService` | `OnKeyDown`, `OnKeyUp` |
+| `EnemyEspToggleService`, `SoundEspToggleService` | `OnKeyPress` |
+| `SettingsSaveService` | `OnKeyPress` |
 
 ## Registration
 

@@ -78,7 +78,7 @@ public sealed class AimHelper
             if (localPlayerIndex >= 0 && !IsVisibleToLocalPlayer(memory, pawn, localPlayerIndex))
                 continue;
 
-            if (!BoneHelper.TryReadSkeleton(memory, _offsets, pawn, _bones, out _))
+            if (!BoneHelper.TryReadSkeleton(memory, _offsets, pawn, _bones))
                 continue;
 
             if (!TryResolveBonePosition(preferredBone, _bones, out var bonePosition))

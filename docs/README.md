@@ -1,17 +1,42 @@
-# Architecture Overview
+# CS2 Toolkit — Architecture Overview
+
+## Features
+
+| Feature | Default key | Description |
+|---------|-------------|-------------|
+| Inject / attach | `F9` | Attach to `cs2.exe` after launch |
+| Settings menu | `Insert` | Toggle read-only settings overlay |
+| Panic shutdown | `F10` | Detach, close overlay, exit immediately |
+| Save settings | `F11` | Write runtime toggles back to `appsettings.json` |
+| Sound ESP | `F5` | Enemy footstep/reload/jump ripples + bomb waves |
+| Enemy ESP | `F6` | Cycle skeleton overlay: off → last seen → full |
+| Triggerbot | `F7` | Auto-fire with humanized timing (see [Tb.md](Tb.md)) |
+| RCS | `F8` | Recoil compensation while spraying (see [Rcs.md](Rcs.md)) |
+| Aim helper | `F4` | Snap aim to visible enemy bones in FOV |
+
+Additional overlays (no toggle key): teammate stats, bomb carrier, clairvoyance tips, grenade trajectory arc.
 
 ## Event-loop driven design
 
 ```
 Program
   └── IHost (Generic Host + DI)
-        ├── ToolkitRuntime        → offsets, injection, input loop
-        ├── GameMemoryReader      → 100ms memory poll
-        ├── EnemyOverlay          → OnMemoryRead → draw
-        ├── TeammateOverlay       → OnMemoryRead → draw
-        ├── BombOverlay           → OnMemoryRead → draw
-        ├── ClairvoyanceOverlay   → OnMemoryRead → draw
-        └── MenuOverlay           → OnKeyPress → draw
+        ├── ToolkitRuntime           → offsets, map parsing, injection, input loop
+        ├── GameMemoryReader         → memory poll (default 5ms)
+        ├── MatchLogger              → round/file diagnostics
+        ├── EnemyOverlay             → enemy skeleton ESP
+        ├── TeammateOverlay          → teammate stat panel
+        ├── BombOverlay              → bomb carrier panel
+        ├── ClairvoyanceOverlay      → contextual tips
+        ├── EnemyNoiseOverlay        → sound/bomb ground ripples
+        ├── GrenadeOverlay           → grenade arc + landing marker
+        ├── MenuOverlay              → settings menu (Insert)
+        ├── RcsOverlay / RcsToggleService
+        ├── TbOverlay / TbToggleService
+        ├── EnemyEspStatusOverlay / EnemyEspToggleService
+        ├── SoundEspStatusOverlay / SoundEspToggleService
+        ├── AimHelperOverlay / AimHelperToggleService
+        └── SettingsSaveService      → F11 persist runtime state
 ```
 
 ## Event bus
@@ -19,18 +44,21 @@ Program
 All cross-component communication flows through `ToolkitEventBus`:
 
 ```
-ToolkitRuntime ──OnKey* / OnMouse*──► MenuOverlay
-GameMemoryReader ──OnMemoryRead──► EnemyOverlay, TeammateOverlay, BombOverlay, ClairvoyanceOverlay
-ToolkitRuntime ──OnInjectionStatus──► (future subscribers)
+ToolkitRuntime ──OnKey* / OnMouse*──► MenuOverlay, toggle services, SettingsSaveService
+GameMemoryReader ──OnMemoryRead──► stat overlays, status overlays, MatchLogger
+EnemySoundTracker ──OnEnemyNoise──► EnemyNoiseOverlay
+ToolkitRuntime ──OnInjectionStatus──► (subscribers as needed)
 ```
 
 ## Startup order
 
-1. Offsets downloaded (fatal on failure)
-2. Overlay window created
-3. Injection flow (wait for CS2 + key press)
-4. Memory reader starts (gated by `RuntimeGate`)
-5. Overlays subscribe and render on each event
+1. Download CS2 offsets (fatal on failure)
+2. Start overlay window
+3. Parse map collision meshes (or load cache); signal `RuntimeGate` when done
+4. Signal overlay ready
+5. Injection flow (wait for CS2 + inject key)
+6. `GameMemoryReader` starts (gated by `RuntimeGate`)
+7. Overlays and memory features run on each poll / draw frame
 
 ## Running
 
@@ -39,59 +67,152 @@ dotnet run
 ```
 
 1. Start CS2.
-2. Launch the toolkit.
-3. Press **F9** (default) when prompted.
-4. Stats appear on the overlay.
-5. Press **Insert** (default) to open the settings menu.
+2. Launch the toolkit (map parsing may take a moment on first run).
+3. Press **F9** when prompted to attach.
+4. Use feature hotkeys above; status labels appear bottom-left after attach.
+5. Press **Insert** for the settings menu; **F11** to save runtime toggles to `appsettings.json`.
+
+Map raycast features (triggerbot pre-fire visibility, aim helper LOS, grenade simulation) require collision meshes. The toolkit auto-discovers CS2's `maps` folder or loads cached meshes from `data/maps`. Set `Toolkit:Maps:MapsDirectory` to override discovery.
 
 ## Project structure
 
 ```
-Configuration/   ToolkitOptions
+Configuration/   ToolkitOptions, AppSettingsWriter
 Events/          ToolkitEventBus, event args
-Memory/          ProcessMemory, EntityResolver
-Models/          MemoryState, PlayerInfo, GameOffsets
+Logging/         FileLogWriter, FileLoggerProvider
+Maps/            Map parsing, raycast index, CS2 install discovery
+Memory/          Process memory, entity resolution, feature logic
+Models/          DTOs, enums, offsets
 Offsets/         OffsetDownloader
-Overlay/         ScreenOverlayManager, OverlayLayer
+Overlay/         ScreenOverlayManager, drawing helpers
 Runtime/         RuntimeGate
-Services/        ToolkitRuntime, GameMemoryReader, overlays
-Utilities/       DrawHelper, KeyParser, NativeInput
+Services/        Hosted services, overlays, runtime state
+Utilities/       DrawHelper, KeyParser, NativeInput, projection
 docs/            Per-class documentation
 ```
 
 ## Class documentation index
 
+### Entry & runtime
+
 | Class | Doc |
 |-------|-----|
 | Program | [Program.md](Program.md) |
 | ToolkitRuntime | [ToolkitRuntime.md](ToolkitRuntime.md) |
-| ScreenOverlayManager | [ScreenOverlayManager.md](ScreenOverlayManager.md) |
-| OverlayLayer | [OverlayLayer.md](OverlayLayer.md) |
-| GameMemoryReader | [GameMemoryReader.md](GameMemoryReader.md) |
-| EnemyOverlay | [EnemyOverlay.md](EnemyOverlay.md) |
-| EnemyLastSeenTracker | [EnemyLastSeenTracker.md](EnemyLastSeenTracker.md) |
-| TeammateOverlay | [TeammateOverlay.md](TeammateOverlay.md) |
-| BombOverlay | [BombOverlay.md](BombOverlay.md) |
-| ClairvoyanceAdvisor | [ClairvoyanceAdvisor.md](ClairvoyanceAdvisor.md) |
-| ClairvoyanceOverlay | [ClairvoyanceOverlay.md](ClairvoyanceOverlay.md) |
-| BombInfo | [BombInfo.md](BombInfo.md) |
-| BombStatus | [BombStatus.md](BombStatus.md) |
-| MenuOverlay | [MenuOverlay.md](MenuOverlay.md) |
-| ToolkitEventBus | [ToolkitEventBus.md](ToolkitEventBus.md) |
 | RuntimeGate | [RuntimeGate.md](RuntimeGate.md) |
-| OffsetDownloader | [OffsetDownloader.md](OffsetDownloader.md) |
+| ToolkitEventBus | [ToolkitEventBus.md](ToolkitEventBus.md) |
+| ToolkitEvents | [ToolkitEvents.md](ToolkitEvents.md) |
+
+### Configuration & persistence
+
+| Class | Doc |
+|-------|-----|
+| ToolkitOptions | [ToolkitOptions.md](ToolkitOptions.md) |
+| AppSettingsWriter | [AppSettingsWriter.md](AppSettingsWriter.md) |
+| ToolkitOptionsCollector | [ToolkitOptionsCollector.md](ToolkitOptionsCollector.md) |
+| SettingsSaveService | [SettingsSaveService.md](SettingsSaveService.md) |
+
+### Memory & models
+
+| Class | Doc |
+|-------|-----|
+| GameMemoryReader | [GameMemoryReader.md](GameMemoryReader.md) |
 | ProcessMemory | [ProcessMemory.md](ProcessMemory.md) |
 | EntityResolver | [EntityResolver.md](EntityResolver.md) |
+| ViewMatrixHolder | [ViewMatrixHolder.md](ViewMatrixHolder.md) |
 | MemoryState | [MemoryState.md](MemoryState.md) |
 | PlayerInfo | [PlayerInfo.md](PlayerInfo.md) |
 | GameOffsets | [GameOffsets.md](GameOffsets.md) |
-| ToolkitOptions | [ToolkitOptions.md](ToolkitOptions.md) |
-| ToolkitEvents | [ToolkitEvents.md](ToolkitEvents.md) |
+| OffsetDownloader | [OffsetDownloader.md](OffsetDownloader.md) |
+
+### Enemy ESP & sound
+
+| Class | Doc |
+|-------|-----|
+| EnemyEspState | [EnemyEspState.md](EnemyEspState.md) |
+| EnemyEspMode | [EnemyEspMode.md](EnemyEspMode.md) |
+| EnemyEspToggleService | [EnemyEspToggleService.md](EnemyEspToggleService.md) |
+| EnemyEspStatusOverlay | [EnemyEspStatusOverlay.md](EnemyEspStatusOverlay.md) |
+| EnemyOverlay | [EnemyOverlay.md](EnemyOverlay.md) |
+| EnemyLastSeenTracker | [EnemyLastSeenTracker.md](EnemyLastSeenTracker.md) |
+| EnemySoundTracker | [EnemySoundTracker.md](EnemySoundTracker.md) |
+| EnemyNoiseOverlay | [EnemyNoiseOverlay.md](EnemyNoiseOverlay.md) |
+| SoundEspState | [SoundEspState.md](SoundEspState.md) |
+| SoundEspToggleService | [SoundEspToggleService.md](SoundEspToggleService.md) |
+| SoundEspStatusOverlay | [SoundEspStatusOverlay.md](SoundEspStatusOverlay.md) |
+
+### Combat assists
+
+| Class | Doc |
+|-------|-----|
+| RecoilCompensator | [RecoilCompensator.md](RecoilCompensator.md) |
+| RcsState | [RcsState.md](RcsState.md) |
+| RcsOverlay | [RcsOverlay.md](RcsOverlay.md) |
+| RcsToggleService | [RcsToggleService.md](RcsToggleService.md) |
+| RCS (feature guide) | [Rcs.md](Rcs.md) |
+| Triggerbot | [Triggerbot.md](Triggerbot.md) |
+| AutoStopper | [AutoStopper.md](AutoStopper.md) |
+| TbState | [TbState.md](TbState.md) |
+| TbOverlay | [TbOverlay.md](TbOverlay.md) |
+| TbToggleService | [TbToggleService.md](TbToggleService.md) |
+| TB (feature guide) | [Tb.md](Tb.md) |
+| AimHelper | [AimHelper.md](AimHelper.md) |
+| AimHelperState | [AimHelperState.md](AimHelperState.md) |
+| AimHelperBone | [AimHelperBone.md](AimHelperBone.md) |
+| AimHelperOverlay | [AimHelperOverlay.md](AimHelperOverlay.md) |
+| AimHelperToggleService | [AimHelperToggleService.md](AimHelperToggleService.md) |
+
+### Grenades & maps
+
+| Class | Doc |
+|-------|-----|
+| GrenadeTrajectoryTracker | [GrenadeTrajectoryTracker.md](GrenadeTrajectoryTracker.md) |
+| GrenadeTrajectoryResolver | [GrenadeTrajectoryResolver.md](GrenadeTrajectoryResolver.md) |
+| GrenadeTrajectorySimulator | [GrenadeTrajectorySimulator.md](GrenadeTrajectorySimulator.md) |
+| GrenadeTrajectory | [GrenadeTrajectory.md](GrenadeTrajectory.md) |
+| GrenadeTrajectoryDiagnostics | [GrenadeTrajectoryDiagnostics.md](GrenadeTrajectoryDiagnostics.md) |
+| GrenadeOverlay | [GrenadeOverlay.md](GrenadeOverlay.md) |
+| GrenadeArcDrawer | [GrenadeArcDrawer.md](GrenadeArcDrawer.md) |
+| MapDataService | [MapDataService.md](MapDataService.md) |
+| MapPhysicsParser | [MapPhysicsParser.md](MapPhysicsParser.md) |
+| MapRaycastIndex | [MapRaycastIndex.md](MapRaycastIndex.md) |
+| MapVisibilityChecker | [MapVisibilityChecker.md](MapVisibilityChecker.md) |
+| Cs2InstallLocator | [Cs2InstallLocator.md](Cs2InstallLocator.md) |
+| MapNameReader | [MapNameReader.md](MapNameReader.md) |
+
+### Stat overlays & advisors
+
+| Class | Doc |
+|-------|-----|
+| TeammateOverlay | [TeammateOverlay.md](TeammateOverlay.md) |
+| BombOverlay | [BombOverlay.md](BombOverlay.md) |
+| BombInfo | [BombInfo.md](BombInfo.md) |
+| BombStatus | [BombStatus.md](BombStatus.md) |
+| ClairvoyanceAdvisor | [ClairvoyanceAdvisor.md](ClairvoyanceAdvisor.md) |
+| ClairvoyanceOverlay | [ClairvoyanceOverlay.md](ClairvoyanceOverlay.md) |
+| MenuOverlay | [MenuOverlay.md](MenuOverlay.md) |
+| RoundInfo | [RoundInfo.md](RoundInfo.md) |
+
+### Overlay infrastructure
+
+| Class | Doc |
+|-------|-----|
+| ScreenOverlayManager | [ScreenOverlayManager.md](ScreenOverlayManager.md) |
+| OverlayLayer | [OverlayLayer.md](OverlayLayer.md) |
+| SkeletonDrawer | [SkeletonDrawer.md](SkeletonDrawer.md) |
+| GroundWaveDrawer | [GroundWaveDrawer.md](GroundWaveDrawer.md) |
+| DrawHelper | [DrawHelper.md](DrawHelper.md) |
+| WorldToScreenHelper | [WorldToScreenHelper.md](WorldToScreenHelper.md) |
+| GameWindowHelper | [GameWindowHelper.md](GameWindowHelper.md) |
+
+### Logging & utilities
+
+| Class | Doc |
+|-------|-----|
+| MatchLogger | [MatchLogger.md](MatchLogger.md) |
 | FileLogWriter | [FileLogWriter.md](FileLogWriter.md) |
 | FileLoggerProvider | [FileLoggerProvider.md](FileLoggerProvider.md) |
-| MatchLogger | [MatchLogger.md](MatchLogger.md) |
-| RoundInfo | [RoundInfo.md](RoundInfo.md) |
-| GameWindowHelper | [GameWindowHelper.md](GameWindowHelper.md) |
-| DrawHelper | [DrawHelper.md](DrawHelper.md) |
 | KeyParser | [KeyParser.md](KeyParser.md) |
 | NativeInput | [NativeInput.md](NativeInput.md) |
+| BoneHelper | [BoneHelper.md](BoneHelper.md) |
+| BombSiteHelper | [BombSiteHelper.md](BombSiteHelper.md) |

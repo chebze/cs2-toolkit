@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Central orchestrator hosted as a `BackgroundService`. Coordinates offset download, injection flow, overlay startup, and the global input event loop.
+Central orchestrator hosted as a `BackgroundService`. Coordinates offset download, map parsing, injection flow, overlay startup, and the global input event loop.
 
 ## Lifecycle
 
@@ -10,6 +10,8 @@ Central orchestrator hosted as a `BackgroundService`. Coordinates offset downloa
 Download offsets (fatal on failure)
     ↓
 Start ScreenOverlayManager
+    ↓
+Parse map collision meshes (MapDataService)
     ↓
 Signal RuntimeGate.OverlayReady
     ↓
@@ -55,21 +57,22 @@ Pressing `Toolkit:PanicKey` (default `F10`) at any point instantly shuts down th
 2. Closes the overlay window
 3. Stops the host
 
-Checked during injection waits and the main input loop (~16ms polling).
+## Map parsing
 
-After successful injection, calls `ScreenOverlayManager.EnsureOnTop()` so overlays appear above a running fullscreen game.
+Before injection, calls `MapDataService.ParseAllMapsAsync` and reports progress on the system overlay layer. Map parsing failure is non-fatal; raycast features degrade gracefully when no meshes are available.
 
 ## System overlay layer
 
-Uses `ScreenOverlayManager.GetOrCreateLayer("system", zIndex: 1000)` for injection prompts and status text in the top-right corner.
+Uses `ScreenOverlayManager.GetOrCreateLayer("system", zIndex: 1000)` for injection prompts, map parsing status, and settings-save confirmations.
 
 ## Error handling
 
-Fatal errors in `RunAsync` (offset download, invalid inject key, attach failure) are caught in `ExecuteAsync`, logged at critical level, set `Environment.ExitCode = 1`, and call `IHostApplicationLifetime.StopApplication()` so the process exits cleanly with a visible error.
+Fatal errors in `RunAsync` (offset download, invalid inject key, attach failure) are caught in `ExecuteAsync`, logged at critical level, set `Environment.ExitCode = 1`, and call `IHostApplicationLifetime.StopApplication()`.
 
 ## Dependencies
 
 - `OffsetDownloader` — must succeed before anything else runs
+- `MapDataService` — loads collision meshes for raycast features
 - `ScreenOverlayManager` — started before injection UI
 - `RuntimeGate` — gates `GameMemoryReader` startup
 - `ToolkitEventBus` — input and injection status events

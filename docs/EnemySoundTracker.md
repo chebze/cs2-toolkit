@@ -6,10 +6,9 @@ Detects nearby enemy sound events from live pawn memory and raises `OnEnemyNoise
 
 ## Detection
 
-Each poll cycle (50ms):
+Each memory poll cycle (default **5ms** via `MemoryReadIntervalMs`):
 
-1. Read `dwViewMatrix` for world-to-screen projection
-2. For each living enemy within `MaxDistanceUnits` (default 2000) of the local player:
+1. For each living enemy within `MaxDistanceUnits` (default 2000) of the local player:
    - Compare `m_flEmitSoundTime` and `m_nLastJumpTick` to the previous snapshot
    - On change, classify the noise and fire `OnEnemyNoise`
 
@@ -29,6 +28,8 @@ event EventHandler<EnemyNoiseEventArgs>? OnEnemyNoise;
 ```
 
 `EnemyNoiseEventArgs` carries `PlayerIndex`, `SoundType`, `WorldPosition` (feet at detection time), and `Timestamp`.
+
+Drawing is gated by `SoundEspState` — see [SoundEspToggleService.md](SoundEspToggleService.md).
 
 ## Configuration
 

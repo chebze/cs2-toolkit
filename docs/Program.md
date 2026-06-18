@@ -20,19 +20,23 @@ Application entry point. Builds the generic host, registers all toolkit services
 | `ProcessMemory` | Singleton | External process memory access |
 | `ScreenOverlayManager` | Singleton | Full-screen overlay window |
 | `OffsetDownloader` | Singleton | Downloads CS2 offsets |
-| `FileLogWriter` | Singleton | Match log file writer |
-| `EnemyOverlay` | Singleton + Hosted | Enemy stat rendering |
-| `TeammateOverlay` | Singleton + Hosted | Teammate stat rendering |
-| `BombOverlay` | Singleton + Hosted | Bomb carrier state rendering |
-| `ClairvoyanceOverlay` | Singleton + Hosted | Contextual advisor tips |
-| `MenuOverlay` | Singleton + Hosted | Settings menu |
+| `MapPhysicsParser`, `MapVisibilityChecker`, `MapDataService`, `MapNameReader` | Singleton | Map collision mesh pipeline |
+| `FileLogWriter`, `FileLoggerProvider`, `MatchLogger` | Singleton / Hosted | File logging |
+| `EnemySoundTracker`, `EnemyLastSeenTracker`, `ViewMatrixHolder` | Singleton | ESP / projection support |
+| `EnemyOverlay`, `TeammateOverlay`, `BombOverlay`, `ClairvoyanceOverlay`, `EnemyNoiseOverlay`, `GrenadeOverlay`, `MenuOverlay` | Singleton + Hosted | Visual overlays |
+| `RecoilCompensator`, `Triggerbot`, `AimHelper`, `GrenadeTrajectoryTracker` | Singleton | Memory-tick combat / utility logic |
+| `RcsState`, `TbState`, `EnemyEspState`, `SoundEspState`, `AimHelperState` | Singleton | Runtime toggle state |
+| `RcsOverlay`, `RcsToggleService`, `TbOverlay`, `TbToggleService` | Singleton + Hosted | RCS / TB UI and hotkeys |
+| `EnemyEspToggleService`, `EnemyEspStatusOverlay` | Singleton + Hosted | Enemy ESP mode |
+| `SoundEspToggleService`, `SoundEspStatusOverlay` | Singleton + Hosted | Sound ESP toggle |
+| `AimHelperOverlay`, `AimHelperToggleService` | Singleton + Hosted | Aim helper UI and hotkeys |
+| `SettingsSaveService` | Hosted | Persist runtime settings (`F11`) |
 | `ToolkitRuntime` | Hosted | Orchestrates startup and input |
-| `GameMemoryReader` | Hosted | Polls game memory every 100ms |
-| `MatchLogger` | Hosted | Round/file diagnostics |
+| `GameMemoryReader` | Hosted | Polls game memory each tick |
 
 ## Fatal errors
 
-If offset download or injection fails, `ToolkitRuntime` logs a critical error, sets `Environment.ExitCode = 1`, and stops the host. `Program` prints the message to stderr and pauses with "Press any key to exit..." when running interactively, so startup failures are visible instead of silently closing.
+If offset download or injection fails, `ToolkitRuntime` logs a critical error, sets `Environment.ExitCode = 1`, and stops the host. `Program` prints the message to stderr and pauses with "Press any key to exit..." when running interactively.
 
 ## Configuration
 

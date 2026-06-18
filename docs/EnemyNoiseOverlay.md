@@ -7,6 +7,7 @@ Renders expanding ripple rings at enemy feet when `EnemySoundTracker` fires `OnE
 ## Behavior
 
 - Layer: `enemy-noise` at z-index `200` (above stat panels)
+- Gated by `SoundEspState` — no drawing when sound ESP is disabled
 - Subscribes to `EnemySoundTracker.OnEnemyNoise`
 - Each event spawns a wave anchored to the frozen world position where the sound occurred
 - Each frame (~60 FPS), projects a **horizontal ground ring** (circle in the XY plane at feet height) and draws fading concentric ripples

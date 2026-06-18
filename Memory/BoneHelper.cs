@@ -8,11 +8,9 @@ internal static class BoneHelper
         ProcessMemory memory,
         GameOffsets offsets,
         nint pawn,
-        Span<Vector3> bones,
-        out BoneReadContext context)
+        Span<Vector3> bones)
     {
         bones.Clear();
-        context = default;
 
         var sceneNode = memory.ReadPtr(pawn + offsets.M_pGameSceneNode);
         if (sceneNode == nint.Zero)
@@ -30,14 +28,6 @@ internal static class BoneHelper
                 memory.Read<float>(boneAddress + 4),
                 memory.Read<float>(boneAddress + 8));
         }
-
-        context = new BoneReadContext
-        {
-            Pawn = pawn,
-            SceneNode = sceneNode,
-            BoneArray = boneArray,
-            EntityOrigin = BombSiteHelper.ReadEntityPosition(memory, offsets, pawn)
-        };
 
         return bones[PlayerBones.Pelvis].IsValid
             && bones[PlayerBones.Neck].IsValid
