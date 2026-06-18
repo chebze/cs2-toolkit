@@ -1,0 +1,40 @@
+---
+description: Keep docs/{classname}.md in sync when classes are added or changed
+alwaysApply: true
+---
+
+# Class Documentation
+
+When you add or modify a C# class, record or update its documentation at `docs/{ClassName}.md`.
+
+## When to update
+
+- **New class** → create `docs/{ClassName}.md`
+- **Changed class** → update the matching doc (purpose, API, behavior, config, dependencies)
+- **Renamed class** → rename the doc file and update cross-references
+
+## Doc structure
+
+Each file should cover:
+
+1. **Purpose** — what the class does
+2. **Key API** — public methods, properties, events
+3. **Behavior** — lifecycle, threading, error handling
+4. **Dependencies** — injected services, related classes
+5. **Configuration** — `appsettings.json` keys, if any
+
+## Examples
+
+| Class file | Doc file |
+|------------|----------|
+| `Services/GameMemoryReader.cs` | `docs/GameMemoryReader.md` |
+| `Overlay/ScreenOverlayManager.cs` | `docs/ScreenOverlayManager.md` |
+| `Events/ToolkitEventBus.cs` | `docs/ToolkitEventBus.md` |
+
+## Checklist before finishing
+
+- [ ] Every new or changed class has a matching `docs/{ClassName}.md`
+- [ ] Doc reflects current behavior (not outdated)
+- [ ] `docs/README.md` index updated if a new class was added
+
+Do not skip docs for "small" changes — if the class behavior changed, the doc must change too.
