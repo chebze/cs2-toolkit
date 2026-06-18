@@ -12,13 +12,26 @@ public sealed class MapCollisionMesh
 
 public sealed class MapRaycastIndex
 {
+    private const float MinCellSize = 64f;
+    private const int TargetCellsPerAxis = 64;
+
     private readonly Vector3[] _vertices;
     private readonly int[] _indices;
+    private readonly Vector3 _boundsMin;
+    private readonly float _cellSize;
+    private readonly int _sizeX;
+    private readonly int _sizeY;
+    private readonly int _sizeZ;
+    private readonly List<int>[] _cells;
+    private readonly int[] _visitStamps;
+    private int _visitGeneration;
 
     public MapRaycastIndex(MapCollisionMesh mesh)
     {
         _vertices = mesh.Vertices;
         _indices = mesh.Indices;
+        (_boundsMin, _cellSize, _sizeX, _sizeY, _sizeZ, _cells) = BuildSpatialGrid(mesh);
+        _visitStamps = new int[mesh.TriangleCount];
     }
 
     public bool HasLineOfSight(Vector3 start, Vector3 end)
@@ -31,18 +44,8 @@ public sealed class MapRaycastIndex
         direction /= distance;
         const float epsilon = 0.1f;
 
-        for (var i = 0; i < _indices.Length; i += 3)
-        {
-            if (IntersectsTriangle(start, direction, distance,
-                    _vertices[_indices[i]],
-                    _vertices[_indices[i + 1]],
-                    _vertices[_indices[i + 2]],
-                    out var hitDistance)
-                && hitDistance < distance - epsilon)
-                return false;
-        }
-
-        return true;
+        return !TryRaycastInternal(start, direction, distance, out var hitDistance, out _)
+               || hitDistance >= distance - epsilon;
     }
 
     public bool TryRaycast(
@@ -57,6 +60,25 @@ public sealed class MapRaycastIndex
         normal = default;
         distance = maxDistance;
 
+        if (!TryRaycastInternal(start, direction, maxDistance, out var closest, out var closestNormal))
+            return false;
+
+        distance = closest;
+        hitPoint = start + Vector3.Normalize(direction) * closest;
+        normal = closestNormal;
+        return true;
+    }
+
+    private bool TryRaycastInternal(
+        Vector3 start,
+        Vector3 direction,
+        float maxDistance,
+        out float distance,
+        out Vector3 normal)
+    {
+        distance = maxDistance;
+        normal = default;
+
         var length = direction.Length();
         if (length <= 1e-6f || maxDistance <= 0f)
             return false;
@@ -66,34 +88,243 @@ public sealed class MapRaycastIndex
         var found = false;
         Vector3 closestNormal = default;
 
-        for (var i = 0; i < _indices.Length; i += 3)
+        _visitGeneration++;
+        if (_visitGeneration == int.MaxValue)
         {
-            var v0 = _vertices[_indices[i]];
-            var v1 = _vertices[_indices[i + 1]];
-            var v2 = _vertices[_indices[i + 2]];
-
-            if (!IntersectsTriangle(start, direction, maxDistance, v0, v1, v2, out var hitDistance))
-                continue;
-
-            if (hitDistance >= closest)
-                continue;
-
-            closest = hitDistance;
-            closestNormal = Vector3.Normalize(Vector3.Cross(v1 - v0, v2 - v0));
-            if (Vector3.Dot(closestNormal, direction) > 0f)
-                closestNormal = -closestNormal;
-
-            found = true;
+            Array.Clear(_visitStamps);
+            _visitGeneration = 1;
         }
+
+        TestCandidateTriangles(
+            start,
+            direction,
+            maxDistance,
+            _visitGeneration,
+            ref closest,
+            ref closestNormal,
+            ref found);
 
         if (!found)
             return false;
 
         distance = closest;
-        hitPoint = start + direction * closest;
         normal = closestNormal;
         return true;
     }
+
+    private void TestCandidateTriangles(
+        Vector3 origin,
+        Vector3 direction,
+        float maxDistance,
+        int visitGeneration,
+        ref float closest,
+        ref Vector3 closestNormal,
+        ref bool found)
+    {
+        if (_cells.Length == 0)
+            return;
+
+        var end = origin + direction * maxDistance;
+        var minX = MathF.Min(origin.X, end.X);
+        var minY = MathF.Min(origin.Y, end.Y);
+        var minZ = MathF.Min(origin.Z, end.Z);
+        var maxX = MathF.Max(origin.X, end.X);
+        var maxY = MathF.Max(origin.Y, end.Y);
+        var maxZ = MathF.Max(origin.Z, end.Z);
+
+        var startCellX = ClampCellX((int)MathF.Floor((minX - _boundsMin.X) / _cellSize));
+        var startCellY = ClampCellY((int)MathF.Floor((minY - _boundsMin.Y) / _cellSize));
+        var startCellZ = ClampCellZ((int)MathF.Floor((minZ - _boundsMin.Z) / _cellSize));
+        var endCellX = ClampCellX((int)MathF.Floor((maxX - _boundsMin.X) / _cellSize));
+        var endCellY = ClampCellY((int)MathF.Floor((maxY - _boundsMin.Y) / _cellSize));
+        var endCellZ = ClampCellZ((int)MathF.Floor((maxZ - _boundsMin.Z) / _cellSize));
+
+        var invCell = 1f / _cellSize;
+        var currentX = (int)MathF.Floor((origin.X - _boundsMin.X) * invCell);
+        var currentY = (int)MathF.Floor((origin.Y - _boundsMin.Y) * invCell);
+        var currentZ = (int)MathF.Floor((origin.Z - _boundsMin.Z) * invCell);
+        currentX = ClampCellX(currentX);
+        currentY = ClampCellY(currentY);
+        currentZ = ClampCellZ(currentZ);
+
+        var stepX = direction.X > 0f ? 1 : direction.X < 0f ? -1 : 0;
+        var stepY = direction.Y > 0f ? 1 : direction.Y < 0f ? -1 : 0;
+        var stepZ = direction.Z > 0f ? 1 : direction.Z < 0f ? -1 : 0;
+
+        var nextBoundaryX = stepX > 0
+            ? _boundsMin.X + (currentX + 1) * _cellSize
+            : _boundsMin.X + currentX * _cellSize;
+        var nextBoundaryY = stepY > 0
+            ? _boundsMin.Y + (currentY + 1) * _cellSize
+            : _boundsMin.Y + currentY * _cellSize;
+        var nextBoundaryZ = stepZ > 0
+            ? _boundsMin.Z + (currentZ + 1) * _cellSize
+            : _boundsMin.Z + currentZ * _cellSize;
+
+        var tMaxX = stepX == 0 ? float.PositiveInfinity : (nextBoundaryX - origin.X) / direction.X;
+        var tMaxY = stepY == 0 ? float.PositiveInfinity : (nextBoundaryY - origin.Y) / direction.Y;
+        var tMaxZ = stepZ == 0 ? float.PositiveInfinity : (nextBoundaryZ - origin.Z) / direction.Z;
+
+        var tDeltaX = stepX == 0 ? float.PositiveInfinity : _cellSize / MathF.Abs(direction.X);
+        var tDeltaY = stepY == 0 ? float.PositiveInfinity : _cellSize / MathF.Abs(direction.Y);
+        var tDeltaZ = stepZ == 0 ? float.PositiveInfinity : _cellSize / MathF.Abs(direction.Z);
+
+        var steps = 0;
+        var maxSteps = Math.Abs(endCellX - startCellX)
+            + Math.Abs(endCellY - startCellY)
+            + Math.Abs(endCellZ - startCellZ)
+            + 8;
+
+        while (steps++ <= maxSteps)
+        {
+            var flat = ToFlat(currentX, currentY, currentZ);
+            var bucket = _cells[flat];
+            for (var i = 0; i < bucket.Count; i++)
+            {
+                var triangleOffset = bucket[i];
+                var triangleIndex = triangleOffset / 3;
+                if (_visitStamps[triangleIndex] == visitGeneration)
+                    continue;
+
+                _visitStamps[triangleIndex] = visitGeneration;
+
+                var v0 = _vertices[_indices[triangleOffset]];
+                var v1 = _vertices[_indices[triangleOffset + 1]];
+                var v2 = _vertices[_indices[triangleOffset + 2]];
+
+                if (!IntersectsTriangle(origin, direction, maxDistance, v0, v1, v2, out var hitDistance))
+                    continue;
+
+                if (hitDistance >= closest)
+                    continue;
+
+                closest = hitDistance;
+                closestNormal = Vector3.Normalize(Vector3.Cross(v1 - v0, v2 - v0));
+                if (Vector3.Dot(closestNormal, direction) > 0f)
+                    closestNormal = -closestNormal;
+
+                found = true;
+            }
+
+            if (currentX == endCellX && currentY == endCellY && currentZ == endCellZ)
+                break;
+
+            if (tMaxX < tMaxY)
+            {
+                if (tMaxX < tMaxZ)
+                {
+                    if (tMaxX > maxDistance)
+                        break;
+
+                    currentX += stepX;
+                    if (currentX < 0 || currentX >= _sizeX)
+                        break;
+
+                    tMaxX += tDeltaX;
+                }
+                else
+                {
+                    if (tMaxZ > maxDistance)
+                        break;
+
+                    currentZ += stepZ;
+                    if (currentZ < 0 || currentZ >= _sizeZ)
+                        break;
+
+                    tMaxZ += tDeltaZ;
+                }
+            }
+            else
+            {
+                if (tMaxY < tMaxZ)
+                {
+                    if (tMaxY > maxDistance)
+                        break;
+
+                    currentY += stepY;
+                    if (currentY < 0 || currentY >= _sizeY)
+                        break;
+
+                    tMaxY += tDeltaY;
+                }
+                else
+                {
+                    if (tMaxZ > maxDistance)
+                        break;
+
+                    currentZ += stepZ;
+                    if (currentZ < 0 || currentZ >= _sizeZ)
+                        break;
+
+                    tMaxZ += tDeltaZ;
+                }
+            }
+        }
+    }
+
+    private static (Vector3 BoundsMin, float CellSize, int SizeX, int SizeY, int SizeZ, List<int>[] Cells) BuildSpatialGrid(
+        MapCollisionMesh mesh)
+    {
+        if (mesh.TriangleCount == 0)
+            return (Vector3.Zero, MinCellSize, 0, 0, 0, []);
+
+        var boundsMin = new Vector3(float.PositiveInfinity);
+        var boundsMax = new Vector3(float.NegativeInfinity);
+
+        foreach (var vertex in mesh.Vertices)
+        {
+            boundsMin = Vector3.Min(boundsMin, vertex);
+            boundsMax = Vector3.Max(boundsMax, vertex);
+        }
+
+        var extent = boundsMax - boundsMin;
+        var maxExtent = MathF.Max(extent.X, MathF.Max(extent.Y, extent.Z));
+        var cellSize = MathF.Max(MinCellSize, maxExtent / TargetCellsPerAxis);
+
+        var sizeX = Math.Max(1, (int)MathF.Ceiling(extent.X / cellSize) + 1);
+        var sizeY = Math.Max(1, (int)MathF.Ceiling(extent.Y / cellSize) + 1);
+        var sizeZ = Math.Max(1, (int)MathF.Ceiling(extent.Z / cellSize) + 1);
+
+        var cells = new List<int>[sizeX * sizeY * sizeZ];
+        for (var i = 0; i < cells.Length; i++)
+            cells[i] = [];
+
+        for (var triangleOffset = 0; triangleOffset < mesh.Indices.Length; triangleOffset += 3)
+        {
+            var v0 = mesh.Vertices[mesh.Indices[triangleOffset]];
+            var v1 = mesh.Vertices[mesh.Indices[triangleOffset + 1]];
+            var v2 = mesh.Vertices[mesh.Indices[triangleOffset + 2]];
+
+            var triMin = Vector3.Min(v0, Vector3.Min(v1, v2));
+            var triMax = Vector3.Max(v0, Vector3.Max(v1, v2));
+
+            var minCellX = ClampCell((int)MathF.Floor((triMin.X - boundsMin.X) / cellSize), sizeX);
+            var minCellY = ClampCell((int)MathF.Floor((triMin.Y - boundsMin.Y) / cellSize), sizeY);
+            var minCellZ = ClampCell((int)MathF.Floor((triMin.Z - boundsMin.Z) / cellSize), sizeZ);
+            var maxCellX = ClampCell((int)MathF.Floor((triMax.X - boundsMin.X) / cellSize), sizeX);
+            var maxCellY = ClampCell((int)MathF.Floor((triMax.Y - boundsMin.Y) / cellSize), sizeY);
+            var maxCellZ = ClampCell((int)MathF.Floor((triMax.Z - boundsMin.Z) / cellSize), sizeZ);
+
+            for (var z = minCellZ; z <= maxCellZ; z++)
+            {
+                for (var y = minCellY; y <= maxCellY; y++)
+                {
+                    for (var x = minCellX; x <= maxCellX; x++)
+                        cells[x + sizeX * (y + sizeY * z)].Add(triangleOffset);
+                }
+            }
+        }
+
+        return (boundsMin, cellSize, sizeX, sizeY, sizeZ, cells);
+    }
+
+    private int ToFlat(int x, int y, int z) => x + _sizeX * (y + _sizeY * z);
+
+    private int ClampCellX(int value) => ClampCell(value, _sizeX);
+    private int ClampCellY(int value) => ClampCell(value, _sizeY);
+    private int ClampCellZ(int value) => ClampCell(value, _sizeZ);
+
+    private static int ClampCell(int value, int size) => Math.Clamp(value, 0, size - 1);
 
     private static bool IntersectsTriangle(
         Vector3 origin,

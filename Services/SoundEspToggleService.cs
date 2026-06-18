@@ -4,41 +4,42 @@ using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Windows.Forms;
 
 namespace Cs2Toolkit.Services;
 
-public sealed class RcsToggleService : IHostedService
+public sealed class SoundEspToggleService : IHostedService
 {
     private readonly ToolkitEventBus _eventBus;
-    private readonly RcsState _rcsState;
+    private readonly SoundEspState _soundEspState;
     private readonly ToolkitOptions _options;
-    private readonly ILogger<RcsToggleService> _logger;
-    private Keys _toggleKey = Keys.F8;
+    private readonly ILogger<SoundEspToggleService> _logger;
+    private Keys _toggleKey = Keys.F5;
 
-    public RcsToggleService(
+    public SoundEspToggleService(
         ToolkitEventBus eventBus,
-        RcsState rcsState,
+        SoundEspState soundEspState,
         IOptions<ToolkitOptions> options,
-        ILogger<RcsToggleService> logger)
+        ILogger<SoundEspToggleService> logger)
     {
         _eventBus = eventBus;
-        _rcsState = rcsState;
+        _soundEspState = soundEspState;
         _options = options.Value;
         _logger = logger;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _toggleKey = KeyParser.Parse(_options.Rcs.ToggleKey);
+        _toggleKey = KeyParser.Parse(_options.SoundEsp.ToggleKey);
         if (_toggleKey == Keys.None)
-            throw new InvalidOperationException($"Invalid Rcs:ToggleKey in appsettings.json: {_options.Rcs.ToggleKey}");
+            throw new InvalidOperationException($"Invalid SoundEsp:ToggleKey in appsettings.json: {_options.SoundEsp.ToggleKey}");
 
-        _rcsState.Initialize(_options.Rcs);
+        _soundEspState.Initialize(_options.SoundEsp);
         _eventBus.OnKeyPress += OnKeyPress;
         _logger.LogInformation(
-            "RCS toggle bound to {ToggleKey} (starts {State})",
-            _options.Rcs.ToggleKey,
-            _rcsState.IsEnabled ? "enabled" : "disabled");
+            "Sound ESP toggle bound to {ToggleKey} (enemy noise + bomb waves, starts {State})",
+            _options.SoundEsp.ToggleKey,
+            _soundEspState.IsEnabled ? "enabled" : "disabled");
         return Task.CompletedTask;
     }
 
@@ -53,7 +54,7 @@ public sealed class RcsToggleService : IHostedService
         if (e.Key != _toggleKey)
             return;
 
-        var enabled = _rcsState.Toggle();
-        _logger.LogInformation("RCS {State}", enabled ? "enabled" : "disabled");
+        var enabled = _soundEspState.Toggle();
+        _logger.LogInformation("S-ESP {State}", enabled ? "enabled" : "disabled");
     }
 }

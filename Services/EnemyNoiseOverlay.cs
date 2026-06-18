@@ -14,7 +14,8 @@ namespace Cs2Toolkit.Services;
 public sealed class EnemyNoiseOverlay : IHostedService
 {
     private readonly EnemySoundTracker _soundTracker;
-    private readonly EnemyLastSeenTracker _lastSeenTracker;
+    private readonly SoundEspState _soundEspState;
+    private readonly ViewMatrixHolder _viewMatrixHolder;
     private readonly ToolkitEventBus _eventBus;
     private readonly ScreenOverlayManager _overlayManager;
     private readonly ToolkitOptions _options;
@@ -29,14 +30,16 @@ public sealed class EnemyNoiseOverlay : IHostedService
 
     public EnemyNoiseOverlay(
         EnemySoundTracker soundTracker,
-        EnemyLastSeenTracker lastSeenTracker,
+        SoundEspState soundEspState,
+        ViewMatrixHolder viewMatrixHolder,
         ToolkitEventBus eventBus,
         ScreenOverlayManager overlayManager,
         IOptions<ToolkitOptions> options,
         ILogger<EnemyNoiseOverlay> logger)
     {
         _soundTracker = soundTracker;
-        _lastSeenTracker = lastSeenTracker;
+        _soundEspState = soundEspState;
+        _viewMatrixHolder = viewMatrixHolder;
         _eventBus = eventBus;
         _overlayManager = overlayManager;
         _options = options.Value;
@@ -65,8 +68,9 @@ public sealed class EnemyNoiseOverlay : IHostedService
     {
         lock (_lock)
         {
-            if (!e.State.IsInMatch)
+            if (!_soundEspState.IsEnabled || !e.State.IsInMatch)
             {
+                _waves.Clear();
                 _bombPosition = null;
                 _bombWasActive = false;
                 return;
@@ -93,6 +97,9 @@ public sealed class EnemyNoiseOverlay : IHostedService
 
     private void OnEnemyNoise(object? sender, EnemyNoiseEventArgs e)
     {
+        if (!_soundEspState.IsEnabled)
+            return;
+
         lock (_lock)
         {
             _waves.Add(new ActiveNoiseWave
@@ -107,10 +114,14 @@ public sealed class EnemyNoiseOverlay : IHostedService
 
     private void DrawWaves(Graphics graphics)
     {
+        if (!_soundEspState.IsEnabled)
+            return;
+
         var noiseOptions = _options.EnemyNoise;
         var bounds = GameWindowHelper.GetTargetBounds();
         var now = DateTime.UtcNow;
-        var viewMatrix = _lastSeenTracker.LatestViewMatrix;
+        Span<float> viewMatrix = stackalloc float[16];
+        _viewMatrixHolder.CopyTo(viewMatrix);
         var waveColor = DrawHelper.ParseColor(noiseOptions.WaveColor, Color.Red);
         Vector3? bombPosition = null;
         DateTime bombWaveEpoch;

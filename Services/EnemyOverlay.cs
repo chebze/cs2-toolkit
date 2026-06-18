@@ -15,21 +15,26 @@ public sealed class EnemyOverlay : IHostedService
 {
     private readonly ToolkitEventBus _eventBus;
     private readonly EnemyLastSeenTracker _lastSeenTracker;
+    private readonly EnemyEspState _espState;
+    private readonly ViewMatrixHolder _viewMatrixHolder;
     private readonly ScreenOverlayManager _overlayManager;
     private readonly ToolkitOptions _options;
     private readonly ILogger<EnemyOverlay> _logger;
     private OverlayLayer? _layer;
-    private DateTime _lastDrawLogAt;
 
     public EnemyOverlay(
         ToolkitEventBus eventBus,
         EnemyLastSeenTracker lastSeenTracker,
+        EnemyEspState espState,
+        ViewMatrixHolder viewMatrixHolder,
         ScreenOverlayManager overlayManager,
         IOptions<ToolkitOptions> options,
         ILogger<EnemyOverlay> logger)
     {
         _eventBus = eventBus;
         _lastSeenTracker = lastSeenTracker;
+        _espState = espState;
+        _viewMatrixHolder = viewMatrixHolder;
         _overlayManager = overlayManager;
         _options = options.Value;
         _logger = logger;
@@ -53,7 +58,7 @@ public sealed class EnemyOverlay : IHostedService
 
     private void OnMemoryRead(object? sender, MemoryReadEventArgs e)
     {
-        if (_layer is null || !e.State.IsInMatch)
+        if (_layer is null || _espState.Mode == EnemyEspMode.Disabled || !e.State.IsInMatch)
             return;
 
         _overlayManager.EnsureOnTop();
@@ -61,40 +66,33 @@ public sealed class EnemyOverlay : IHostedService
 
     private void DrawSkeletons(Graphics graphics)
     {
+        var mode = _espState.Mode;
+        if (mode == EnemyEspMode.Disabled)
+            return;
+
         var panel = _options.Overlay.EnemyLastSeen;
         var bounds = GameWindowHelper.GetTargetBounds();
         var color = DrawHelper.ParseColor(panel.Color, Color.OrangeRed);
-        var snapshots = _lastSeenTracker.DrawableSnapshots.ToList();
+        var snapshots = mode switch
+        {
+            EnemyEspMode.Full => _lastSeenTracker.CopyLiveSnapshots(),
+            EnemyEspMode.LastSeen => _lastSeenTracker.CopyDrawableSnapshots(),
+            _ => []
+        };
+
+        if (snapshots.Count == 0)
+            return;
+
+        Span<float> viewMatrix = stackalloc float[16];
+        _viewMatrixHolder.CopyTo(viewMatrix);
 
         SkeletonDrawer.DrawLastSeen(
             graphics,
             snapshots,
-            _lastSeenTracker.LatestViewMatrix,
+            viewMatrix,
             bounds.Width,
             bounds.Height,
             color,
             panel.LineWidth);
-
-        LogSkeletonDraw(snapshots, panel, bounds.Width, bounds.Height);
-    }
-
-    private void LogSkeletonDraw(
-        IReadOnlyList<EnemyLastSeenSnapshot> snapshots,
-        SkeletonOverlayOptions panel,
-        int screenWidth,
-        int screenHeight)
-    {
-        if (!panel.LogDiagnostics || snapshots.Count == 0)
-            return;
-
-        var now = DateTime.UtcNow;
-        if ((now - _lastDrawLogAt).TotalMilliseconds < panel.LogDiagnosticsIntervalMs)
-            return;
-
-        _lastDrawLogAt = now;
-        var snapshot = snapshots[0];
-        _logger.LogInformation(
-            "{Diagnostics}",
-            SkeletonDiagnostics.FormatDraw(snapshot, _lastSeenTracker.LatestViewMatrix, screenWidth, screenHeight));
     }
 }

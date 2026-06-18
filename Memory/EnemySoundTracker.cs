@@ -10,7 +10,6 @@ public sealed class EnemySoundTracker
     private readonly ProcessMemory _memory;
     private readonly EnemyNoiseOptions _options;
     private readonly Dictionary<int, EnemySoundSnapshot> _snapshots = new();
-    private readonly float[] _viewMatrix = new float[16];
 
     private GameOffsets? _offsets;
 
@@ -21,8 +20,6 @@ public sealed class EnemySoundTracker
     }
 
     public event EventHandler<EnemyNoiseEventArgs>? OnEnemyNoise;
-
-    public ReadOnlySpan<float> LatestViewMatrix => _viewMatrix;
 
     public void Initialize(GameOffsets offsets) => _offsets = offsets;
 
@@ -35,7 +32,6 @@ public sealed class EnemySoundTracker
         }
 
         var clientBase = _memory.ClientBase;
-        ReadViewMatrix(clientBase);
 
         var entityList = _memory.ReadPtr(clientBase + _offsets.DwEntityList);
         var localPawn = _memory.ReadPtr(clientBase + _offsets.DwLocalPlayerPawn);
@@ -149,13 +145,6 @@ public sealed class EnemySoundTracker
             return false;
 
         return _memory.Read<byte>(weapon + _offsets.M_bInReload) != 0;
-    }
-
-    private void ReadViewMatrix(nint clientBase)
-    {
-        var matrixAddress = clientBase + _offsets!.DwViewMatrix;
-        for (var i = 0; i < 16; i++)
-            _viewMatrix[i] = _memory.Read<float>(matrixAddress + (nint)(i * 4));
     }
 
     private nint ResolvePawnForPlayer(nint entityList, int index)

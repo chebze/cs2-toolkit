@@ -2,13 +2,13 @@ using Cs2Toolkit.Configuration;
 
 namespace Cs2Toolkit.Services;
 
-public sealed class RcsState
+public sealed class SoundEspState
 {
-    private int _enabled;
+    private int _enabled = 1;
 
     public bool IsEnabled => Volatile.Read(ref _enabled) == 1;
 
-    public void Initialize(RcsOptions options) =>
+    public void Initialize(SoundEspOptions options) =>
         Volatile.Write(ref _enabled, options.Enabled ? 1 : 0);
 
     public bool Toggle()

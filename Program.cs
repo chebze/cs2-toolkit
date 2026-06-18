@@ -43,6 +43,8 @@ internal static class Program
 
                 services.AddSingleton<EnemySoundTracker>();
                 services.AddSingleton<EnemyLastSeenTracker>();
+                services.AddSingleton<EnemyEspState>();
+                services.AddSingleton<ViewMatrixHolder>();
                 services.AddSingleton<EnemyOverlay>();
                 services.AddSingleton<TeammateOverlay>();
                 services.AddSingleton<BombOverlay>();
@@ -54,6 +56,20 @@ internal static class Program
                 services.AddSingleton<RecoilCompensator>();
                 services.AddSingleton<RcsOverlay>();
                 services.AddSingleton<RcsToggleService>();
+
+                services.AddSingleton<EnemyEspToggleService>();
+                services.AddSingleton<EnemyEspStatusOverlay>();
+
+                services.AddSingleton<SoundEspState>();
+                services.AddSingleton<SoundEspToggleService>();
+                services.AddSingleton<SoundEspStatusOverlay>();
+
+                services.AddSingleton<AimHelperState>();
+                services.AddSingleton<AimHelper>();
+                services.AddSingleton<AimHelperToggleService>();
+                services.AddSingleton<AimHelperOverlay>();
+
+                services.AddSingleton<SettingsSaveService>();
 
                 services.AddSingleton<TbState>();
                 services.AddSingleton<Triggerbot>();
@@ -73,6 +89,13 @@ internal static class Program
                 services.AddHostedService(sp => sp.GetRequiredService<MenuOverlay>());
                 services.AddHostedService(sp => sp.GetRequiredService<RcsOverlay>());
                 services.AddHostedService(sp => sp.GetRequiredService<RcsToggleService>());
+                services.AddHostedService(sp => sp.GetRequiredService<EnemyEspToggleService>());
+                services.AddHostedService(sp => sp.GetRequiredService<EnemyEspStatusOverlay>());
+                services.AddHostedService(sp => sp.GetRequiredService<SoundEspToggleService>());
+                services.AddHostedService(sp => sp.GetRequiredService<SoundEspStatusOverlay>());
+                services.AddHostedService(sp => sp.GetRequiredService<AimHelperToggleService>());
+                services.AddHostedService(sp => sp.GetRequiredService<AimHelperOverlay>());
+                services.AddHostedService(sp => sp.GetRequiredService<SettingsSaveService>());
                 services.AddHostedService(sp => sp.GetRequiredService<TbOverlay>());
                 services.AddHostedService(sp => sp.GetRequiredService<TbToggleService>());
                 services.AddHostedService(sp => sp.GetRequiredService<GrenadeOverlay>());

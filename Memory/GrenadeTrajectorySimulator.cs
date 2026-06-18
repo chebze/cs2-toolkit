@@ -16,19 +16,26 @@ public sealed class GrenadeTrajectorySimulator
         Vector3 start,
         Vector3 velocity,
         out List<ModelVector3> points,
+        out List<List<ModelVector3>> segments,
+        out List<ModelVector3> bouncePoints,
         out ModelVector3 landingPoint,
         out int bounceCount)
     {
         points = [];
+        segments = [];
+        bouncePoints = [];
         landingPoint = default;
         bounceCount = 0;
 
         if (!IsFinite(start) || !IsFinite(velocity) || velocity.LengthSquared() < 100f)
             return false;
 
+        var currentSegment = new List<ModelVector3>();
+        segments.Add(currentSegment);
+
         var position = start;
         var currentVelocity = velocity;
-        RecordPoint(points, position, force: true);
+        RecordPoint(points, currentSegment, position, force: true);
 
         var tickInterval = _options.TickIntervalSeconds;
         var gravity = _options.Gravity;
@@ -65,36 +72,39 @@ public sealed class GrenadeTrajectorySimulator
                     && hitDistance <= stepLength + _options.RaycastSkin * 0.5f)
                 {
                     position = hitPoint - normal * surfaceOffset;
-                    RecordPoint(points, position, force: true);
+                    RecordPoint(points, currentSegment, position, force: true);
+                    bouncePoints.Add(ToModel(position));
                     landingPoint = ToModel(position);
                     bounceCount++;
                     hitThisTick = true;
 
                     currentVelocity = Reflect(currentVelocity, normal) * elasticity;
 
-                    if (bounceCount >= _options.MaxBounces)
+                    if (bounceCount >= _options.MaxBounces
+                        || currentVelocity.LengthSquared() < _options.StopVelocityThreshold * _options.StopVelocityThreshold)
                     {
                         FinalizeLanding(mapChecker, position, ref landingPoint);
+                        RecordPoint(points, currentSegment, ToNumeric(landingPoint), force: true);
                         return points.Count >= 2;
                     }
 
-                    if (currentVelocity.LengthSquared() < _options.StopVelocityThreshold * _options.StopVelocityThreshold)
-                    {
-                        FinalizeLanding(mapChecker, position, ref landingPoint);
-                        return points.Count >= 2;
-                    }
+                    currentSegment = [ToModel(position)];
+                    segments.Add(currentSegment);
 
+                    var separation = Math.Max(surfaceOffset * 2f, 2f);
+                    if (currentVelocity.LengthSquared() > 1f)
+                        position += Vector3.Normalize(currentVelocity) * separation;
+
+                    RecordPoint(points, currentSegment, position, force: true);
                     break;
                 }
 
                 position += subMove;
+                RecordPoint(points, currentSegment, position, force: true);
             }
 
             if (!hitThisTick)
-            {
-                RecordPoint(points, position, force: tick % _options.RecordIntervalTicks == 0);
                 landingPoint = ToModel(position);
-            }
 
             if (currentVelocity.LengthSquared() < _options.StopVelocityThreshold * _options.StopVelocityThreshold)
                 break;
@@ -103,7 +113,7 @@ public sealed class GrenadeTrajectorySimulator
         if (points.Count > 0)
         {
             FinalizeLanding(mapChecker, position, ref landingPoint);
-            RecordPoint(points, ToNumeric(landingPoint), force: true);
+            RecordPoint(points, currentSegment, ToNumeric(landingPoint), force: true);
         }
 
         return points.Count >= 2;
@@ -136,7 +146,7 @@ public sealed class GrenadeTrajectorySimulator
         start.Z += power * 12f - 12f;
         start += forward * (options.ThrowForwardTraceUnits - options.ThrowStartPullbackUnits);
 
-        velocity = forward * speed + playerVelocity * options.PlayerVelocityScale;
+        velocity = forward * speed + ComputeInheritedPlayerVelocity(forward, playerVelocity, options.PlayerVelocityScale);
         return velocity.LengthSquared() >= 100f;
     }
 
@@ -164,8 +174,21 @@ public sealed class GrenadeTrajectorySimulator
         var forward = DirectionFromAngles(pitchDegrees, yawDegrees);
 
         start = throwPosition;
-        velocity = forward * speed + playerVelocity * options.PlayerVelocityScale;
+        velocity = forward * speed + ComputeInheritedPlayerVelocity(forward, playerVelocity, options.PlayerVelocityScale);
         return velocity.LengthSquared() >= 100f;
+    }
+
+    public static Vector3 ComputeInheritedPlayerVelocity(Vector3 throwDirection, Vector3 playerVelocity, float scale)
+    {
+        var horizontalAim = new Vector3(throwDirection.X, throwDirection.Y, 0f);
+        if (horizontalAim.LengthSquared() > 1e-4f)
+            horizontalAim = Vector3.Normalize(horizontalAim);
+
+        var horizontalVelocity = new Vector3(playerVelocity.X, playerVelocity.Y, 0f);
+        var forwardRunSpeed = Vector3.Dot(horizontalVelocity, horizontalAim);
+
+        return horizontalAim * (forwardRunSpeed * scale)
+            + new Vector3(0f, 0f, playerVelocity.Z * scale);
     }
 
     public static float AdjustThrowPitch(float pitchDegrees)
@@ -190,7 +213,7 @@ public sealed class GrenadeTrajectorySimulator
         var power = Math.Clamp(throwStrength, 0f, 1f);
         var speed = baseThrowVelocity * 0.9f * (options.MinThrowSpeedScale + options.MaxThrowSpeedScale * power);
         var forward = DirectionFromAngles(pitchDegrees, yawDegrees);
-        return forward * speed + playerVelocity * options.PlayerVelocityScale;
+        return forward * speed + ComputeInheritedPlayerVelocity(forward, playerVelocity, options.PlayerVelocityScale);
     }
 
     public static Vector3 DirectionFromAngles(float pitchDegrees, float yawDegrees)
@@ -275,11 +298,11 @@ public sealed class GrenadeTrajectorySimulator
         return MathF.Sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    private void RecordPoint(List<ModelVector3> points, Vector3 position, bool force)
+    private void RecordPoint(List<ModelVector3> points, List<ModelVector3> segment, Vector3 position, bool force)
     {
-        if (!force && points.Count > 0)
+        if (!force && segment.Count > 0)
         {
-            var last = points[^1];
+            var last = segment[^1];
             var dx = position.X - last.X;
             var dy = position.Y - last.Y;
             var dz = position.Z - last.Z;
@@ -288,7 +311,9 @@ public sealed class GrenadeTrajectorySimulator
                 return;
         }
 
-        points.Add(ToModel(position));
+        var model = ToModel(position);
+        segment.Add(model);
+        points.Add(model);
     }
 
     private static Vector3 Reflect(Vector3 velocity, Vector3 normal)

@@ -54,8 +54,9 @@ public sealed class TbToggleService : BackgroundService
         try
         {
             _logger.LogInformation(
-                "TB toggle bound to {ToggleKey} (tap to toggle, hold + arrows to adjust FOV/reaction delay, starts disabled)",
-                _options.Tb.ToggleKey);
+                "TB toggle bound to {ToggleKey} (tap to toggle, hold + arrows to adjust FOV/reaction delay, starts {State})",
+                _options.Tb.ToggleKey,
+                _tbState.IsEnabled ? "enabled" : "disabled");
 
             while (!stoppingToken.IsCancellationRequested)
             {

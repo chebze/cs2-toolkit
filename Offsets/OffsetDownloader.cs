@@ -126,6 +126,7 @@ public sealed class OffsetDownloader
         var m_vecAbsVelocity = GetClassFieldOffset(clientClasses, "C_BaseEntity", "m_vecAbsVelocity");
         var m_bPinPulled = GetClassFieldOffset(clientClasses, "C_BaseCSGrenade", "m_bPinPulled");
         var m_flThrowStrength = GetClassFieldOffset(clientClasses, "C_BaseCSGrenade", "m_flThrowStrength");
+        var m_bIsHeldByPlayer = GetClassFieldOffset(clientClasses, "C_BaseCSGrenade", "m_bIsHeldByPlayer");
         var m_bGrenadeParametersStashed = GetClassFieldOffset(clientClasses, "C_CSPlayerPawn", "m_bGrenadeParametersStashed");
         var m_angStashedShootAngles = GetClassFieldOffset(clientClasses, "C_CSPlayerPawn", "m_angStashedShootAngles");
         var m_vecStashedGrenadeThrowPosition = GetClassFieldOffset(clientClasses, "C_CSPlayerPawn", "m_vecStashedGrenadeThrowPosition");
@@ -234,6 +235,7 @@ public sealed class OffsetDownloader
             M_vecAbsVelocity = m_vecAbsVelocity,
             M_bPinPulled = m_bPinPulled,
             M_flThrowStrength = m_flThrowStrength,
+            M_bIsHeldByPlayer = m_bIsHeldByPlayer,
             M_bGrenadeParametersStashed = m_bGrenadeParametersStashed,
             M_angStashedShootAngles = m_angStashedShootAngles,
             M_vecStashedGrenadeThrowPosition = m_vecStashedGrenadeThrowPosition,

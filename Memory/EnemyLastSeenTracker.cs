@@ -1,6 +1,5 @@
 using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Models;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Cs2Toolkit.Memory;
@@ -10,12 +9,10 @@ public sealed class EnemyLastSeenTracker
     private const byte LifeStateDead = 2;
 
     private readonly ProcessMemory _memory;
-    private readonly ILogger<EnemyLastSeenTracker> _logger;
-    private readonly SkeletonOverlayOptions _skeletonOptions;
+    private readonly object _lock = new();
     private readonly Dictionary<int, EnemyLastSeenSnapshot> _lastSeen = new();
+    private readonly Dictionary<int, EnemyLastSeenSnapshot> _live = new();
     private readonly HashSet<int> _visibleToLocalPlayer = new();
-    private readonly Dictionary<int, DateTime> _lastReadLogAt = new();
-    private readonly float[] _viewMatrix = new float[16];
     private readonly Vector3[] _boneScratch = new Vector3[PlayerBones.Count];
 
     private GameOffsets? _offsets;
@@ -23,22 +20,31 @@ public sealed class EnemyLastSeenTracker
 
     public EnemyLastSeenTracker(
         ProcessMemory memory,
-        IOptions<ToolkitOptions> options,
-        ILogger<EnemyLastSeenTracker> logger)
+        IOptions<ToolkitOptions> options)
     {
         _memory = memory;
-        _logger = logger;
-        _skeletonOptions = options.Value.Overlay.EnemyLastSeen;
+        _ = options;
     }
 
-    public ReadOnlySpan<float> LatestViewMatrix => _viewMatrix;
+    public List<EnemyLastSeenSnapshot> CopyDrawableSnapshots()
+    {
+        lock (_lock)
+        {
+            return _lastSeen.Values
+                .Where(snapshot => !_visibleToLocalPlayer.Contains(snapshot.PlayerIndex))
+                .ToList();
+        }
+    }
 
-    public IEnumerable<EnemyLastSeenSnapshot> DrawableSnapshots =>
-        _lastSeen.Values.Where(snapshot => !_visibleToLocalPlayer.Contains(snapshot.PlayerIndex));
+    public List<EnemyLastSeenSnapshot> CopyLiveSnapshots()
+    {
+        lock (_lock)
+            return _live.Values.ToList();
+    }
 
     public void Initialize(GameOffsets offsets) => _offsets = offsets;
 
-    public void Poll(MemoryState state)
+    public void Poll(MemoryState state, EnemyEspMode mode)
     {
         if (_offsets is null || !_memory.IsAttached || !state.IsInMatch || state.LocalTeam == 0)
         {
@@ -46,20 +52,41 @@ public sealed class EnemyLastSeenTracker
             return;
         }
 
-        if (state.Round.RoundStartCount != _trackedRoundStart)
+        if (mode == EnemyEspMode.Disabled)
         {
-            _lastSeen.Clear();
-            _trackedRoundStart = state.Round.RoundStartCount;
+            ResetAll();
+            return;
         }
 
-        ReadViewMatrix();
+        if (state.Round.RoundStartCount != _trackedRoundStart)
+        {
+            lock (_lock)
+            {
+                _lastSeen.Clear();
+                _live.Clear();
+                _trackedRoundStart = state.Round.RoundStartCount;
+            }
+        }
 
+        if (mode == EnemyEspMode.Full)
+            PollLiveSkeletons(state);
+        else
+        {
+            lock (_lock)
+                _live.Clear();
+
+            PollLastSeenSkeletons(state);
+        }
+    }
+
+    private void PollLastSeenSkeletons(MemoryState state)
+    {
         var clientBase = _memory.ClientBase;
-        var entityList = _memory.ReadPtr(clientBase + _offsets.DwEntityList);
+        var entityList = _memory.ReadPtr(clientBase + _offsets!.DwEntityList);
         if (entityList == nint.Zero)
             return;
 
-        var localPlayerIndex = ResolveLocalPlayerIndex(state, entityList);
+        var localPlayerIndex = ResolveLocalPlayerIndex(state);
         var friendlyIndices = new HashSet<int>();
         foreach (var player in state.Players)
         {
@@ -67,7 +94,8 @@ public sealed class EnemyLastSeenTracker
                 friendlyIndices.Add(player.Index);
         }
 
-        _visibleToLocalPlayer.Clear();
+        var visibleToLocal = new HashSet<int>();
+        var updates = new Dictionary<int, EnemyLastSeenSnapshot>();
 
         foreach (var player in state.Players)
         {
@@ -76,7 +104,8 @@ public sealed class EnemyLastSeenTracker
 
             if (!player.IsAlive)
             {
-                _lastSeen.Remove(player.Index);
+                lock (_lock)
+                    _lastSeen.Remove(player.Index);
                 continue;
             }
 
@@ -86,43 +115,102 @@ public sealed class EnemyLastSeenTracker
 
             if (!IsPawnAlive(pawn))
             {
-                _lastSeen.Remove(player.Index);
+                lock (_lock)
+                    _lastSeen.Remove(player.Index);
                 continue;
             }
 
-            if (IsSpottedByPlayer(pawn, localPlayerIndex))
-                _visibleToLocalPlayer.Add(player.Index);
-
-            if (!IsSpottedByFriendlyTeam(pawn, friendlyIndices))
+            var spottedByTeam = IsSpottedByFriendlyTeam(pawn, friendlyIndices);
+            if (!spottedByTeam)
                 continue;
 
-            if (!BoneHelper.TryReadSkeleton(_memory, _offsets, pawn, _boneScratch, out var boneContext))
-                continue;
-
-            var snapshot = new EnemyLastSeenSnapshot
+            var visibleToLocalPlayer = IsSpottedByPlayer(pawn, localPlayerIndex);
+            if (visibleToLocalPlayer)
             {
-                PlayerIndex = player.Index,
-                Name = player.Name,
-                Bones = (Vector3[])_boneScratch.Clone(),
-                LastSeenAt = DateTime.UtcNow
-            };
-            _lastSeen[player.Index] = snapshot;
-            LogSkeletonRead(snapshot, boneContext, _visibleToLocalPlayer.Contains(player.Index));
+                visibleToLocal.Add(player.Index);
+                if (TryCaptureSnapshot(player, pawn, out var snapshot))
+                    updates[player.Index] = snapshot;
+                continue;
+            }
+
+            lock (_lock)
+            {
+                if (_lastSeen.ContainsKey(player.Index))
+                    continue;
+            }
+
+            if (TryCaptureSnapshot(player, pawn, out var firstSnapshot))
+                updates[player.Index] = firstSnapshot;
+        }
+
+        lock (_lock)
+        {
+            _visibleToLocalPlayer.Clear();
+            foreach (var index in visibleToLocal)
+                _visibleToLocalPlayer.Add(index);
+
+            foreach (var (index, snapshot) in updates)
+                _lastSeen[index] = snapshot;
         }
     }
 
-    private void LogSkeletonRead(EnemyLastSeenSnapshot snapshot, BoneReadContext context, bool hiddenFromLocalPlayer)
+    private void PollLiveSkeletons(MemoryState state)
     {
-        if (!_skeletonOptions.LogDiagnostics)
+        var clientBase = _memory.ClientBase;
+        var entityList = _memory.ReadPtr(clientBase + _offsets!.DwEntityList);
+        if (entityList == nint.Zero)
             return;
 
-        var now = DateTime.UtcNow;
-        if (_lastReadLogAt.TryGetValue(snapshot.PlayerIndex, out var lastLogged)
-            && (now - lastLogged).TotalMilliseconds < _skeletonOptions.LogDiagnosticsIntervalMs)
-            return;
+        var updates = new Dictionary<int, EnemyLastSeenSnapshot>();
+        var aliveIndices = new HashSet<int>();
 
-        _lastReadLogAt[snapshot.PlayerIndex] = now;
-        _logger.LogInformation("{Diagnostics}", SkeletonDiagnostics.FormatRead(snapshot, context, hiddenFromLocalPlayer));
+        foreach (var player in state.Players)
+        {
+            if (player.IsLocalPlayer || player.Team == state.LocalTeam)
+                continue;
+
+            if (!player.IsAlive)
+                continue;
+
+            var pawn = ResolvePawnForPlayer(entityList, player.Index);
+            if (pawn == nint.Zero || !IsPawnAlive(pawn))
+                continue;
+
+            aliveIndices.Add(player.Index);
+
+            if (TryCaptureSnapshot(player, pawn, out var snapshot))
+                updates[player.Index] = snapshot;
+        }
+
+        lock (_lock)
+        {
+            foreach (var index in _live.Keys.Where(index => !aliveIndices.Contains(index)).ToList())
+                _live.Remove(index);
+
+            foreach (var (index, snapshot) in updates)
+                _live[index] = snapshot;
+
+            _visibleToLocalPlayer.Clear();
+            _lastSeen.Clear();
+        }
+    }
+
+    private bool TryCaptureSnapshot(PlayerInfo player, nint pawn, out EnemyLastSeenSnapshot snapshot)
+    {
+        snapshot = default!;
+
+        if (!BoneHelper.TryReadSkeleton(_memory, _offsets!, pawn, _boneScratch, out _))
+            return false;
+
+        snapshot = new EnemyLastSeenSnapshot
+        {
+            PlayerIndex = player.Index,
+            Name = player.Name,
+            Bones = (Vector3[])_boneScratch.Clone(),
+            LastSeenAt = DateTime.UtcNow
+        };
+
+        return snapshot.HasValidBones;
     }
 
     private bool IsPawnAlive(nint pawn)
@@ -135,23 +223,12 @@ public sealed class EnemyLastSeenTracker
         return lifeState != LifeStateDead;
     }
 
-    private int ResolveLocalPlayerIndex(MemoryState state, nint entityList)
+    private int ResolveLocalPlayerIndex(MemoryState state)
     {
         foreach (var player in state.Players)
         {
             if (player.IsLocalPlayer)
                 return player.Index;
-        }
-
-        var localController = _memory.ReadPtr(_memory.ClientBase + _offsets!.DwLocalPlayerController);
-        if (localController == nint.Zero)
-            return -1;
-
-        for (var index = 1; index <= GameOffsets.MaxPlayerIndex; index++)
-        {
-            var controller = ResolveControllerFromIndex(entityList, index);
-            if (controller == localController)
-                return index;
         }
 
         return -1;
@@ -191,18 +268,15 @@ public sealed class EnemyLastSeenTracker
         return false;
     }
 
-    private void ReadViewMatrix()
-    {
-        var matrixAddress = _memory.ClientBase + _offsets!.DwViewMatrix;
-        for (var i = 0; i < 16; i++)
-            _viewMatrix[i] = _memory.Read<float>(matrixAddress + (nint)(i * 4));
-    }
-
     private void ResetAll()
     {
-        _lastSeen.Clear();
-        _visibleToLocalPlayer.Clear();
-        _trackedRoundStart = -1;
+        lock (_lock)
+        {
+            _lastSeen.Clear();
+            _live.Clear();
+            _visibleToLocalPlayer.Clear();
+            _trackedRoundStart = -1;
+        }
     }
 
     private nint ResolvePawnForPlayer(nint entityList, int index)

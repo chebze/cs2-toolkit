@@ -46,6 +46,9 @@ public sealed class TbState
 
     public void Initialize(TbOptions options)
     {
+        Volatile.Write(ref _enabled, options.Enabled ? 1 : 0);
+        Volatile.Write(ref _autoStopEnabled, options.AutoStopEnabled ? 1 : 0);
+
         lock (_lock)
         {
             _minPreFireFovDegrees = options.MinPreFireFovDegrees;

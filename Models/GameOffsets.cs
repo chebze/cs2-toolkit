@@ -86,6 +86,7 @@ public sealed class GameOffsets
     public nint DwGameTypes { get; init; }
     public nint M_bPinPulled { get; init; }
     public nint M_flThrowStrength { get; init; }
+    public nint M_bIsHeldByPlayer { get; init; }
     public nint M_bGrenadeParametersStashed { get; init; }
     public nint M_angStashedShootAngles { get; init; }
     public nint M_vecStashedGrenadeThrowPosition { get; init; }

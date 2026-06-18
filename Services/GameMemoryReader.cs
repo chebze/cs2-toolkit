@@ -19,6 +19,7 @@ public sealed class GameMemoryReader : BackgroundService
     private readonly ToolkitEventBus _eventBus;
     private readonly EnemySoundTracker _enemySoundTracker;
     private readonly EnemyLastSeenTracker _enemyLastSeenTracker;
+    private readonly ViewMatrixHolder _viewMatrixHolder;
     private readonly RecoilCompensator _recoilCompensator;
     private readonly Triggerbot _triggerbot;
     private readonly RcsState _rcsState;
@@ -26,6 +27,9 @@ public sealed class GameMemoryReader : BackgroundService
     private readonly MapDataService _mapDataService;
     private readonly MapNameReader _mapNameReader;
     private readonly GrenadeTrajectoryTracker _grenadeTrajectoryTracker;
+    private readonly EnemyEspState _enemyEspState;
+    private readonly AimHelper _aimHelper;
+    private readonly AimHelperState _aimHelperState;
     private readonly ToolkitOptions _options;
     private readonly ILogger<GameMemoryReader> _logger;
 
@@ -38,6 +42,7 @@ public sealed class GameMemoryReader : BackgroundService
         ToolkitEventBus eventBus,
         EnemySoundTracker enemySoundTracker,
         EnemyLastSeenTracker enemyLastSeenTracker,
+        ViewMatrixHolder viewMatrixHolder,
         RecoilCompensator recoilCompensator,
         Triggerbot triggerbot,
         RcsState rcsState,
@@ -45,6 +50,9 @@ public sealed class GameMemoryReader : BackgroundService
         MapDataService mapDataService,
         MapNameReader mapNameReader,
         GrenadeTrajectoryTracker grenadeTrajectoryTracker,
+        EnemyEspState enemyEspState,
+        AimHelper aimHelper,
+        AimHelperState aimHelperState,
         IOptions<ToolkitOptions> options,
         ILogger<GameMemoryReader> logger)
     {
@@ -54,6 +62,7 @@ public sealed class GameMemoryReader : BackgroundService
         _eventBus = eventBus;
         _enemySoundTracker = enemySoundTracker;
         _enemyLastSeenTracker = enemyLastSeenTracker;
+        _viewMatrixHolder = viewMatrixHolder;
         _recoilCompensator = recoilCompensator;
         _triggerbot = triggerbot;
         _rcsState = rcsState;
@@ -61,6 +70,9 @@ public sealed class GameMemoryReader : BackgroundService
         _mapDataService = mapDataService;
         _mapNameReader = mapNameReader;
         _grenadeTrajectoryTracker = grenadeTrajectoryTracker;
+        _enemyEspState = enemyEspState;
+        _aimHelper = aimHelper;
+        _aimHelperState = aimHelperState;
         _options = options.Value;
         _logger = logger;
     }
@@ -77,8 +89,14 @@ public sealed class GameMemoryReader : BackgroundService
         _entityResolver = new EntityResolver(_processMemory, _offsetDownloader.Offsets, _options.Clairvoyance);
         _enemySoundTracker.Initialize(_offsetDownloader.Offsets);
         _enemyLastSeenTracker.Initialize(_offsetDownloader.Offsets);
+        _viewMatrixHolder.Initialize(_offsetDownloader.Offsets);
         _recoilCompensator.Initialize(_offsetDownloader.Offsets, _options.Rcs);
         _triggerbot.Initialize(_offsetDownloader.Offsets, _options.Tb, _mapDataService.VisibilityChecker);
+        _aimHelper.Initialize(
+            _offsetDownloader.Offsets,
+            _options.AimHelper,
+            _mapDataService.VisibilityChecker,
+            _viewMatrixHolder);
         _grenadeTrajectoryTracker.Initialize(_offsetDownloader.Offsets, _mapDataService.VisibilityChecker);
         _logger.LogInformation("GameMemoryReader started — interval {Interval}ms", _options.MemoryReadIntervalMs);
 
@@ -87,6 +105,7 @@ public sealed class GameMemoryReader : BackgroundService
             var state = ReadMemoryState();
             if (_processMemory.IsAttached)
             {
+                _viewMatrixHolder.Update(_processMemory);
                 var mapName = _mapNameReader.ReadCurrentMap(_processMemory, _offsetDownloader.Offsets!);
                 _mapDataService.VisibilityChecker.SetActiveMap(mapName);
             }
@@ -101,8 +120,15 @@ public sealed class GameMemoryReader : BackgroundService
                 _tbState.MaxReactionDelayMs,
                 _tbState.IsAutoStopEnabled);
             _recoilCompensator.TryCompensate(_processMemory, _processMemory.ClientBase, _rcsState.IsEnabled);
+            _aimHelper.TryAim(
+                _processMemory,
+                _processMemory.ClientBase,
+                state,
+                _aimHelperState.IsEnabled,
+                _aimHelperState.FovDegrees,
+                _aimHelperState.PreferredBone);
             _enemySoundTracker.Poll(state);
-            _enemyLastSeenTracker.Poll(state);
+            _enemyLastSeenTracker.Poll(state, _enemyEspState.Mode);
             _grenadeTrajectoryTracker.Poll(_processMemory, state);
             _eventBus.PublishMemoryRead(state);
             await Task.Delay(_options.MemoryReadIntervalMs, stoppingToken);

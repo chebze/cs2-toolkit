@@ -1,44 +1,46 @@
 using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Events;
+using Cs2Toolkit.Models;
 using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Windows.Forms;
 
 namespace Cs2Toolkit.Services;
 
-public sealed class RcsToggleService : IHostedService
+public sealed class EnemyEspToggleService : IHostedService
 {
     private readonly ToolkitEventBus _eventBus;
-    private readonly RcsState _rcsState;
+    private readonly EnemyEspState _espState;
     private readonly ToolkitOptions _options;
-    private readonly ILogger<RcsToggleService> _logger;
-    private Keys _toggleKey = Keys.F8;
+    private readonly ILogger<EnemyEspToggleService> _logger;
+    private Keys _toggleKey = Keys.F6;
 
-    public RcsToggleService(
+    public EnemyEspToggleService(
         ToolkitEventBus eventBus,
-        RcsState rcsState,
+        EnemyEspState espState,
         IOptions<ToolkitOptions> options,
-        ILogger<RcsToggleService> logger)
+        ILogger<EnemyEspToggleService> logger)
     {
         _eventBus = eventBus;
-        _rcsState = rcsState;
+        _espState = espState;
         _options = options.Value;
         _logger = logger;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _toggleKey = KeyParser.Parse(_options.Rcs.ToggleKey);
+        _toggleKey = KeyParser.Parse(_options.EnemyEsp.ToggleKey);
         if (_toggleKey == Keys.None)
-            throw new InvalidOperationException($"Invalid Rcs:ToggleKey in appsettings.json: {_options.Rcs.ToggleKey}");
+            throw new InvalidOperationException($"Invalid EnemyEsp:ToggleKey in appsettings.json: {_options.EnemyEsp.ToggleKey}");
 
-        _rcsState.Initialize(_options.Rcs);
+        _espState.Initialize(_options.EnemyEsp);
         _eventBus.OnKeyPress += OnKeyPress;
         _logger.LogInformation(
-            "RCS toggle bound to {ToggleKey} (starts {State})",
-            _options.Rcs.ToggleKey,
-            _rcsState.IsEnabled ? "enabled" : "disabled");
+            "Enemy ESP toggle bound to {ToggleKey} (cycles disabled → last seen → full, starts {Mode})",
+            _options.EnemyEsp.ToggleKey,
+            _espState.Mode);
         return Task.CompletedTask;
     }
 
@@ -53,7 +55,7 @@ public sealed class RcsToggleService : IHostedService
         if (e.Key != _toggleKey)
             return;
 
-        var enabled = _rcsState.Toggle();
-        _logger.LogInformation("RCS {State}", enabled ? "enabled" : "disabled");
+        var mode = _espState.CycleMode();
+        _logger.LogInformation("Enemy ESP mode set to {Mode}", mode);
     }
 }
