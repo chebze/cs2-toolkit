@@ -206,6 +206,7 @@ public sealed class EnemyLastSeenTracker
         {
             PlayerIndex = player.Index,
             Name = player.Name,
+            Health = player.Health,
             Bones = (Vector3[])_boneScratch.Clone(),
             LastSeenAt = DateTime.UtcNow
         };

@@ -29,7 +29,14 @@ public sealed class RecoilCompensator
         _compensateCurrentBullet = true;
     }
 
-    public void TryCompensate(ProcessMemory memory, nint clientBase, bool enabled)
+    public void TryCompensate(ProcessMemory memory, nint clientBase, bool enabled) =>
+        TryCompensateWithOptions(memory, clientBase, enabled, null);
+
+    public void TryCompensateWithOptions(
+        ProcessMemory memory,
+        nint clientBase,
+        bool enabled,
+        RcsLayerSettings? weaponSettings)
     {
         if (_offsets is null || !enabled || !memory.IsAttached)
         {
@@ -67,15 +74,21 @@ public sealed class RecoilCompensator
         if (!TryReadAimPunch(memory, localPawn, out var currentPunch))
             return;
 
-        UpdateBulletCompensationDecision(shotsFired);
+        var sensitivity = weaponSettings?.Sensitivity ?? _options.Sensitivity;
+        var pitchScale = weaponSettings?.PitchScale ?? _options.PitchScale;
+        var yawScale = weaponSettings?.YawScale ?? _options.YawScale;
+        var firstBulletChance = weaponSettings?.FirstBulletCompensateChance ?? _options.FirstBulletCompensateChance;
+        var skipChance = weaponSettings?.SubsequentBulletSkipChance ?? _options.SubsequentBulletSkipChance;
+
+        UpdateBulletCompensationDecision(shotsFired, firstBulletChance, skipChance);
 
         var deltaPitch = (currentPunch.X - _oldPunch.X) * -1f;
         var deltaYaw = (currentPunch.Y - _oldPunch.Y) * -1f;
 
         if (_compensateCurrentBullet)
         {
-            var mouseX = (int)(deltaYaw * _options.YawScale / _options.Sensitivity / -M_yaw);
-            var mouseY = (int)(deltaPitch * _options.PitchScale / _options.Sensitivity / M_yaw);
+            var mouseX = (int)(deltaYaw * yawScale / sensitivity / -M_yaw);
+            var mouseY = (int)(deltaPitch * pitchScale / sensitivity / M_yaw);
 
             if (mouseX != 0 || mouseY != 0)
                 NativeInput.MoveMouseRelative(mouseX, mouseY);
@@ -84,7 +97,10 @@ public sealed class RecoilCompensator
         _oldPunch = currentPunch;
     }
 
-    private void UpdateBulletCompensationDecision(int shotsFired)
+    private void UpdateBulletCompensationDecision(
+        int shotsFired,
+        float firstBulletChance,
+        float skipChance)
     {
         if (shotsFired == _lastShotsFired)
             return;
@@ -92,8 +108,8 @@ public sealed class RecoilCompensator
         if (shotsFired > _lastShotsFired)
         {
             _compensateCurrentBullet = shotsFired == 2
-                ? Random.Shared.NextDouble() < _options.FirstBulletCompensateChance
-                : Random.Shared.NextDouble() >= _options.SubsequentBulletSkipChance;
+                ? Random.Shared.NextDouble() < firstBulletChance
+                : Random.Shared.NextDouble() >= skipChance;
         }
 
         _lastShotsFired = shotsFired;

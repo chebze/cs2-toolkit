@@ -6,7 +6,6 @@ using Cs2Toolkit.Overlay;
 using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Cs2Toolkit.Services;
 
@@ -16,7 +15,8 @@ public sealed class GrenadeOverlay : IHostedService
     private readonly GrenadeTrajectoryTracker _tracker;
     private readonly ViewMatrixHolder _viewMatrixHolder;
     private readonly ScreenOverlayManager _overlayManager;
-    private readonly ToolkitOptions _options;
+    private readonly OverlayStyleState _overlayStyle;
+    private readonly RuntimeConfigProvider _runtimeConfig;
     private readonly ILogger<GrenadeOverlay> _logger;
     private OverlayLayer? _layer;
 
@@ -25,14 +25,16 @@ public sealed class GrenadeOverlay : IHostedService
         GrenadeTrajectoryTracker tracker,
         ViewMatrixHolder viewMatrixHolder,
         ScreenOverlayManager overlayManager,
-        IOptions<ToolkitOptions> options,
+        OverlayStyleState overlayStyle,
+        RuntimeConfigProvider runtimeConfig,
         ILogger<GrenadeOverlay> logger)
     {
         _eventBus = eventBus;
         _tracker = tracker;
         _viewMatrixHolder = viewMatrixHolder;
         _overlayManager = overlayManager;
-        _options = options.Value;
+        _overlayStyle = overlayStyle;
+        _runtimeConfig = runtimeConfig;
         _logger = logger;
     }
 
@@ -54,7 +56,7 @@ public sealed class GrenadeOverlay : IHostedService
 
     private void OnMemoryRead(object? sender, MemoryReadEventArgs e)
     {
-        if (_layer is null || !_options.Overlay.GrenadeTrajectory.Enabled || !e.State.IsInMatch)
+        if (_layer is null || !_overlayStyle.Settings.Visuals.Grenade.Enabled || !e.State.IsInMatch)
             return;
 
         _overlayManager.EnsureOnTop();
@@ -62,7 +64,16 @@ public sealed class GrenadeOverlay : IHostedService
 
     private void DrawTrajectory(Graphics graphics)
     {
-        var panel = _options.Overlay.GrenadeTrajectory;
+        var visuals = _overlayStyle.Settings.Visuals.Grenade;
+        var panel = new GrenadeOverlayOptions
+        {
+            Enabled = visuals.Enabled,
+            ArcColor = visuals.ArcColor,
+            LandingColor = visuals.LandingColor,
+            ArcLineWidth = visuals.ArcLineWidth,
+            LandingLineWidth = visuals.LandingLineWidth
+        };
+
         if (!panel.Enabled)
         {
             _tracker.LogDrawSkip("overlay disabled");
@@ -93,7 +104,9 @@ public sealed class GrenadeOverlay : IHostedService
             bounds.Width,
             bounds.Height,
             panel,
-            _options.Grenade.LandingMarkerRadiusUnits);
+            _runtimeConfig.Current.Grenade.LandingMarkerRadiusUnits,
+            visuals.PointColor,
+            visuals.ImpactColor);
 
         if (drawStats.DrawnSegments == 0 && drawStats.ProjectedPoints == 0)
             _tracker.LogDrawSkip($"active snapshot but nothing projected ({snapshot.Points.Count} world points)");

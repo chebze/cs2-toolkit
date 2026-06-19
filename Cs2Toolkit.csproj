@@ -7,10 +7,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Cs2Toolkit</RootNamespace>
-    <DefaultItemExcludes>$(DefaultItemExcludes);VpkDiag/**</DefaultItemExcludes>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <DefaultItemExcludes>$(DefaultItemExcludes);VpkDiag/**;ConfigUI/node_modules/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
@@ -23,5 +25,24 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="BuildConfigUI" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)/ConfigUI/package.json')">
+    <Exec Command="npm ci" WorkingDirectory="$(MSBuildProjectDirectory)/ConfigUI" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/ConfigUI" />
+  </Target>
+
+  <Target Name="CopyConfigUI" AfterTargets="BuildConfigUI" Condition="Exists('$(MSBuildProjectDirectory)/ConfigUI/dist/index.html')">
+    <ItemGroup>
+      <ConfigUiFiles Include="$(MSBuildProjectDirectory)/ConfigUI/dist/**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ConfigUiFiles)" DestinationFolder="$(OutDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyRadarAssets" AfterTargets="CopyConfigUI" Condition="Exists('$(MSBuildProjectDirectory)/wwwroot/radar/index.html')">
+    <ItemGroup>
+      <RadarAssets Include="$(MSBuildProjectDirectory)/wwwroot/radar/**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RadarAssets)" DestinationFolder="$(OutDir)wwwroot\radar\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

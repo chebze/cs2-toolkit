@@ -12,6 +12,9 @@ public sealed class EnemyEspState
     public void Initialize(EnemyEspOptions options) =>
         Volatile.Write(ref _mode, (int)EnemyEspModeParser.Parse(options.Mode));
 
+    public void InitializeFromProfile(EnemyEspProfileOptions options) =>
+        Volatile.Write(ref _mode, (int)EnemyEspModeParser.Parse(options.Mode));
+
     public EnemyEspMode CycleMode()
     {
         while (true)

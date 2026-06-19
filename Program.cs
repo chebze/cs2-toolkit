@@ -7,6 +7,8 @@ using Cs2Toolkit.Offsets;
 using Cs2Toolkit.Overlay;
 using Cs2Toolkit.Runtime;
 using Cs2Toolkit.Services;
+using Cs2Toolkit.Tunnel;
+using Cs2Toolkit.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,18 @@ internal static class Program
             .ConfigureServices((context, services) =>
             {
                 services.Configure<ToolkitOptions>(context.Configuration.GetSection(ToolkitOptions.SectionName));
+
+                services.AddSingleton<ConfigManager>();
+                services.AddSingleton<RuntimeConfigProvider>();
+                services.AddSingleton<OverlayStyleState>();
+                services.AddSingleton<GlobalKeybindState>();
+                services.AddSingleton<ConfigWebState>();
+                services.AddSingleton<LocalTunnelState>();
+                services.AddSingleton<ActiveWeaponTracker>();
+                services.AddSingleton<WeaponConfigState>();
+
+                services.AddSingleton<RadarTracker>();
+                services.AddSingleton<RadarState>();
 
                 services.AddSingleton<ToolkitEventBus>();
                 services.AddSingleton<RuntimeGate>();
@@ -78,6 +92,10 @@ internal static class Program
                 services.AddSingleton<GrenadeTrajectoryTracker>();
                 services.AddSingleton<GrenadeOverlay>();
 
+                services.AddHostedService<ConfigWebHostService>();
+                services.AddHostedService<LocalTunnelHostedService>();
+                services.AddHostedService<LiveConfigApplier>();
+                services.AddHostedService<ConfigProfileSwitchService>();
                 services.AddHostedService<ToolkitRuntime>();
                 services.AddHostedService<GameMemoryReader>();
                 services.AddHostedService(sp => sp.GetRequiredService<MatchLogger>());

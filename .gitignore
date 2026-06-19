@@ -2,3 +2,6 @@ bin/
 obj/
 logs/
 data/maps/
+data/configs/
+ConfigUI/node_modules/
+ConfigUI/dist/
