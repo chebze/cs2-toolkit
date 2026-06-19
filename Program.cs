@@ -7,6 +7,7 @@ using Cs2Toolkit.Offsets;
 using Cs2Toolkit.Overlay;
 using Cs2Toolkit.Runtime;
 using Cs2Toolkit.Services;
+using Cs2Toolkit.Tunnel;
 using Cs2Toolkit.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,6 +31,8 @@ internal static class Program
                 services.AddSingleton<RuntimeConfigProvider>();
                 services.AddSingleton<OverlayStyleState>();
                 services.AddSingleton<GlobalKeybindState>();
+                services.AddSingleton<ConfigWebState>();
+                services.AddSingleton<LocalTunnelState>();
                 services.AddSingleton<ActiveWeaponTracker>();
                 services.AddSingleton<WeaponConfigState>();
 
@@ -87,6 +90,7 @@ internal static class Program
                 services.AddSingleton<GrenadeOverlay>();
 
                 services.AddHostedService<ConfigWebHostService>();
+                services.AddHostedService<LocalTunnelHostedService>();
                 services.AddHostedService<LiveConfigApplier>();
                 services.AddHostedService<ConfigProfileSwitchService>();
                 services.AddHostedService<ToolkitRuntime>();

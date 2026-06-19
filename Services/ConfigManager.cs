@@ -156,6 +156,26 @@ public sealed class ConfigManager
         NotifyChanged();
     }
 
+    public void UpdatePublicTunnelSettings(
+        bool enabled,
+        string server,
+        string? subdomain,
+        int maxConnections)
+    {
+        lock (_lock)
+        {
+            _store.PublicTunnelEnabled = enabled;
+            _store.PublicTunnelServer = string.IsNullOrWhiteSpace(server)
+                ? "https://localtunnel.me"
+                : server;
+            _store.PublicTunnelSubdomain = string.IsNullOrWhiteSpace(subdomain) ? null : subdomain;
+            _store.PublicTunnelMaxConnections = Math.Clamp(maxConnections, 1, 10);
+            SaveLocked();
+        }
+
+        NotifyChanged();
+    }
+
     public string ExportProfile(string profileId)
     {
         var profile = GetProfile(profileId)

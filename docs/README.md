@@ -130,6 +130,8 @@ docs/            Per-class documentation
 | ToolkitOptions | [ToolkitOptions.md](ToolkitOptions.md) |
 | ConfigManager | [ConfigManager.md](ConfigManager.md) |
 | ConfigWebHostService | [ConfigWebHostService.md](ConfigWebHostService.md) |
+| LocalTunnelClient | [LocalTunnelClient.md](LocalTunnelClient.md) |
+| LocalTunnelHostedService | [LocalTunnelHostedService.md](LocalTunnelHostedService.md) |
 | RuntimeConfigProvider | [RuntimeConfigProvider.md](RuntimeConfigProvider.md) |
 | LiveConfigApplier | [LiveConfigApplier.md](LiveConfigApplier.md) |
 | AppSettingsWriter | [AppSettingsWriter.md](AppSettingsWriter.md) |

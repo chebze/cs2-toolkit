@@ -110,4 +110,12 @@ export interface DashboardData {
   defaultProfileId: string;
   accessUrls: string[];
   webPort: number;
+  publicTunnel: {
+    enabled: boolean;
+    status: string;
+    url?: string | null;
+    error?: string | null;
+    server: string;
+    subdomain?: string | null;
+  };
 }

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Services;
+using Cs2Toolkit.Tunnel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -24,6 +25,8 @@ public sealed class ConfigWebHostService : IHostedService
 
     private readonly ConfigManager _configManager;
     private readonly RuntimeConfigProvider _runtimeConfig;
+    private readonly ConfigWebState _webState;
+    private readonly LocalTunnelState _tunnelState;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<ConfigWebHostService> _logger;
     private WebApplication? _app;
@@ -32,11 +35,15 @@ public sealed class ConfigWebHostService : IHostedService
     public ConfigWebHostService(
         ConfigManager configManager,
         RuntimeConfigProvider runtimeConfig,
+        ConfigWebState webState,
+        LocalTunnelState tunnelState,
         IHostEnvironment environment,
         ILogger<ConfigWebHostService> logger)
     {
         _configManager = configManager;
         _runtimeConfig = runtimeConfig;
+        _webState = webState;
+        _tunnelState = tunnelState;
         _environment = environment;
         _logger = logger;
     }
@@ -69,6 +76,8 @@ public sealed class ConfigWebHostService : IHostedService
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _ = _app.RunAsync(_cts.Token);
 
+        _webState.SetWebReady(port);
+
         var urls = GetAccessUrls(port);
         _logger.LogInformation("Config UI available at {Urls}", string.Join(", ", urls));
         TryOpenBrowser(urls.FirstOrDefault() ?? $"http://localhost:{port}");
@@ -94,7 +103,16 @@ public sealed class ConfigWebHostService : IHostedService
                 activeProfile = new { active.Id, active.Name, active.SwitchHotkey },
                 defaultProfileId = store.DefaultProfileId,
                 accessUrls = GetAccessUrls(store.WebPort),
-                webPort = store.WebPort
+                webPort = store.WebPort,
+                publicTunnel = new
+                {
+                    enabled = store.PublicTunnelEnabled,
+                    status = _tunnelState.Status.ToString(),
+                    url = _tunnelState.PublicUrl,
+                    error = _tunnelState.Error,
+                    server = store.PublicTunnelServer,
+                    subdomain = store.PublicTunnelSubdomain
+                }
             }, JsonOptions);
         });
 
@@ -171,6 +189,16 @@ public sealed class ConfigWebHostService : IHostedService
         });
 
         app.MapGet("/api/weapons", () => Results.Json(WeaponCatalog.All, JsonOptions));
+
+        app.MapPut("/api/tunnel", (PublicTunnelSettingsRequest request) =>
+        {
+            _configManager.UpdatePublicTunnelSettings(
+                request.Enabled,
+                request.Server,
+                request.Subdomain,
+                request.MaxConnections);
+            return Results.Ok();
+        });
     }
 
     private void MapStaticFiles(WebApplication app)
@@ -244,4 +272,10 @@ public sealed class ConfigWebHostService : IHostedService
     }
 
     private sealed record CreateProfileRequest(string Name);
+
+    private sealed record PublicTunnelSettingsRequest(
+        bool Enabled,
+        string Server,
+        string? Subdomain,
+        int MaxConnections);
 }
