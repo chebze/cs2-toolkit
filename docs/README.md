@@ -76,7 +76,8 @@ dotnet run
 4. Press **F9** when prompted to attach.
 5. Use feature hotkeys above; status labels appear bottom-left after attach.
 6. Edit settings in the web UI — changes apply **live in-game** without restart.
-7. Switch profiles with per-profile hotkeys configured in the Profiles page.
+7. Open **Radar** (`/radar`) for a live minimap shareable via LocalTunnel.
+8. Switch profiles with per-profile hotkeys configured in the Profiles page.
 
 ### Web configuration UI
 
@@ -132,6 +133,8 @@ docs/            Per-class documentation
 | ConfigWebHostService | [ConfigWebHostService.md](ConfigWebHostService.md) |
 | LocalTunnelClient | [LocalTunnelClient.md](LocalTunnelClient.md) |
 | LocalTunnelHostedService | [LocalTunnelHostedService.md](LocalTunnelHostedService.md) |
+| RadarTracker | [RadarTracker.md](RadarTracker.md) |
+| RadarState | [RadarState.md](RadarState.md) |
 | RuntimeConfigProvider | [RuntimeConfigProvider.md](RuntimeConfigProvider.md) |
 | LiveConfigApplier | [LiveConfigApplier.md](LiveConfigApplier.md) |
 | AppSettingsWriter | [AppSettingsWriter.md](AppSettingsWriter.md) |

@@ -32,10 +32,13 @@ public sealed class GameMemoryReader : BackgroundService
     private readonly RuntimeConfigProvider _runtimeConfig;
     private readonly ActiveWeaponTracker _activeWeaponTracker;
     private readonly WeaponConfigState _weaponConfigState;
+    private readonly RadarTracker _radarTracker;
+    private readonly RadarState _radarState;
     private readonly ILogger<GameMemoryReader> _logger;
 
     private EntityResolver? _entityResolver;
     private ushort _lastWeaponId;
+    private string? _currentMapName;
 
     public GameMemoryReader(
         ProcessMemory processMemory,
@@ -58,6 +61,8 @@ public sealed class GameMemoryReader : BackgroundService
         RuntimeConfigProvider runtimeConfig,
         ActiveWeaponTracker activeWeaponTracker,
         WeaponConfigState weaponConfigState,
+        RadarTracker radarTracker,
+        RadarState radarState,
         ILogger<GameMemoryReader> logger)
     {
         _processMemory = processMemory;
@@ -80,6 +85,8 @@ public sealed class GameMemoryReader : BackgroundService
         _runtimeConfig = runtimeConfig;
         _activeWeaponTracker = activeWeaponTracker;
         _weaponConfigState = weaponConfigState;
+        _radarTracker = radarTracker;
+        _radarState = radarState;
         _logger = logger;
     }
 
@@ -105,6 +112,7 @@ public sealed class GameMemoryReader : BackgroundService
             _mapDataService.VisibilityChecker,
             _viewMatrixHolder);
         _grenadeTrajectoryTracker.Initialize(_offsetDownloader.Offsets, _mapDataService.VisibilityChecker);
+        _radarTracker.Initialize(_offsetDownloader.Offsets);
         _logger.LogInformation("GameMemoryReader started — interval {Interval}ms", options.MemoryReadIntervalMs);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -114,8 +122,8 @@ public sealed class GameMemoryReader : BackgroundService
             if (_processMemory.IsAttached)
             {
                 _viewMatrixHolder.Update(_processMemory);
-                var mapName = _mapNameReader.ReadCurrentMap(_processMemory, _offsetDownloader.Offsets!);
-                _mapDataService.VisibilityChecker.SetActiveMap(mapName);
+                _currentMapName = _mapNameReader.ReadCurrentMap(_processMemory, _offsetDownloader.Offsets!);
+                _mapDataService.VisibilityChecker.SetActiveMap(_currentMapName);
                 _activeWeaponTracker.Update(_processMemory, _offsetDownloader.Offsets!, _processMemory.ClientBase);
 
                 if (_activeWeaponTracker.WeaponId != _lastWeaponId)
@@ -157,6 +165,7 @@ public sealed class GameMemoryReader : BackgroundService
             _enemySoundTracker.Poll(state);
             _enemyLastSeenTracker.Poll(state, _enemyEspState.Mode);
             _grenadeTrajectoryTracker.Poll(_processMemory, state);
+            _radarState.Update(_radarTracker.BuildSnapshot(_processMemory, state, _currentMapName));
             _eventBus.PublishMemoryRead(state);
             await Task.Delay(options.MemoryReadIntervalMs, stoppingToken);
         }

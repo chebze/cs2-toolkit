@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Menu,
   Palette,
+  Radar,
   Settings2,
   Target,
   Volume2,
@@ -23,6 +24,7 @@ const navItems = [
   { to: "/rcs", label: "RCS", icon: Gauge },
   { to: "/esp", label: "ESP", icon: Eye },
   { to: "/visuals", label: "Visuals", icon: Palette },
+  { to: "/radar", label: "Radar", icon: Radar },
   { to: "/keybinds", label: "Keybinds", icon: Keyboard },
   { to: "/sound", label: "Sound ESP", icon: Volume2 },
 ];

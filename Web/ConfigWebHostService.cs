@@ -27,6 +27,7 @@ public sealed class ConfigWebHostService : IHostedService
     private readonly RuntimeConfigProvider _runtimeConfig;
     private readonly ConfigWebState _webState;
     private readonly LocalTunnelState _tunnelState;
+    private readonly RadarState _radarState;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<ConfigWebHostService> _logger;
     private WebApplication? _app;
@@ -37,6 +38,7 @@ public sealed class ConfigWebHostService : IHostedService
         RuntimeConfigProvider runtimeConfig,
         ConfigWebState webState,
         LocalTunnelState tunnelState,
+        RadarState radarState,
         IHostEnvironment environment,
         ILogger<ConfigWebHostService> logger)
     {
@@ -44,6 +46,7 @@ public sealed class ConfigWebHostService : IHostedService
         _runtimeConfig = runtimeConfig;
         _webState = webState;
         _tunnelState = tunnelState;
+        _radarState = radarState;
         _environment = environment;
         _logger = logger;
     }
@@ -70,6 +73,7 @@ public sealed class ConfigWebHostService : IHostedService
 
         _app = builder.Build();
         MapApi(_app);
+        MapRadar(_app);
         MapStaticFiles(_app);
         _app.MapFallbackToFile("index.html");
 
@@ -112,7 +116,8 @@ public sealed class ConfigWebHostService : IHostedService
                     error = _tunnelState.Error,
                     server = store.PublicTunnelServer,
                     subdomain = store.PublicTunnelSubdomain
-                }
+                },
+                radarUrl = $"/radar"
             }, JsonOptions);
         });
 
@@ -198,6 +203,50 @@ public sealed class ConfigWebHostService : IHostedService
                 request.Subdomain,
                 request.MaxConnections);
             return Results.Ok();
+        });
+    }
+
+    private void MapRadar(WebApplication app)
+    {
+        var radarRoot = Path.Combine(_environment.ContentRootPath, "wwwroot", "radar");
+
+        app.MapGet("/api/radar/snapshot", () =>
+            Results.Json(_radarState.GetSnapshot(), JsonOptions));
+
+        app.MapGet("/api/radar/stream", async (HttpContext context, CancellationToken cancellationToken) =>
+        {
+            context.Response.Headers.CacheControl = "no-cache";
+            context.Response.Headers.Connection = "keep-alive";
+            context.Response.ContentType = "text/event-stream";
+
+            var lastVersion = -1L;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var version = _radarState.Version;
+                if (version != lastVersion)
+                {
+                    lastVersion = version;
+                    await context.Response.WriteAsync($"data: {_radarState.GetSnapshotJson()}\n\n", cancellationToken);
+                    await context.Response.Body.FlushAsync(cancellationToken);
+                }
+
+                await Task.Delay(100, cancellationToken);
+            }
+        });
+
+        app.MapGet("/radar", () => Results.LocalRedirect("/radar/index.html"));
+
+        app.MapGet("/radar/index.html", async context =>
+        {
+            var path = Path.Combine(radarRoot, "index.html");
+            if (!File.Exists(path))
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                return;
+            }
+
+            context.Response.ContentType = "text/html; charset=utf-8";
+            await context.Response.SendFileAsync(path);
         });
     }
 

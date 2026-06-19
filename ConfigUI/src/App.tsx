@@ -8,6 +8,7 @@ import { RcsPage } from "@/pages/RcsPage";
 import { EspPage } from "@/pages/EspPage";
 import { VisualsPage, SoundEspPage } from "@/pages/VisualsPage";
 import { KeybindsPage } from "@/pages/KeybindsPage";
+import { RadarPage } from "@/pages/RadarPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="visuals" element={<VisualsPage />} />
           <Route path="sound" element={<SoundEspPage />} />
           <Route path="keybinds" element={<KeybindsPage />} />
+          <Route path="radar" element={<RadarPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

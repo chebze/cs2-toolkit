@@ -38,4 +38,11 @@
     <Copy SourceFiles="@(ConfigUiFiles)" DestinationFolder="$(OutDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 
+  <Target Name="CopyRadarAssets" AfterTargets="CopyConfigUI" Condition="Exists('$(MSBuildProjectDirectory)/wwwroot/radar/index.html')">
+    <ItemGroup>
+      <RadarAssets Include="$(MSBuildProjectDirectory)/wwwroot/radar/**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RadarAssets)" DestinationFolder="$(OutDir)wwwroot\radar\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>

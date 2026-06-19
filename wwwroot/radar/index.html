@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS2 Toolkit — Live Radar</title>
+  <link rel="stylesheet" href="/radar/radar.css" />
+</head>
+<body>
+  <div class="layout">
+    <header class="header">
+      <div>
+        <h1>Live Radar</h1>
+        <p id="status-text" class="status">Connecting…</p>
+      </div>
+      <div class="header-actions">
+        <label class="toggle"><input type="checkbox" id="show-fov" checked /> FOV cones</label>
+        <label class="toggle"><input type="checkbox" id="show-bomb" checked /> Bomb</label>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="idle-panel" class="idle-panel">
+        <div class="idle-card">
+          <h2 id="idle-title">Not currently in a match</h2>
+          <p id="idle-subtitle">Waiting for live match data from the toolkit…</p>
+        </div>
+      </section>
+
+      <section id="match-panel" class="match-panel hidden">
+        <div class="radar-column">
+          <div id="map-title" class="map-title"></div>
+          <div id="radar-container" class="radar-container">
+            <img id="map-image" class="map-image" alt="Map radar" />
+            <svg id="radar-overlay" class="radar-overlay" viewBox="0 0 1024 1024" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+        <aside class="players-panel">
+          <h2>Players</h2>
+          <div id="team-t" class="team-section">
+            <h3 class="team-t">Terrorists</h3>
+            <ul id="players-t" class="player-list"></ul>
+          </div>
+          <div id="team-ct" class="team-section">
+            <h3 class="team-ct">Counter-Terrorists</h3>
+            <ul id="players-ct" class="player-list"></ul>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script src="/radar/radar.js"></script>
+</body>
+</html>

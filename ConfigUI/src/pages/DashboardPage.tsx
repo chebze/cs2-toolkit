@@ -113,6 +113,30 @@ export function DashboardPage() {
 
         <Card className="md:col-span-2 xl:col-span-2">
           <CardHeader>
+            <CardTitle>Live Radar</CardTitle>
+            <CardDescription>Shareable minimap with player positions, health, and weapons</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded bg-[var(--color-muted)] px-2 py-1 text-xs">
+                {window.location.origin}{data.radarUrl}
+              </code>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigator.clipboard.writeText(`${window.location.origin}${data.radarUrl}`)}
+              >
+                Copy
+              </Button>
+              <Button variant="secondary" size="sm" asChild>
+                <a href={data.radarUrl} target="_blank" rel="noreferrer">Open</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 xl:col-span-2">
+          <CardHeader>
             <CardTitle>Local Network URLs</CardTitle>
             <CardDescription>Use these from your phone or another device on the same network</CardDescription>
           </CardHeader>

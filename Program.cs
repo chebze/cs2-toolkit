@@ -36,6 +36,9 @@ internal static class Program
                 services.AddSingleton<ActiveWeaponTracker>();
                 services.AddSingleton<WeaponConfigState>();
 
+                services.AddSingleton<RadarTracker>();
+                services.AddSingleton<RadarState>();
+
                 services.AddSingleton<ToolkitEventBus>();
                 services.AddSingleton<RuntimeGate>();
                 services.AddSingleton<ProcessMemory>();

@@ -118,4 +118,5 @@ export interface DashboardData {
     server: string;
     subdomain?: string | null;
   };
+  radarUrl: string;
 }
