@@ -1,3 +1,4 @@
+using Cs2Toolkit.Maps;
 using Cs2Toolkit.Models;
 
 namespace Cs2Toolkit.Memory;
@@ -63,7 +64,7 @@ public sealed class RadarTracker
         {
             Attached = true,
             InMatch = true,
-            Map = mapName,
+            Map = MapVisibilityChecker.NormalizeMapName(mapName),
             LocalTeam = state.LocalTeam,
             Players = players,
             Bomb = bomb,

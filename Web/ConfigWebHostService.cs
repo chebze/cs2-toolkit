@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Services;
-using Cs2Toolkit.Tunnel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -25,8 +24,6 @@ public sealed class ConfigWebHostService : IHostedService
 
     private readonly ConfigManager _configManager;
     private readonly RuntimeConfigProvider _runtimeConfig;
-    private readonly ConfigWebState _webState;
-    private readonly LocalTunnelState _tunnelState;
     private readonly RadarState _radarState;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<ConfigWebHostService> _logger;
@@ -36,16 +33,12 @@ public sealed class ConfigWebHostService : IHostedService
     public ConfigWebHostService(
         ConfigManager configManager,
         RuntimeConfigProvider runtimeConfig,
-        ConfigWebState webState,
-        LocalTunnelState tunnelState,
         RadarState radarState,
         IHostEnvironment environment,
         ILogger<ConfigWebHostService> logger)
     {
         _configManager = configManager;
         _runtimeConfig = runtimeConfig;
-        _webState = webState;
-        _tunnelState = tunnelState;
         _radarState = radarState;
         _environment = environment;
         _logger = logger;
@@ -72,15 +65,13 @@ public sealed class ConfigWebHostService : IHostedService
         builder.Logging.ClearProviders();
 
         _app = builder.Build();
+        var wwwroot = ResolveWwwRootPath();
         MapApi(_app);
         MapRadar(_app);
-        MapStaticFiles(_app);
-        _app.MapFallbackToFile("index.html");
+        MapStaticFiles(_app, wwwroot);
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _ = _app.RunAsync(_cts.Token);
-
-        _webState.SetWebReady(port);
 
         var urls = GetAccessUrls(port);
         _logger.LogInformation("Config UI available at {Urls}", string.Join(", ", urls));
@@ -108,15 +99,6 @@ public sealed class ConfigWebHostService : IHostedService
                 defaultProfileId = store.DefaultProfileId,
                 accessUrls = GetAccessUrls(store.WebPort),
                 webPort = store.WebPort,
-                publicTunnel = new
-                {
-                    enabled = store.PublicTunnelEnabled,
-                    status = _tunnelState.Status.ToString(),
-                    url = _tunnelState.PublicUrl,
-                    error = _tunnelState.Error,
-                    server = store.PublicTunnelServer,
-                    subdomain = store.PublicTunnelSubdomain
-                },
                 radarUrl = $"/radar"
             }, JsonOptions);
         });
@@ -194,22 +176,10 @@ public sealed class ConfigWebHostService : IHostedService
         });
 
         app.MapGet("/api/weapons", () => Results.Json(WeaponCatalog.All, JsonOptions));
-
-        app.MapPut("/api/tunnel", (PublicTunnelSettingsRequest request) =>
-        {
-            _configManager.UpdatePublicTunnelSettings(
-                request.Enabled,
-                request.Server,
-                request.Subdomain,
-                request.MaxConnections);
-            return Results.Ok();
-        });
     }
 
     private void MapRadar(WebApplication app)
     {
-        var radarRoot = Path.Combine(_environment.ContentRootPath, "wwwroot", "radar");
-
         app.MapGet("/api/radar/snapshot", () =>
             Results.Json(_radarState.GetSnapshot(), JsonOptions));
 
@@ -233,37 +203,33 @@ public sealed class ConfigWebHostService : IHostedService
                 await Task.Delay(100, cancellationToken);
             }
         });
-
-        app.MapGet("/radar", () => Results.LocalRedirect("/radar/index.html"));
-
-        app.MapGet("/radar/index.html", async context =>
-        {
-            var path = Path.Combine(radarRoot, "index.html");
-            if (!File.Exists(path))
-            {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                return;
-            }
-
-            context.Response.ContentType = "text/html; charset=utf-8";
-            await context.Response.SendFileAsync(path);
-        });
     }
 
-    private void MapStaticFiles(WebApplication app)
+    private void MapStaticFiles(WebApplication app, string wwwroot)
     {
-        var wwwroot = Path.Combine(_environment.ContentRootPath, "wwwroot");
         if (!Directory.Exists(wwwroot))
             Directory.CreateDirectory(wwwroot);
 
-        app.UseDefaultFiles(new DefaultFilesOptions
+        if (!File.Exists(Path.Combine(wwwroot, "index.html")))
         {
-            FileProvider = new PhysicalFileProvider(wwwroot)
-        });
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new PhysicalFileProvider(wwwroot)
-        });
+            _logger.LogWarning(
+                "Config UI assets missing at {Wwwroot}. Run dotnet build to generate wwwroot/index.html.",
+                wwwroot);
+        }
+
+        var fileProvider = new PhysicalFileProvider(wwwroot);
+        app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = fileProvider });
+        app.UseStaticFiles(new StaticFileOptions { FileProvider = fileProvider });
+        app.MapFallbackToFile("index.html", new StaticFileOptions { FileProvider = fileProvider });
+    }
+
+    private string ResolveWwwRootPath()
+    {
+        var outputWwwroot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        if (File.Exists(Path.Combine(outputWwwroot, "index.html")))
+            return outputWwwroot;
+
+        return Path.Combine(_environment.ContentRootPath, "wwwroot");
     }
 
     private static int FindAvailablePort(int startPort)
@@ -321,10 +287,4 @@ public sealed class ConfigWebHostService : IHostedService
     }
 
     private sealed record CreateProfileRequest(string Name);
-
-    private sealed record PublicTunnelSettingsRequest(
-        bool Enabled,
-        string Server,
-        string? Subdomain,
-        int MaxConnections);
 }

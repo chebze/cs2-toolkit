@@ -110,13 +110,50 @@ export interface DashboardData {
   defaultProfileId: string;
   accessUrls: string[];
   webPort: number;
-  publicTunnel: {
-    enabled: boolean;
-    status: string;
-    url?: string | null;
-    error?: string | null;
-    server: string;
-    subdomain?: string | null;
-  };
   radarUrl: string;
+}
+
+export interface RadarBombSnapshot {
+  planted: boolean;
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface RadarPlayerSnapshot {
+  id: number;
+  name: string;
+  team: number;
+  health: number;
+  isLocalPlayer: boolean;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+  activeWeaponId: number;
+  activeWeapon: string;
+}
+
+export interface RadarSnapshot {
+  attached: boolean;
+  inMatch: boolean;
+  map?: string | null;
+  localTeam: number;
+  players: RadarPlayerSnapshot[];
+  bomb: RadarBombSnapshot;
+  timestamp: string;
+}
+
+export interface MapConfig {
+  map_name: string;
+  pos_x: number;
+  pos_y: number;
+  scale: number;
+  lower_altitude?: number;
+  AltitudeMax?: number;
+  AltitudeMin?: number;
+}
+
+export interface MapsConfig {
+  maps: MapConfig[];
 }

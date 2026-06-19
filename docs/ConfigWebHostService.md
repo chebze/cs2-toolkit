@@ -14,8 +14,9 @@ REST endpoints:
 - `GET /api/configs/{id}/export`, `POST /api/configs/import`
 - `GET/PUT /api/keybinds`
 - `GET /api/weapons`
+- `GET /api/radar/snapshot`, `GET /api/radar/stream` — live radar data (SSE)
 
-Static files served from `wwwroot/` (built from `ConfigUI/` during `dotnet build`).
+Static files served from `{AppContext.BaseDirectory}/wwwroot/` when present (built from `ConfigUI/` during `dotnet build` and copied to the output directory). Radar map images and weapon icons live under `ConfigUI/public/radar/` and are included in the Vite build output. Falls back to `{ContentRootPath}/wwwroot/` if `index.html` is missing from the output folder.
 
 ## Behavior
 
@@ -25,7 +26,7 @@ Static files served from `wwwroot/` (built from `ConfigUI/` during `dotnet build
 
 ## Dependencies
 
-- `ConfigManager`, `RuntimeConfigProvider`
+- `ConfigManager`, `RuntimeConfigProvider`, `RadarState`
 - `IHostEnvironment`
 
 ## Configuration

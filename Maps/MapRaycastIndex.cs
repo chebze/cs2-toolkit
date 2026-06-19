@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace Cs2Toolkit.Maps;
 
@@ -461,8 +462,19 @@ public sealed class MapVisibilityChecker
         if (string.IsNullOrWhiteSpace(mapName))
             return string.Empty;
 
-        var normalized = mapName.Trim().Replace('\\', '/');
+        var printable = new string(mapName.Where(static c => c >= 32 && c <= 126).ToArray());
+        var normalized = printable.Trim().Replace('\\', '/');
         var fileName = Path.GetFileNameWithoutExtension(normalized);
-        return fileName;
+
+        var match = MapNamePattern.Match(fileName);
+        if (match.Success)
+            return match.Value.ToLowerInvariant();
+
+        match = MapNamePattern.Match(normalized);
+        return match.Success ? match.Value.ToLowerInvariant() : fileName;
     }
+
+    private static readonly Regex MapNamePattern = new(
+        @"(?:cs_|de_|ar_)[a-z0-9_]+",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 }

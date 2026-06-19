@@ -94,6 +94,8 @@ public sealed class GameOffsets
     public nint M_arrTrajectoryTrailPoints { get; init; }
 
     public const nint DwGameTypes_mapName = 0x120;
+    public const nint GlobalVarsCurrentMapName = 0x180;
+    public const nint GlobalVarsCurrentMapNameAlt = 0x230;
     public const nint EntitySpottedState_bSpotted = 0x8;
     public const nint EntitySpottedState_bSpottedByMask = 0xC;
     public const nint SceneNode_bDormant = 0x103;

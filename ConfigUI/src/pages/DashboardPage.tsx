@@ -4,21 +4,6 @@ import type { DashboardData } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-function statusLabel(status: string) {
-  switch (status) {
-    case "Connected":
-      return "Connected";
-    case "Connecting":
-      return "Connecting…";
-    case "Reconnecting":
-      return "Reconnecting…";
-    case "Failed":
-      return "Failed";
-    default:
-      return "Disabled";
-  }
-}
-
 export function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,40 +47,6 @@ export function DashboardPage() {
             {data.activeProfile.switchHotkey && (
               <p className="mt-2 text-sm text-[var(--color-muted-foreground)]">
                 Switch hotkey: {data.activeProfile.switchHotkey}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2 xl:col-span-2 border-[var(--color-primary)]/40">
-          <CardHeader>
-            <CardTitle>Public Share URL</CardTitle>
-            <CardDescription>
-              Share this link with anyone — no VPN or same-network required
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm text-[var(--color-muted-foreground)]">
-              Status: {statusLabel(data.publicTunnel.status)}
-            </div>
-            {data.publicTunnel.url ? (
-              <div className="flex items-center gap-2">
-                <code className="flex-1 break-all rounded bg-[var(--color-muted)] px-2 py-2 text-sm">
-                  {data.publicTunnel.url}
-                </code>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigator.clipboard.writeText(data.publicTunnel.url!)}
-                >
-                  Copy
-                </Button>
-              </div>
-            ) : (
-              <p className="text-sm text-[var(--color-muted-foreground)]">
-                {data.publicTunnel.enabled
-                  ? data.publicTunnel.error ?? "Waiting for tunnel registration…"
-                  : "Public tunnel is disabled in settings."}
               </p>
             )}
           </CardContent>

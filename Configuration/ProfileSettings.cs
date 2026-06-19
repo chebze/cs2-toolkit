@@ -87,8 +87,4 @@ public sealed class ConfigStore
     public GlobalKeybinds Keybinds { get; set; } = new();
     public List<ConfigProfile> Profiles { get; set; } = [];
     public int WebPort { get; set; } = 8080;
-    public bool PublicTunnelEnabled { get; set; } = true;
-    public string PublicTunnelServer { get; set; } = "https://localtunnel.me";
-    public string? PublicTunnelSubdomain { get; set; }
-    public int PublicTunnelMaxConnections { get; set; } = 4;
 }

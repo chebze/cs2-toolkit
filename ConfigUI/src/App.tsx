@@ -14,6 +14,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/radar" element={<RadarPage />} />
         <Route element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="configs" element={<ConfigsPage />} />
@@ -24,7 +25,6 @@ export default function App() {
           <Route path="visuals" element={<VisualsPage />} />
           <Route path="sound" element={<SoundEspPage />} />
           <Route path="keybinds" element={<KeybindsPage />} />
-          <Route path="radar" element={<RadarPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
