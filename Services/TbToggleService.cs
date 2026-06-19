@@ -1,9 +1,7 @@
-using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Events;
 using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Windows.Forms;
 
 namespace Cs2Toolkit.Services;
@@ -12,42 +10,27 @@ public sealed class TbToggleService : BackgroundService
 {
     private readonly ToolkitEventBus _eventBus;
     private readonly TbState _tbState;
-    private readonly ToolkitOptions _options;
+    private readonly GlobalKeybindState _keybinds;
+    private readonly RuntimeConfigProvider _runtimeConfig;
     private readonly ILogger<TbToggleService> _logger;
-    private Keys _toggleKey = Keys.F7;
-    private Keys _autoStrafeKey = Keys.Space;
-    private float _fovStep = 0.05f;
-    private int _fovRepeatIntervalMs = 80;
-    private int _reactionDelayStepMs = 50;
     private bool _settingsAdjustedThisHold;
 
     public TbToggleService(
         ToolkitEventBus eventBus,
         TbState tbState,
-        IOptions<ToolkitOptions> options,
+        GlobalKeybindState keybinds,
+        RuntimeConfigProvider runtimeConfig,
         ILogger<TbToggleService> logger)
     {
         _eventBus = eventBus;
         _tbState = tbState;
-        _options = options.Value;
+        _keybinds = keybinds;
+        _runtimeConfig = runtimeConfig;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _toggleKey = KeyParser.Parse(_options.Tb.ToggleKey);
-        if (_toggleKey == Keys.None)
-            throw new InvalidOperationException($"Invalid Tb:ToggleKey in appsettings.json: {_options.Tb.ToggleKey}");
-
-        _autoStrafeKey = KeyParser.Parse(_options.Tb.AutoStrafeKey);
-        if (_autoStrafeKey == Keys.None)
-            throw new InvalidOperationException($"Invalid Tb:AutoStrafeKey in appsettings.json: {_options.Tb.AutoStrafeKey}");
-
-        _fovStep = _options.Tb.FovAdjustStepDegrees;
-        _fovRepeatIntervalMs = _options.Tb.FovAdjustRepeatIntervalMs;
-        _reactionDelayStepMs = _options.Tb.ReactionDelayAdjustStepMs;
-        _tbState.Initialize(_options.Tb);
-
         _eventBus.OnKeyDown += OnKeyDown;
         _eventBus.OnKeyUp += OnKeyUp;
 
@@ -55,12 +38,12 @@ public sealed class TbToggleService : BackgroundService
         {
             _logger.LogInformation(
                 "TB toggle bound to {ToggleKey} (tap to toggle, hold + arrows to adjust FOV/reaction delay, starts {State})",
-                _options.Tb.ToggleKey,
+                _keybinds.Current.TbToggleKey,
                 _tbState.IsEnabled ? "enabled" : "disabled");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (NativeInput.IsKeyDown(_toggleKey))
+                if (NativeInput.IsKeyDown(_keybinds.ParseToggleKey(k => k.TbToggleKey)))
                     await AdjustSettingsWhileHeldAsync(stoppingToken);
 
                 await Task.Delay(16, stoppingToken);
@@ -75,16 +58,17 @@ public sealed class TbToggleService : BackgroundService
 
     private void OnKeyDown(object? sender, KeyInputEventArgs e)
     {
-        if (e.Key == _toggleKey)
+        var toggleKey = _keybinds.ParseToggleKey(k => k.TbToggleKey);
+        if (e.Key == toggleKey)
         {
             _settingsAdjustedThisHold = false;
             return;
         }
 
-        if (!NativeInput.IsKeyDown(_toggleKey))
+        if (!NativeInput.IsKeyDown(toggleKey))
             return;
 
-        if (e.Key == _autoStrafeKey)
+        if (e.Key == _keybinds.ParseToggleKey(k => k.TbAutoStrafeKey))
         {
             var enabled = _tbState.ToggleAutoStop();
             _settingsAdjustedThisHold = true;
@@ -94,7 +78,7 @@ public sealed class TbToggleService : BackgroundService
 
     private void OnKeyUp(object? sender, KeyInputEventArgs e)
     {
-        if (e.Key != _toggleKey)
+        if (e.Key != _keybinds.ParseToggleKey(k => k.TbToggleKey))
             return;
 
         if (_settingsAdjustedThisHold)
@@ -106,6 +90,7 @@ public sealed class TbToggleService : BackgroundService
 
     private async Task AdjustSettingsWhileHeldAsync(CancellationToken stoppingToken)
     {
+        var tb = _runtimeConfig.Current.Tb;
         var left = NativeInput.IsKeyDown(Keys.Left);
         var right = NativeInput.IsKeyDown(Keys.Right);
         var up = NativeInput.IsKeyDown(Keys.Up);
@@ -113,15 +98,15 @@ public sealed class TbToggleService : BackgroundService
 
         if (left != right)
         {
-            AdjustFov(right ? _fovStep : -_fovStep);
-            await Task.Delay(_fovRepeatIntervalMs, stoppingToken);
+            AdjustFov(right ? tb.FovAdjustStepDegrees : -tb.FovAdjustStepDegrees);
+            await Task.Delay(tb.FovAdjustRepeatIntervalMs, stoppingToken);
             return;
         }
 
         if (up != down)
         {
-            AdjustReactionDelays(up ? _reactionDelayStepMs : -_reactionDelayStepMs);
-            await Task.Delay(_fovRepeatIntervalMs, stoppingToken);
+            AdjustReactionDelays(up ? tb.ReactionDelayAdjustStepMs : -tb.ReactionDelayAdjustStepMs);
+            await Task.Delay(tb.FovAdjustRepeatIntervalMs, stoppingToken);
         }
     }
 

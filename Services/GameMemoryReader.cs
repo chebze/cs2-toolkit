@@ -7,7 +7,6 @@ using Cs2Toolkit.Offsets;
 using Cs2Toolkit.Runtime;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Cs2Toolkit.Services;
 
@@ -30,10 +29,13 @@ public sealed class GameMemoryReader : BackgroundService
     private readonly EnemyEspState _enemyEspState;
     private readonly AimHelper _aimHelper;
     private readonly AimHelperState _aimHelperState;
-    private readonly ToolkitOptions _options;
+    private readonly RuntimeConfigProvider _runtimeConfig;
+    private readonly ActiveWeaponTracker _activeWeaponTracker;
+    private readonly WeaponConfigState _weaponConfigState;
     private readonly ILogger<GameMemoryReader> _logger;
 
     private EntityResolver? _entityResolver;
+    private ushort _lastWeaponId;
 
     public GameMemoryReader(
         ProcessMemory processMemory,
@@ -53,7 +55,9 @@ public sealed class GameMemoryReader : BackgroundService
         EnemyEspState enemyEspState,
         AimHelper aimHelper,
         AimHelperState aimHelperState,
-        IOptions<ToolkitOptions> options,
+        RuntimeConfigProvider runtimeConfig,
+        ActiveWeaponTracker activeWeaponTracker,
+        WeaponConfigState weaponConfigState,
         ILogger<GameMemoryReader> logger)
     {
         _processMemory = processMemory;
@@ -73,7 +77,9 @@ public sealed class GameMemoryReader : BackgroundService
         _enemyEspState = enemyEspState;
         _aimHelper = aimHelper;
         _aimHelperState = aimHelperState;
-        _options = options.Value;
+        _runtimeConfig = runtimeConfig;
+        _activeWeaponTracker = activeWeaponTracker;
+        _weaponConfigState = weaponConfigState;
         _logger = logger;
     }
 
@@ -86,52 +92,73 @@ public sealed class GameMemoryReader : BackgroundService
         if (_offsetDownloader.Offsets is null)
             throw new InvalidOperationException("Offsets were not downloaded before memory reading started.");
 
-        _entityResolver = new EntityResolver(_processMemory, _offsetDownloader.Offsets, _options.Clairvoyance);
+        var options = _runtimeConfig.Current;
+        _entityResolver = new EntityResolver(_processMemory, _offsetDownloader.Offsets, options.Clairvoyance);
         _enemySoundTracker.Initialize(_offsetDownloader.Offsets);
         _enemyLastSeenTracker.Initialize(_offsetDownloader.Offsets);
         _viewMatrixHolder.Initialize(_offsetDownloader.Offsets);
-        _recoilCompensator.Initialize(_offsetDownloader.Offsets, _options.Rcs);
-        _triggerbot.Initialize(_offsetDownloader.Offsets, _options.Tb, _mapDataService.VisibilityChecker);
+        _recoilCompensator.Initialize(_offsetDownloader.Offsets, options.Rcs);
+        _triggerbot.Initialize(_offsetDownloader.Offsets, options.Tb, _mapDataService.VisibilityChecker);
         _aimHelper.Initialize(
             _offsetDownloader.Offsets,
-            _options.AimHelper,
+            options.AimHelper,
             _mapDataService.VisibilityChecker,
             _viewMatrixHolder);
         _grenadeTrajectoryTracker.Initialize(_offsetDownloader.Offsets, _mapDataService.VisibilityChecker);
-        _logger.LogInformation("GameMemoryReader started — interval {Interval}ms", _options.MemoryReadIntervalMs);
+        _logger.LogInformation("GameMemoryReader started — interval {Interval}ms", options.MemoryReadIntervalMs);
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            options = _runtimeConfig.Current;
             var state = ReadMemoryState();
             if (_processMemory.IsAttached)
             {
                 _viewMatrixHolder.Update(_processMemory);
                 var mapName = _mapNameReader.ReadCurrentMap(_processMemory, _offsetDownloader.Offsets!);
                 _mapDataService.VisibilityChecker.SetActiveMap(mapName);
+                _activeWeaponTracker.Update(_processMemory, _offsetDownloader.Offsets!, _processMemory.ClientBase);
+
+                if (_activeWeaponTracker.WeaponId != _lastWeaponId)
+                {
+                    _lastWeaponId = _activeWeaponTracker.WeaponId;
+                    _weaponConfigState.Update(_lastWeaponId, _runtimeConfig);
+                }
             }
+
+            var weapon = _weaponConfigState;
+            var tb = weapon.Triggerbot;
+            var rcs = weapon.Rcs;
+            var aim = weapon.AimHelper;
 
             _triggerbot.TryTrigger(
                 _processMemory,
                 _processMemory.ClientBase,
                 state,
                 _tbState.IsEnabled,
-                _tbState.PreFireFovDegrees,
-                _tbState.MinReactionDelayMs,
-                _tbState.MaxReactionDelayMs,
-                _tbState.IsAutoStopEnabled);
-            _recoilCompensator.TryCompensate(_processMemory, _processMemory.ClientBase, _rcsState.IsEnabled);
+                tb.PreFireFovDegrees ?? _tbState.PreFireFovDegrees,
+                tb.MinReactionDelayMs ?? _tbState.MinReactionDelayMs,
+                tb.MaxReactionDelayMs ?? _tbState.MaxReactionDelayMs,
+                tb.AutoStopEnabled ?? _tbState.IsAutoStopEnabled);
+
+            _recoilCompensator.TryCompensateWithOptions(
+                _processMemory,
+                _processMemory.ClientBase,
+                _rcsState.IsEnabled,
+                rcs);
+
             _aimHelper.TryAim(
                 _processMemory,
                 _processMemory.ClientBase,
                 state,
                 _aimHelperState.IsEnabled,
-                _aimHelperState.FovDegrees,
-                _aimHelperState.PreferredBone);
+                aim.FovDegrees ?? _aimHelperState.FovDegrees,
+                AimHelperBoneParser.Parse(aim.PreferredBone ?? _aimHelperState.PreferredBone.ToString()));
+
             _enemySoundTracker.Poll(state);
             _enemyLastSeenTracker.Poll(state, _enemyEspState.Mode);
             _grenadeTrajectoryTracker.Poll(_processMemory, state);
             _eventBus.PublishMemoryRead(state);
-            await Task.Delay(_options.MemoryReadIntervalMs, stoppingToken);
+            await Task.Delay(options.MemoryReadIntervalMs, stoppingToken);
         }
     }
 

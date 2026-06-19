@@ -1,9 +1,7 @@
-using Cs2Toolkit.Configuration;
 using Cs2Toolkit.Events;
 using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Windows.Forms;
 
 namespace Cs2Toolkit.Services;
@@ -12,35 +10,27 @@ public sealed class AimHelperToggleService : BackgroundService
 {
     private readonly ToolkitEventBus _eventBus;
     private readonly AimHelperState _aimHelperState;
-    private readonly ToolkitOptions _options;
+    private readonly GlobalKeybindState _keybinds;
+    private readonly RuntimeConfigProvider _runtimeConfig;
     private readonly ILogger<AimHelperToggleService> _logger;
-    private Keys _toggleKey = Keys.F4;
-    private float _fovStep = 0.25f;
-    private int _fovRepeatIntervalMs = 80;
     private bool _settingsAdjustedThisHold;
 
     public AimHelperToggleService(
         ToolkitEventBus eventBus,
         AimHelperState aimHelperState,
-        IOptions<ToolkitOptions> options,
+        GlobalKeybindState keybinds,
+        RuntimeConfigProvider runtimeConfig,
         ILogger<AimHelperToggleService> logger)
     {
         _eventBus = eventBus;
         _aimHelperState = aimHelperState;
-        _options = options.Value;
+        _keybinds = keybinds;
+        _runtimeConfig = runtimeConfig;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _toggleKey = KeyParser.Parse(_options.AimHelper.ToggleKey);
-        if (_toggleKey == Keys.None)
-            throw new InvalidOperationException($"Invalid AimHelper:ToggleKey in appsettings.json: {_options.AimHelper.ToggleKey}");
-
-        _fovStep = _options.AimHelper.FovAdjustStepDegrees;
-        _fovRepeatIntervalMs = _options.AimHelper.FovAdjustRepeatIntervalMs;
-        _aimHelperState.Initialize(_options.AimHelper);
-
         _eventBus.OnKeyDown += OnKeyDown;
         _eventBus.OnKeyUp += OnKeyUp;
 
@@ -48,12 +38,12 @@ public sealed class AimHelperToggleService : BackgroundService
         {
             _logger.LogInformation(
                 "Aim helper toggle bound to {ToggleKey} (tap to toggle, hold + arrows to adjust FOV, starts {State})",
-                _options.AimHelper.ToggleKey,
+                _keybinds.Current.AimHelperToggleKey,
                 _aimHelperState.IsEnabled ? "enabled" : "disabled");
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (NativeInput.IsKeyDown(_toggleKey))
+                if (NativeInput.IsKeyDown(_keybinds.ParseToggleKey(k => k.AimHelperToggleKey)))
                     await AdjustFovWhileHeldAsync(stoppingToken);
 
                 await Task.Delay(16, stoppingToken);
@@ -68,13 +58,13 @@ public sealed class AimHelperToggleService : BackgroundService
 
     private void OnKeyDown(object? sender, KeyInputEventArgs e)
     {
-        if (e.Key == _toggleKey)
+        if (e.Key == _keybinds.ParseToggleKey(k => k.AimHelperToggleKey))
             _settingsAdjustedThisHold = false;
     }
 
     private void OnKeyUp(object? sender, KeyInputEventArgs e)
     {
-        if (e.Key != _toggleKey)
+        if (e.Key != _keybinds.ParseToggleKey(k => k.AimHelperToggleKey))
             return;
 
         if (_settingsAdjustedThisHold)
@@ -86,14 +76,15 @@ public sealed class AimHelperToggleService : BackgroundService
 
     private async Task AdjustFovWhileHeldAsync(CancellationToken stoppingToken)
     {
+        var aim = _runtimeConfig.Current.AimHelper;
         var left = NativeInput.IsKeyDown(Keys.Left);
         var right = NativeInput.IsKeyDown(Keys.Right);
 
         if (left == right)
             return;
 
-        AdjustFov(right ? _fovStep : -_fovStep);
-        await Task.Delay(_fovRepeatIntervalMs, stoppingToken);
+        AdjustFov(right ? aim.FovAdjustStepDegrees : -aim.FovAdjustStepDegrees);
+        await Task.Delay(aim.FovAdjustRepeatIntervalMs, stoppingToken);
     }
 
     private void AdjustFov(float delta)

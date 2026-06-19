@@ -36,7 +36,11 @@ Program
         ├── EnemyEspStatusOverlay / EnemyEspToggleService
         ├── SoundEspStatusOverlay / SoundEspToggleService
         ├── AimHelperOverlay / AimHelperToggleService
-        └── SettingsSaveService      → F11 persist runtime state
+        ├── SettingsSaveService      → F11 persist runtime state
+        ├── ConfigWebHostService     → Kestrel config UI + REST API (:8080+)
+        ├── ConfigManager            → multi-profile store
+        ├── LiveConfigApplier        → live in-game config updates
+        └── ConfigProfileSwitchService → per-profile switch hotkeys
 ```
 
 ## Event bus
@@ -68,9 +72,25 @@ dotnet run
 
 1. Start CS2.
 2. Launch the toolkit (map parsing may take a moment on first run).
-3. Press **F9** when prompted to attach.
-4. Use feature hotkeys above; status labels appear bottom-left after attach.
-5. Press **Insert** for the settings menu; **F11** to save runtime toggles to `appsettings.json`.
+3. The **configuration UI** opens automatically in your browser (default `http://localhost:8080`). Use the dashboard URLs to access it from your phone on the same network.
+4. Press **F9** when prompted to attach.
+5. Use feature hotkeys above; status labels appear bottom-left after attach.
+6. Edit settings in the web UI — changes apply **live in-game** without restart.
+7. Switch profiles with per-profile hotkeys configured in the Profiles page.
+
+### Web configuration UI
+
+| Page | Description |
+|------|-------------|
+| Dashboard | Active profile name, LAN access URLs |
+| Profiles | Create/delete/import/export configs, default profile, switch hotkeys |
+| Triggerbot / RCS / Aim Helper | Global, weapon-type, and per-weapon layered settings |
+| ESP | Skeleton mode, player name/health/bounding box |
+| Visuals | Grenade arc/point/impact/landing colors |
+| Sound ESP | Wave vs static box animation |
+| Keybinds | Global hotkeys (shared across profiles) |
+
+Config profiles are stored in `data/configs/store.json`. Legacy `appsettings.json` is migrated on first run.
 
 Map raycast features (triggerbot pre-fire visibility, aim helper LOS, grenade simulation) require collision meshes. The toolkit auto-discovers CS2's `maps` folder or loads cached meshes from `data/maps`. Set `Toolkit:Maps:MapsDirectory` to override discovery.
 
@@ -108,6 +128,10 @@ docs/            Per-class documentation
 | Class | Doc |
 |-------|-----|
 | ToolkitOptions | [ToolkitOptions.md](ToolkitOptions.md) |
+| ConfigManager | [ConfigManager.md](ConfigManager.md) |
+| ConfigWebHostService | [ConfigWebHostService.md](ConfigWebHostService.md) |
+| RuntimeConfigProvider | [RuntimeConfigProvider.md](RuntimeConfigProvider.md) |
+| LiveConfigApplier | [LiveConfigApplier.md](LiveConfigApplier.md) |
 | AppSettingsWriter | [AppSettingsWriter.md](AppSettingsWriter.md) |
 | ToolkitOptionsCollector | [ToolkitOptionsCollector.md](ToolkitOptionsCollector.md) |
 | SettingsSaveService | [SettingsSaveService.md](SettingsSaveService.md) |

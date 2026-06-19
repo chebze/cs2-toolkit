@@ -7,7 +7,6 @@ using Cs2Toolkit.Overlay;
 using Cs2Toolkit.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Cs2Toolkit.Services;
 
@@ -18,7 +17,7 @@ public sealed class EnemyNoiseOverlay : IHostedService
     private readonly ViewMatrixHolder _viewMatrixHolder;
     private readonly ToolkitEventBus _eventBus;
     private readonly ScreenOverlayManager _overlayManager;
-    private readonly ToolkitOptions _options;
+    private readonly OverlayStyleState _overlayStyle;
     private readonly ILogger<EnemyNoiseOverlay> _logger;
     private readonly object _lock = new();
     private readonly List<ActiveNoiseWave> _waves = [];
@@ -34,7 +33,7 @@ public sealed class EnemyNoiseOverlay : IHostedService
         ViewMatrixHolder viewMatrixHolder,
         ToolkitEventBus eventBus,
         ScreenOverlayManager overlayManager,
-        IOptions<ToolkitOptions> options,
+        OverlayStyleState overlayStyle,
         ILogger<EnemyNoiseOverlay> logger)
     {
         _soundTracker = soundTracker;
@@ -42,7 +41,7 @@ public sealed class EnemyNoiseOverlay : IHostedService
         _viewMatrixHolder = viewMatrixHolder;
         _eventBus = eventBus;
         _overlayManager = overlayManager;
-        _options = options.Value;
+        _overlayStyle = overlayStyle;
         _logger = logger;
     }
 
@@ -117,12 +116,12 @@ public sealed class EnemyNoiseOverlay : IHostedService
         if (!_soundEspState.IsEnabled)
             return;
 
-        var noiseOptions = _options.EnemyNoise;
+        var soundEsp = _overlayStyle.Settings.SoundEsp;
         var bounds = GameWindowHelper.GetTargetBounds();
         var now = DateTime.UtcNow;
         Span<float> viewMatrix = stackalloc float[16];
         _viewMatrixHolder.CopyTo(viewMatrix);
-        var waveColor = DrawHelper.ParseColor(noiseOptions.WaveColor, Color.Red);
+        var waveColor = DrawHelper.ParseColor(soundEsp.WaveColor, Color.Red);
         Vector3? bombPosition = null;
         DateTime bombWaveEpoch;
 
@@ -131,27 +130,26 @@ public sealed class EnemyNoiseOverlay : IHostedService
             for (var i = _waves.Count - 1; i >= 0; i--)
             {
                 var elapsedMs = (now - _waves[i].StartedAt).TotalMilliseconds;
-                if (elapsedMs >= noiseOptions.WaveDurationMs)
+                if (elapsedMs >= soundEsp.WaveDurationMs)
                     _waves.RemoveAt(i);
             }
 
             foreach (var wave in _waves)
             {
                 var progress = (float)Math.Clamp(
-                    (now - wave.StartedAt).TotalMilliseconds / noiseOptions.WaveDurationMs,
+                    (now - wave.StartedAt).TotalMilliseconds / soundEsp.WaveDurationMs,
                     0d,
                     1d);
 
-                GroundWaveDrawer.DrawRings(
+                DrawSoundIndicator(
                     graphics,
                     wave.WorldPosition,
                     progress,
                     waveColor,
-                    noiseOptions,
+                    soundEsp,
                     viewMatrix,
                     bounds.Width,
-                    bounds.Height,
-                    noiseOptions.WaveLineWidth);
+                    bounds.Height);
             }
 
             bombPosition = _bombPosition;
@@ -161,19 +159,66 @@ public sealed class EnemyNoiseOverlay : IHostedService
         if (bombPosition is { IsValid: true } position)
         {
             var elapsedMs = (now - bombWaveEpoch).TotalMilliseconds;
-            var progress = (float)(elapsedMs % noiseOptions.WaveDurationMs / noiseOptions.WaveDurationMs);
+            var progress = (float)(elapsedMs % soundEsp.WaveDurationMs / soundEsp.WaveDurationMs);
 
-            GroundWaveDrawer.DrawRings(
+            DrawSoundIndicator(
                 graphics,
                 position,
                 progress,
                 waveColor,
-                noiseOptions,
+                soundEsp,
                 viewMatrix,
                 bounds.Width,
-                bounds.Height,
-                noiseOptions.WaveLineWidth);
+                bounds.Height);
         }
+    }
+
+    private static void DrawSoundIndicator(
+        Graphics graphics,
+        Vector3 worldPosition,
+        float progress,
+        Color color,
+        SoundEspProfileOptions options,
+        ReadOnlySpan<float> viewMatrix,
+        int screenWidth,
+        int screenHeight)
+    {
+        if (options.Animation == SoundWaveAnimation.StaticBox)
+        {
+            StaticBoxDrawer.DrawBox(
+                graphics,
+                worldPosition,
+                progress,
+                color,
+                options,
+                viewMatrix,
+                screenWidth,
+                screenHeight,
+                options.WaveLineWidth);
+            return;
+        }
+
+        var noiseOptions = new EnemyNoiseOptions
+        {
+            WaveDurationMs = options.WaveDurationMs,
+            MinWorldRadius = options.MinWorldRadius,
+            MaxWorldRadius = options.MaxWorldRadius,
+            RingCount = options.RingCount,
+            RingSpacing = options.RingSpacing,
+            WaveLineWidth = options.WaveLineWidth,
+            WaveColor = options.WaveColor
+        };
+
+        GroundWaveDrawer.DrawRings(
+            graphics,
+            worldPosition,
+            progress,
+            color,
+            noiseOptions,
+            viewMatrix,
+            screenWidth,
+            screenHeight,
+            options.WaveLineWidth);
     }
 
     private sealed class ActiveNoiseWave

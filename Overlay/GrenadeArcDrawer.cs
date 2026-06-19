@@ -22,7 +22,9 @@ internal static class GrenadeArcDrawer
         int screenWidth,
         int screenHeight,
         GrenadeOverlayOptions overlayOptions,
-        float landingMarkerRadiusUnits)
+        float landingMarkerRadiusUnits,
+        string? pointColorHex = null,
+        string? impactColorHex = null)
     {
         if (!snapshot.IsActive || snapshot.Points.Count < 2)
             return default;
@@ -30,7 +32,9 @@ internal static class GrenadeArcDrawer
         graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
         var arcColor = DrawHelper.ParseColor(overlayOptions.ArcColor, Color.DeepSkyBlue);
+        var pointColor = DrawHelper.ParseColor(pointColorHex ?? overlayOptions.ArcColor, arcColor);
         var landingColor = DrawHelper.ParseColor(overlayOptions.LandingColor, Color.Gold);
+        var impactColor = DrawHelper.ParseColor(impactColorHex ?? overlayOptions.LandingColor, landingColor);
 
         using var arcPen = new Pen(arcColor, overlayOptions.ArcLineWidth)
         {
@@ -49,7 +53,7 @@ internal static class GrenadeArcDrawer
             if (arcSegment.Count < 2)
                 continue;
 
-            var segmentStats = DrawArcSegment(graphics, arcPen, arcSegment, viewMatrix, screenWidth, screenHeight);
+            var segmentStats = DrawArcSegment(graphics, arcPen, arcSegment, viewMatrix, screenWidth, screenHeight, pointColor);
             projectedPoints += segmentStats.ProjectedPoints;
             drawnSegments += segmentStats.DrawnSegments;
         }
@@ -57,7 +61,7 @@ internal static class GrenadeArcDrawer
         var landingVisible = false;
         foreach (var bouncePoint in snapshot.BouncePoints)
         {
-            if (DrawBounceMarker(graphics, bouncePoint, viewMatrix, screenWidth, screenHeight, landingColor, overlayOptions))
+            if (DrawBounceMarker(graphics, bouncePoint, viewMatrix, screenWidth, screenHeight, impactColor, overlayOptions))
                 landingVisible = true;
         }
 
@@ -90,7 +94,8 @@ internal static class GrenadeArcDrawer
         IReadOnlyList<Vector3> segment,
         ReadOnlySpan<float> viewMatrix,
         int screenWidth,
-        int screenHeight)
+        int screenHeight,
+        Color pointColor)
     {
         PointF? previous = null;
         var projectedPoints = 0;
@@ -105,6 +110,10 @@ internal static class GrenadeArcDrawer
             }
 
             projectedPoints++;
+            using (var fill = new SolidBrush(pointColor))
+            {
+                graphics.FillEllipse(fill, screen.X - 2f, screen.Y - 2f, 4f, 4f);
+            }
 
             if (previous is { } last)
             {

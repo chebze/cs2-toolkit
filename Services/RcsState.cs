@@ -8,7 +8,9 @@ public sealed class RcsState
 
     public bool IsEnabled => Volatile.Read(ref _enabled) == 1;
 
-    public void Initialize(RcsOptions options) =>
+    public void Initialize(RcsOptions options) => InitializeFromConfig(options);
+
+    public void InitializeFromConfig(RcsOptions options) =>
         Volatile.Write(ref _enabled, options.Enabled ? 1 : 0);
 
     public bool Toggle()
