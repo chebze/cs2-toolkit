@@ -407,11 +407,11 @@ Replace `_old/ToolkitRuntime` + `RuntimeGate`:
 
 ## Phase 10 — Documentation and polish
 
-- [ ] Root `README.md` — build, run, architecture diagram
-- [ ] `docs/README.md` — index of all v2 class docs
-- [ ] Every new/changed C# class has `docs/{ClassName}.md` per workspace rules
-- [ ] Architecture decision record (ADR) for: abstractions split, non-blocking render, snapshot model
-- [ ] Contributor guide: how to add a new feature service
+- [x] Root `README.md` — build, run, architecture diagram
+- [x] `docs/README.md` — index of all v2 class docs
+- [x] Every new/changed C# class has `docs/{ClassName}.md` per workspace rules
+- [x] Architecture decision record (ADR) for: abstractions split, non-blocking render, snapshot model
+- [x] Contributor guide: how to add a new feature service
 
 ---
 
@@ -517,6 +517,6 @@ Only Runtime references implementation projects.
 | Phase 7 — Services core | **Done** |
 | Phase 8 — API and Frontend | **Done** (in-game radar SSE validation deferred) |
 | Phase 9 — Runtime orchestration | **Done** (stress + manual validation deferred) |
-| Phase 10 | Not started |
+| Phase 10 — Documentation and polish | **Done** |
 
-Next step: **Phase 10** — Documentation and polish.
+The v2 rebuild roadmap is complete. Remaining work is manual in-game validation ([PARITY.md](docs/PARITY.md)) and optional deferred items noted in earlier phases.
