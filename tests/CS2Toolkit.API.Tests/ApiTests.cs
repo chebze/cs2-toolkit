@@ -74,7 +74,7 @@ public sealed class WeaponsApiTests
         var response = await host.Client.GetAsync("/api/weapons");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var weapons = await response.Content.ReadFromJsonAsync<List<WeaponDefinitionDto>>();
+        var weapons = await response.Content.ReadFromJsonAsync<List<WeaponDefinitionDto>>(ToolkitJsonSerializerOptions.Web);
         Assert.NotNull(weapons);
         Assert.Contains(weapons, w => w.Id == 7 && w.Name == "AK-47");
     }
