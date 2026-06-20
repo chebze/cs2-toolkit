@@ -9,7 +9,20 @@ public sealed class ToolkitHostSettings
     public OffsetSettings Offsets { get; set; } = new();
     public MapHostSettings Maps { get; set; } = new();
     public GrenadePhysicsSettings Grenade { get; set; } = new();
+    public TriggerbotHostSettings Triggerbot { get; set; } = new();
     public FileLoggingSettings FileLogging { get; set; } = new();
+}
+
+public sealed class TriggerbotHostSettings
+{
+    public float AutoStopSpeedThreshold { get; set; } = 15f;
+    public int MinGraceBullets { get; set; } = 1;
+    public int MaxGraceBullets { get; set; } = 2;
+    public float AssumedHorizontalFovDegrees { get; set; } = 90f;
+    public string FovCircleColor { get; set; } = "#EF4444";
+    public float FovCircleLineWidth { get; set; } = 1.5f;
+    public int StatusFontSize { get; set; } = 16;
+    public int StatusMargin { get; set; } = 16;
 }
 
 public sealed class OffsetSettings

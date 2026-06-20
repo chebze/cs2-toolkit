@@ -2,14 +2,32 @@ using CS2Toolkit.Services.Abstractions;
 
 namespace CS2Toolkit.Services.Features;
 
-internal sealed class TriggerbotFeatureService : FeatureServiceBase
+internal sealed class TriggerbotFeatureService : IFeatureService
 {
-    public TriggerbotFeatureService(IFeatureState state) : base(state, FeatureIds.Triggerbot)
+    private readonly IFeatureState _state;
+    private readonly TriggerbotController _controller;
+
+    public TriggerbotFeatureService(IFeatureState state, TriggerbotController controller)
     {
+        _state = state;
+        _controller = controller;
     }
 
-    public override void OnSnapshot(FeatureContext context)
+    public FeatureId Id => FeatureIds.Triggerbot;
+
+    public bool IsEnabled => true;
+
+    public void OnSnapshot(FeatureContext context)
     {
-        // Combat logic arrives in Phase 7.3.7.
+        if (!_state.IsEnabled(Id))
+        {
+            _controller.Reset(context.Input);
+            return;
+        }
+
+        var autoStopEnabled = context.WeaponSettings.Triggerbot.AutoStopEnabled
+            ?? _state.TriggerbotAutoStopEnabled;
+
+        _controller.Process(context, autoStopEnabled);
     }
 }

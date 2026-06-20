@@ -18,7 +18,8 @@ public sealed record GameSnapshot(
     int EnemiesAlive,
     int EnemiesDead,
     int TeammatesAlive,
-    int TeammatesDead)
+    int TeammatesDead,
+    TriggerbotState Triggerbot)
 {
     public static GameSnapshot Detached { get; } = new(
         DateTimeOffset.UtcNow,
@@ -38,5 +39,6 @@ public sealed record GameSnapshot(
         0,
         0,
         0,
-        0);
+        0,
+        TriggerbotState.Inactive);
 }

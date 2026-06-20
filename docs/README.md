@@ -90,5 +90,9 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `GrenadeTrajectoryReader` | [GrenadeTrajectoryReader.md](GrenadeTrajectoryReader.md) |
 | `GrenadeTrajectoryResolver` | [GrenadeTrajectoryResolver.md](GrenadeTrajectoryResolver.md) |
 | `GrenadeTrajectorySimulator` | [GrenadeTrajectorySimulator.md](GrenadeTrajectorySimulator.md) |
+| `TriggerbotReader` | [TriggerbotReader.md](TriggerbotReader.md) |
+| `TriggerbotController` | [TriggerbotController.md](TriggerbotController.md) |
+| `AutoStopper` | [AutoStopper.md](AutoStopper.md) |
+| `TriggerbotOverlayPresenter` | [TriggerbotOverlayPresenter.md](TriggerbotOverlayPresenter.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

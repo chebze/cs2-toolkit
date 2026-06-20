@@ -6,7 +6,7 @@ Immutable per-tick view of mapped CS2 game state. The central contract consumed 
 
 ## Key API
 
-Record properties: attachment/match flags, `LocalPlayer`, `Players` (with optional `Bones` and spotted flags), `Round`, `Bomb`, `ViewMatrix`, `RecentSounds`, `Grenades` (active throw preview), clairvoyance tips, team alive counts.
+Record properties: attachment/match flags, `LocalPlayer`, `Players`, `Round`, `Bomb`, `ViewMatrix`, `RecentSounds`, `Grenades`, `Triggerbot`, clairvoyance tips, team alive counts.
 
 `Detached` — static snapshot when not attached to the game process.
 

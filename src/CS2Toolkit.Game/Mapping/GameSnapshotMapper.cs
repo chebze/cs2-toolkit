@@ -10,7 +10,8 @@ internal static class GameSnapshotMapper
         string? mapName,
         ViewMatrix viewMatrix,
         LocalPlayer? localPlayer,
-        GrenadeState grenade)
+        GrenadeState grenade,
+        TriggerbotState triggerbot)
     {
         if (!state.IsAttached)
             return GameSnapshot.Detached;
@@ -33,7 +34,8 @@ internal static class GameSnapshotMapper
             state.EnemiesAlive,
             state.EnemiesDead,
             state.TeammatesAlive,
-            state.TeammatesDead);
+            state.TeammatesDead,
+            triggerbot);
     }
 
     private static Player MapPlayer(LegacyPlayerInfo player) => new(
