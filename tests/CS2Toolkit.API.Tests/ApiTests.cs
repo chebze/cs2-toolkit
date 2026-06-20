@@ -305,4 +305,59 @@ public sealed class RadarApiTests
         var response = await host.Client.GetAsync("/api/radar/snapshot");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetRadarStream_emits_sse_snapshot_event()
+    {
+        const long version = 42;
+        const string snapshotJson = """{"version":42,"players":[]}""";
+        var radar = new Mock<IRadarStreamSource>();
+        radar.Setup(r => r.Version).Returns(version);
+        radar.Setup(r => r.GetSnapshotJson()).Returns(snapshotJson);
+        radar.Setup(r => r.GetSnapshot()).Returns(RadarSnapshot.Idle);
+
+        await using var host = await ApiTestHost.StartAsync(services =>
+        {
+            services.AddSingleton(Mock.Of<IConfigurationStore>());
+            services.AddSingleton(Mock.Of<IActiveProfileSwitcher>());
+            services.AddSingleton(Mock.Of<IDashboardInfoProvider>());
+            services.AddSingleton(radar.Object);
+        });
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/radar/stream");
+        using var response = await host.Client.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cts.Token);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/event-stream", response.Content.Headers.ContentType?.MediaType);
+        Assert.Contains(
+            "no-cache",
+            response.Headers.CacheControl?.ToString() ?? string.Empty,
+            StringComparison.OrdinalIgnoreCase);
+
+        await using var body = await response.Content.ReadAsStreamAsync(cts.Token);
+        using var reader = new StreamReader(body);
+
+        string? dataLine = null;
+        while (!cts.Token.IsCancellationRequested)
+        {
+            var line = await reader.ReadLineAsync(cts.Token);
+            if (line is null)
+                break;
+
+            if (line.StartsWith("data: ", StringComparison.Ordinal))
+            {
+                dataLine = line;
+                break;
+            }
+        }
+
+        cts.Cancel();
+
+        Assert.Equal($"data: {snapshotJson}", dataLine);
+        radar.Verify(r => r.GetSnapshotJson(), Times.AtLeastOnce);
+    }
 }
