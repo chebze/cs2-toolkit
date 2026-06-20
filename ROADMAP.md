@@ -267,44 +267,44 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 
 ### 7.1 `CS2Toolkit.Services.Abstractions`
 
-- [ ] `IFeatureService` — `FeatureId`, `IsEnabled`, `OnSnapshot(GameSnapshot, ResolvedFeatureSettings)`
-- [ ] `IFeatureRegistry` — enable/disable, list features
-- [ ] `IOverlayComposer` — `Compose(...) → OverlayFrame`
-- [ ] `IOverlayPresenter` — per-feature `IReadOnlyList<DrawCommand>`
+- [x] `IFeatureService` — `FeatureId`, `IsEnabled`, `OnSnapshot(GameSnapshot, ResolvedFeatureSettings)`
+- [x] `IFeatureRegistry` — enable/disable, list features
+- [x] `IOverlayComposer` — `Compose(...) → OverlayFrame`
+- [x] `IOverlayPresenter` — per-feature `IReadOnlyList<DrawCommand>`
+- [x] `IFeatureState` — runtime toggle state (ESP mode, TB auto-stop)
+- [x] `FeatureContext` — snapshot + resolved settings bundle + `IInputSimulator`
 - [ ] Optional per-feature ports: `ITriggerbotService`, `IRadarService`, etc.
-- [ ] `FeatureContext` — snapshot + resolved settings bundle
-- [ ] `docs/` entries
+- [x] `docs/` entries
 
 ### 7.2 `CS2Toolkit.Services` — infrastructure
 
-- [ ] `FeatureCoordinator` — subscribes to `IGameStateSource`, fans out to features
-- [ ] `FeatureRegistry` — wired to `KeybindDispatcher` from Input
-- [ ] `OverlayComposer` — merges presenter outputs
-- [ ] Per-tick order: combat services + `IInputSimulator` **before** overlay composition
-- [ ] Presenter time budget (e.g. 1 ms/layer); over budget → skip layer, log warning
-- [ ] Presenter exceptions caught; publish empty/partial frame; never stop game loop
-- [ ] `AddToolkitServices()` DI extension
-- [ ] Analyzer: no `System.Drawing`, `System.Windows.Forms`, or Game/Input implementation refs
+- [x] `FeatureCoordinator` — polls `IReadOnlyGameState`, fans out to features, composes overlay
+- [x] `FeatureRegistry` — wired to `KeybindDispatcher` from Input
+- [x] `OverlayComposer` — merges presenter outputs with per-layer try/catch and 1 ms budget warning
+- [x] Per-tick order: combat services → overlay composition → publish
+- [x] Presenter exceptions caught; partial frame published; game loop unaffected
+- [x] `AddToolkitServices()` DI extension
+- [x] Dependency guard: no `CS2Toolkit.Game` or `CS2Toolkit.Input` implementation refs
 
 ### 7.3 Feature migration (ordered)
 
 Each feature: logic in Services, mapping already in Game, config from `IActiveConfiguration`, draw via `IOverlayPresenter`, docs updated.
 
-| # | Feature | Abstractions used | Port from `_old/` |
-|---|---------|-------------------|-------------------|
-| 7.3.1 | Keybind → feature registry | Input, Configuration | `*ToggleService` |
-| 7.3.2 | Teammate overlay | Drawing | `TeammateOverlay` |
-| 7.3.3 | Bomb overlay | Drawing | `BombOverlay` |
-| 7.3.4 | Enemy ESP (last seen → full) | Drawing | `EnemyOverlay`, `EnemyLastSeenTracker` |
-| 7.3.5 | Sound ESP | Drawing | `EnemyNoiseOverlay`, `EnemySoundTracker` |
-| 7.3.6 | Grenade arc | Drawing, `IMapVisibility` | `GrenadeOverlay`, `GrenadeTrajectory*` |
-| 7.3.7 | Triggerbot + autostop | `IInputSimulator`, `IMapVisibility` | `Triggerbot`, `AutoStopper` |
-| 7.3.8 | RCS | `IInputSimulator` | `RecoilCompensator` |
-| 7.3.9 | Aim helper | `IInputSimulator`, `IMapVisibility` | `AimHelper` |
-| 7.3.10 | Clairvoyance | Drawing | `ClairvoyanceOverlay`, `ClairvoyanceAdvisor` |
-| 7.3.11 | Radar state | API.Abstractions | `RadarTracker`, `RadarState` |
-| 7.3.12 | In-game menu overlay | Drawing | `MenuOverlay` |
-| 7.3.13 | Status toasts / system messages | Drawing | `SettingsSaveService`, `ToolkitRuntime` prompts |
+| # | Feature | Status |
+|---|---------|--------|
+| 7.3.1 | Keybind → feature registry | **Done** |
+| 7.3.2 | Teammate overlay | Not started |
+| 7.3.3 | Bomb overlay | Not started |
+| 7.3.4 | Enemy ESP (last seen → full) | Not started |
+| 7.3.5 | Sound ESP | Not started |
+| 7.3.6 | Grenade arc | Not started |
+| 7.3.7 | Triggerbot + autostop | Stub service only |
+| 7.3.8 | RCS | Stub service only |
+| 7.3.9 | Aim helper | Stub service only |
+| 7.3.10 | Clairvoyance | Not started |
+| 7.3.11 | Radar state | Not started |
+| 7.3.12 | In-game menu overlay | Stub service only |
+| 7.3.13 | Status toasts / system messages | Not started |
 
 Per-feature checklist:
 
@@ -513,6 +513,8 @@ Only Runtime references implementation projects.
 | Phase 3 — Input | **Done** |
 | Phase 4 — Game pipeline | **Mostly done** (reader split + sound/grenade deferred) |
 | Phase 5 — Maps and visibility | **Done** |
-| Phases 6–10 | Not started |
+| Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
+| Phase 7 — Services core | **Done** (feature migration 7.3.2+ pending) |
+| Phases 8–10 | Not started |
 
-Next step: **Phase 6** — non-blocking drawing (`OverlayFrame`, `IOverlayFrameSink`, WinForms renderer).
+Next step: **Phase 7.3.2** — migrate teammate overlay, then remaining features in order.

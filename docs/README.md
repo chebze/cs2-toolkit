@@ -68,5 +68,10 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `WinFormsOverlayRenderer` | [WinFormsOverlayRenderer.md](WinFormsOverlayRenderer.md) |
 | `OverlayComposer` | [OverlayComposer.md](OverlayComposer.md) |
 | `DebugPlayerBoxPresenter` | [DebugPlayerBoxPresenter.md](DebugPlayerBoxPresenter.md) |
+| `IFeatureService` | [IFeatureService.md](IFeatureService.md) |
+| `IFeatureRegistry` | [IFeatureRegistry.md](IFeatureRegistry.md) |
+| `FeatureContext` | [FeatureContext.md](FeatureContext.md) |
+| `FeatureCoordinator` | [FeatureCoordinator.md](FeatureCoordinator.md) |
+| `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).
