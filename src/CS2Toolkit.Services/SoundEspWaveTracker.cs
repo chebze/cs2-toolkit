@@ -24,6 +24,12 @@ public sealed class SoundEspWaveTracker
 
     public void Update(GameSnapshot snapshot, SoundEspProfileOptions options)
     {
+        if (!options.Enabled)
+        {
+            Reset();
+            return;
+        }
+
         if (!snapshot.IsAttached || !snapshot.IsInMatch)
         {
             Reset();

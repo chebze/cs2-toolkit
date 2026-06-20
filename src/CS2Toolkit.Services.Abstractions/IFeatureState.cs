@@ -1,3 +1,4 @@
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Models.Abstractions;
 
 namespace CS2Toolkit.Services.Abstractions;
@@ -13,4 +14,5 @@ public interface IFeatureState
     void ToggleTriggerbotAutoStop();
     bool AimHelperActivationHeld { get; set; }
     void DisableAllCombatFeatures();
+    void ApplyFromProfile(ProfileSettings profile);
 }

@@ -1,3 +1,4 @@
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Models.Abstractions;
 using CS2Toolkit.Services.Abstractions;
 
@@ -69,4 +70,21 @@ internal sealed class FeatureRuntimeState : IFeatureState
         TriggerbotAutoStopEnabled = false;
         AimHelperActivationHeld = false;
     }
+
+    public void ApplyFromProfile(ProfileSettings profile)
+    {
+        _enabled[FeatureIds.Triggerbot.Value] = profile.Triggerbot.Global.Enabled ?? false;
+        _enabled[FeatureIds.Rcs.Value] = profile.Rcs.Global.Enabled ?? false;
+        _enabled[FeatureIds.AimHelper.Value] = profile.AimHelper.Global.Enabled ?? false;
+        _enabled[FeatureIds.SoundEsp.Value] = profile.SoundEsp.Enabled;
+        _enabled[FeatureIds.Menu.Value] = false;
+        EnemyEspMode = ParseEnemyEspMode(profile.EnemyEsp.Mode);
+        TriggerbotAutoStopEnabled = profile.Triggerbot.Global.AutoStopEnabled ?? false;
+        AimHelperActivationHeld = false;
+    }
+
+    private static EnemyEspMode ParseEnemyEspMode(string mode) =>
+        Enum.TryParse<EnemyEspMode>(mode, ignoreCase: true, out var parsed)
+            ? parsed
+            : EnemyEspMode.Disabled;
 }

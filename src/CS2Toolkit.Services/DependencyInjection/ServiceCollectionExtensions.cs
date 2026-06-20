@@ -49,6 +49,8 @@ public static class DependencyInjection
         services.AddHostedService<FeatureCoordinator>();
         services.AddHostedService<RadarStateUpdater>();
         services.AddHostedService<StatusToastOrchestrator>();
+        services.AddHostedService<FeatureStateHydrator>();
+        services.AddHostedService<ProfileSwitchHostedService>();
 
         return services;
     }

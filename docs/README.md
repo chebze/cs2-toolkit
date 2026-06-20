@@ -75,6 +75,7 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `LegacySettingsMigrator` | [LegacySettingsMigrator.md](LegacySettingsMigrator.md) |
 | `WeaponCatalog` | [WeaponCatalog.md](WeaponCatalog.md) |
 | `ProfileSettingsSaver` | [ProfileSettingsSaver.md](ProfileSettingsSaver.md) |
+| `ProfileSwitchHostedService` | [ProfileSwitchHostedService.md](ProfileSwitchHostedService.md) |
 
 ### Input
 
@@ -116,10 +117,13 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | Class | Doc |
 |-------|-----|
 | `IFeatureService` | [IFeatureService.md](IFeatureService.md) |
+| `IFeatureState` | [IFeatureState.md](IFeatureState.md) |
+| `FeatureRuntimeState` | [FeatureRuntimeState.md](FeatureRuntimeState.md) |
 | `IFeatureRegistry` | [IFeatureRegistry.md](IFeatureRegistry.md) |
 | `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 | `FeatureContext` | [FeatureContext.md](FeatureContext.md) |
 | `FeatureCoordinator` | [FeatureCoordinator.md](FeatureCoordinator.md) |
+| `FeatureStateHydrator` | [FeatureStateHydrator.md](FeatureStateHydrator.md) |
 | `OverlayComposer` | [OverlayComposer.md](OverlayComposer.md) |
 | `DebugPlayerBoxPresenter` | [DebugPlayerBoxPresenter.md](DebugPlayerBoxPresenter.md) |
 

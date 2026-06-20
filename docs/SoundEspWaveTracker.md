@@ -13,6 +13,7 @@ Maintains active sound ESP wave indicators from mapped `GameSnapshot.RecentSound
 
 ## Behavior
 
+- Resets immediately when `options.Enabled` is false (allows cleanup ticks while sound ESP is off)
 - Adds a wave for each `SoundEvent` within `MaxDistanceUnits` of the local player
 - Expires waves after `WaveDurationMs`
 - Loops a continuous wave at the bomb world position while status is `Planted` or `Defusing`

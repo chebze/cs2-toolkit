@@ -41,10 +41,6 @@ public sealed class OverlayComposer : IOverlayComposer
             if (!hasToasts)
                 return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
         }
-        else if (!snapshot.IsInMatch && !menuVisible && !hasToasts)
-        {
-            return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
-        }
 
         var commands = new List<DrawCommand>();
         foreach (var presenter in _presenters)
