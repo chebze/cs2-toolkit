@@ -1,2 +1,20 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CS2Toolkit.Models.Abstractions/CS2Toolkit.Models.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Models/CS2Toolkit.Models.csproj" />
+    <Project Path="src/CS2Toolkit.Configuration.Abstractions/CS2Toolkit.Configuration.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Configuration/CS2Toolkit.Configuration.csproj" />
+    <Project Path="src/CS2Toolkit.Input.Abstractions/CS2Toolkit.Input.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Input/CS2Toolkit.Input.csproj" />
+    <Project Path="src/CS2Toolkit.Game.Abstractions/CS2Toolkit.Game.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Game/CS2Toolkit.Game.csproj" />
+    <Project Path="src/CS2Toolkit.Drawing.Abstractions/CS2Toolkit.Drawing.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Drawing.WinForms/CS2Toolkit.Drawing.WinForms.csproj" />
+    <Project Path="src/CS2Toolkit.Services.Abstractions/CS2Toolkit.Services.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Services/CS2Toolkit.Services.csproj" />
+    <Project Path="src/CS2Toolkit.API.Abstractions/CS2Toolkit.API.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.API/CS2Toolkit.API.csproj" />
+    <Project Path="src/CS2Toolkit.Runtime.Abstractions/CS2Toolkit.Runtime.Abstractions.csproj" />
+    <Project Path="src/CS2Toolkit.Runtime/CS2Toolkit.Runtime.csproj" />
+  </Folder>
 </Solution>

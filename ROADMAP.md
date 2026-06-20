@@ -60,9 +60,9 @@ _old/                             # legacy reference (not in solution)
 - [x] Create empty `CS2Toolkit.slnx` excluding `_old/`
 - [x] Update root `.gitignore` for v2 layout
 - [x] Add root `README.md` with architecture overview and link to this roadmap
-- [ ] Add `Directory.Build.props` (TFM `net9.0-windows` where needed, nullable, analyzers)
-- [ ] Add `global.json` pinning .NET SDK if required by CI
-- [ ] Add dependency guard script or analyzer: fail build if `CS2Toolkit.Services` references `CS2Toolkit.Game` or `CS2Toolkit.Input`
+- [x] Add `Directory.Build.props` (TFM `net9.0-windows` where needed, nullable, analyzers)
+- [x] Add `global.json` pinning .NET SDK if required by CI
+- [x] Add dependency guard script or analyzer: fail build if `CS2Toolkit.Services` references `CS2Toolkit.Game` or `CS2Toolkit.Input`
 
 ---
 
@@ -72,40 +72,40 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 
 ### 1.1 Create projects
 
-- [ ] `src/CS2Toolkit.Models.Abstractions`
-- [ ] `src/CS2Toolkit.Models`
-- [ ] `src/CS2Toolkit.Configuration.Abstractions`
-- [ ] `src/CS2Toolkit.Configuration`
-- [ ] `src/CS2Toolkit.Input.Abstractions`
-- [ ] `src/CS2Toolkit.Input`
-- [ ] `src/CS2Toolkit.Game.Abstractions`
-- [ ] `src/CS2Toolkit.Game`
-- [ ] `src/CS2Toolkit.Drawing.Abstractions`
-- [ ] `src/CS2Toolkit.Drawing.WinForms` (`UseWindowsForms`)
-- [ ] `src/CS2Toolkit.Services.Abstractions`
-- [ ] `src/CS2Toolkit.Services`
-- [ ] `src/CS2Toolkit.API.Abstractions`
-- [ ] `src/CS2Toolkit.API` (`FrameworkReference` ASP.NET Core)
-- [ ] `src/CS2Toolkit.Runtime.Abstractions`
-- [ ] `src/CS2Toolkit.Runtime` (`OutputType` WinExe)
-- [ ] `src/CS2Toolkit.Frontend` (Vite + React + TypeScript + shadcn/ui scaffold)
+- [x] `src/CS2Toolkit.Models.Abstractions`
+- [x] `src/CS2Toolkit.Models`
+- [x] `src/CS2Toolkit.Configuration.Abstractions`
+- [x] `src/CS2Toolkit.Configuration`
+- [x] `src/CS2Toolkit.Input.Abstractions`
+- [x] `src/CS2Toolkit.Input`
+- [x] `src/CS2Toolkit.Game.Abstractions`
+- [x] `src/CS2Toolkit.Game`
+- [x] `src/CS2Toolkit.Drawing.Abstractions`
+- [x] `src/CS2Toolkit.Drawing.WinForms` (`UseWindowsForms`)
+- [x] `src/CS2Toolkit.Services.Abstractions`
+- [x] `src/CS2Toolkit.Services`
+- [x] `src/CS2Toolkit.API.Abstractions`
+- [x] `src/CS2Toolkit.API` (`FrameworkReference` ASP.NET Core)
+- [x] `src/CS2Toolkit.Runtime.Abstractions`
+- [x] `src/CS2Toolkit.Runtime` (`OutputType` WinExe)
+- [x] `src/CS2Toolkit.Frontend` (Vite + React + TypeScript + shadcn/ui scaffold)
 
 ### 1.2 Wire solution
 
-- [ ] Add all projects to `CS2Toolkit.slnx`
-- [ ] Verify `_old/Cs2Toolkit.csproj` is **not** in solution
-- [ ] Solution builds with empty/stub types
+- [x] Add all projects to `CS2Toolkit.slnx`
+- [x] Verify `_old/Cs2Toolkit.csproj` is **not** in solution
+- [x] Solution builds with empty/stub types
 
 ### 1.3 Runtime boots
 
-- [ ] `CS2Toolkit.Runtime/Program.cs` — `Host.CreateDefaultBuilder`, call stub `Add*` extensions
-- [ ] Log "CS2 Toolkit v2 ready" on startup
-- [ ] Exit criteria: `dotnet build` succeeds; `dotnet run --project src/CS2Toolkit.Runtime` starts host
+- [x] `CS2Toolkit.Runtime/Program.cs` — `Host.CreateDefaultBuilder`, call stub `Add*` extensions
+- [x] Log "CS2 Toolkit v2 ready" on startup
+- [x] Exit criteria: `dotnet build` succeeds; `dotnet run --project src/CS2Toolkit.Runtime` starts host (requires Windows Desktop runtime)
 
 ### 1.4 Documentation
 
-- [ ] Create `docs/README.md` index for v2
-- [ ] Document stub extension methods as classes are added
+- [x] Create `docs/README.md` index for v2
+- [x] Document stub extension methods as classes are added
 
 ---
 
@@ -504,7 +504,7 @@ Only Runtime references implementation projects.
 | Item | Status |
 |------|--------|
 | Phase 0 — Archive | **Done** |
-| Phase 1 — Skeleton | Not started |
+| Phase 1 — Skeleton | **Done** |
 | Phases 2–10 | Not started |
 
-Next step: **Phase 1.1** — create `src/` project structure and wire the solution.
+Next step: **Phase 2.1** — `IGameStateSource`, domain enums, and `GameSnapshot` in Models.

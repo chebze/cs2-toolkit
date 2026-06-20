@@ -18,7 +18,15 @@ _old/                    # legacy reference codebase
 
 ## Building
 
-v2 projects are not yet scaffolded. To build the legacy app for comparison:
+```bash
+dotnet build CS2Toolkit.slnx
+bash scripts/dependency-guard.sh
+dotnet run --project src/CS2Toolkit.Runtime/CS2Toolkit.Runtime.csproj
+```
+
+`CS2Toolkit.Runtime` targets `net9.0-windows` and requires the Windows Desktop runtime.
+
+To build the legacy app for comparison:
 
 ```bash
 cd _old
