@@ -1,4 +1,7 @@
 using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Game.Internal;
+using CS2Toolkit.Game.Maps;
+using CS2Toolkit.Game.Mapping;
 using CS2Toolkit.Game.Offsets;
 using CS2Toolkit.Game.Process;
 using CS2Toolkit.Models.Abstractions;
@@ -14,6 +17,8 @@ internal sealed class GameMemoryLoop : BackgroundService
     private readonly OffsetDownloader _offsetDownloader;
     private readonly GameStatePublisher _publisher;
     private readonly MapVisibilityService _mapVisibility;
+    private readonly MapVisibilityChecker _mapChecker;
+    private readonly GrenadeSimulationOptions _grenadeOptions;
     private readonly ToolkitHostSettings _options;
     private readonly ILogger<GameMemoryLoop> _logger;
     private string? _activeMapName;
@@ -23,6 +28,7 @@ internal sealed class GameMemoryLoop : BackgroundService
         OffsetDownloader offsetDownloader,
         GameStatePublisher publisher,
         MapVisibilityService mapVisibility,
+        MapVisibilityChecker mapChecker,
         IOptions<ToolkitHostSettings> options,
         ILogger<GameMemoryLoop> logger)
     {
@@ -30,6 +36,8 @@ internal sealed class GameMemoryLoop : BackgroundService
         _offsetDownloader = offsetDownloader;
         _publisher = publisher;
         _mapVisibility = mapVisibility;
+        _mapChecker = mapChecker;
+        _grenadeOptions = GrenadeSimulationOptionsFactory.FromSettings(options.Value.Grenade);
         _options = options.Value;
         _logger = logger;
     }
@@ -42,7 +50,7 @@ internal sealed class GameMemoryLoop : BackgroundService
         if (_offsetDownloader.Offsets is null)
             return;
 
-        var factory = new GameSnapshotFactory(_memory, _offsetDownloader.Offsets);
+        var factory = new GameSnapshotFactory(_memory, _offsetDownloader.Offsets, _mapChecker, _grenadeOptions);
         var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
         _logger.LogInformation("Game memory loop started — interval {Interval}ms", intervalMs);
 

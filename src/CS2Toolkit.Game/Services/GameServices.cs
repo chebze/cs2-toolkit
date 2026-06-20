@@ -1,7 +1,9 @@
 using System.Threading.Channels;
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Game.Abstractions;
 using CS2Toolkit.Game.Internal;
 using CS2Toolkit.Game.Mapping;
+using CS2Toolkit.Game.Maps;
 using CS2Toolkit.Game.Memory;
 using CS2Toolkit.Game.Offsets;
 using CS2Toolkit.Game.Process;
@@ -45,8 +47,13 @@ internal sealed class GameSnapshotFactory
     private readonly MapNameReader _mapNameReader;
     private readonly ViewMatrixReader _viewMatrixReader;
     private readonly LocalPlayerReader _localPlayerReader;
+    private readonly GrenadeTrajectoryReader _grenadeReader;
 
-    public GameSnapshotFactory(ProcessMemory memory, GameOffsets offsets)
+    public GameSnapshotFactory(
+        ProcessMemory memory,
+        GameOffsets offsets,
+        MapVisibilityChecker mapChecker,
+        GrenadeSimulationOptions grenadeOptions)
     {
         _memory = memory;
         _offsets = offsets;
@@ -54,6 +61,7 @@ internal sealed class GameSnapshotFactory
         _mapNameReader = new MapNameReader();
         _viewMatrixReader = new ViewMatrixReader();
         _localPlayerReader = new LocalPlayerReader();
+        _grenadeReader = new GrenadeTrajectoryReader(memory, offsets, mapChecker, grenadeOptions);
     }
 
     public GameSnapshot Create()
@@ -62,7 +70,8 @@ internal sealed class GameSnapshotFactory
         var mapName = _memory.IsAttached ? _mapNameReader.ReadCurrentMap(_memory, _offsets) : null;
         var viewMatrix = _viewMatrixReader.Read(_memory, _offsets);
         var localPlayer = _localPlayerReader.Read(_memory, _offsets, legacy);
-        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer);
+        var grenade = _grenadeReader.Read(legacy.IsInMatch);
+        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer, grenade);
     }
 }
 

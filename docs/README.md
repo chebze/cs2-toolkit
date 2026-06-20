@@ -85,5 +85,10 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `SoundEspOverlayPresenter` | [SoundEspOverlayPresenter.md](SoundEspOverlayPresenter.md) |
 | `SoundEspWaveTracker` | [SoundEspWaveTracker.md](SoundEspWaveTracker.md) |
 | `SoundEspDrawBuilder` | [SoundEspDrawBuilder.md](SoundEspDrawBuilder.md) |
+| `GrenadeArcOverlayPresenter` | [GrenadeArcOverlayPresenter.md](GrenadeArcOverlayPresenter.md) |
+| `GrenadeArcDrawBuilder` | [GrenadeArcDrawBuilder.md](GrenadeArcDrawBuilder.md) |
+| `GrenadeTrajectoryReader` | [GrenadeTrajectoryReader.md](GrenadeTrajectoryReader.md) |
+| `GrenadeTrajectoryResolver` | [GrenadeTrajectoryResolver.md](GrenadeTrajectoryResolver.md) |
+| `GrenadeTrajectorySimulator` | [GrenadeTrajectorySimulator.md](GrenadeTrajectorySimulator.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

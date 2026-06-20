@@ -9,7 +9,8 @@ internal static class GameSnapshotMapper
         LegacyMemoryState state,
         string? mapName,
         ViewMatrix viewMatrix,
-        LocalPlayer? localPlayer)
+        LocalPlayer? localPlayer,
+        GrenadeState grenade)
     {
         if (!state.IsAttached)
             return GameSnapshot.Detached;
@@ -27,7 +28,7 @@ internal static class GameSnapshotMapper
             MapBombSites(state.BombSites),
             viewMatrix,
             state.RecentSounds,
-            [],
+            grenade.IsActive ? [grenade] : [],
             state.ClairvoyanceTips,
             state.EnemiesAlive,
             state.EnemiesDead,

@@ -34,6 +34,7 @@ public sealed class GrenadeVisualOptions
     public string LandingColor { get; set; } = "#FBBF24";
     public float ArcLineWidth { get; set; } = 2f;
     public float LandingLineWidth { get; set; } = 1.5f;
+    public int LandingRingSegments { get; set; } = 20;
 }
 
 public sealed class TextPanelOverlayOptions

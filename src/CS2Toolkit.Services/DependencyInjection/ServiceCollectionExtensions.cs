@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, BombStatusOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, EnemyEspOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, SoundEspOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, GrenadeArcOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
 

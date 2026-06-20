@@ -36,6 +36,16 @@ public sealed class GrenadePhysicsSettings
     public float StopVelocityThreshold { get; set; } = 20f;
     public int MaxSimulationTicks { get; set; } = 512;
     public int MaxBounces { get; set; } = 10;
+    public float MinThrowSpeedScale { get; set; } = 0.7f;
+    public float MaxThrowSpeedScale { get; set; } = 0.3f;
+    public float PlayerVelocityScale { get; set; } = 1.25f;
+    public int RaycastSubSteps { get; set; } = 4;
+    public float RaycastSkin { get; set; } = 0.5f;
+    public float MinPointSpacingUnits { get; set; } = 4f;
+    public float ThrowForwardTraceUnits { get; set; } = 22f;
+    public float ThrowStartPullbackUnits { get; set; } = 6f;
+    public int MaxEntityScanIndex { get; set; } = 1024;
+    public float LandingMarkerRadiusUnits { get; set; } = 18f;
 }
 
 public sealed class FileLoggingSettings
