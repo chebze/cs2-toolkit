@@ -16,6 +16,7 @@
     <ProjectReference Include="..\CS2Toolkit.Drawing.Abstractions\CS2Toolkit.Drawing.Abstractions.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Game.Abstractions\CS2Toolkit.Game.Abstractions.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Input.Abstractions\CS2Toolkit.Input.Abstractions.csproj" />
+    <ProjectReference Include="..\CS2Toolkit.Models\CS2Toolkit.Models.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Models.Abstractions\CS2Toolkit.Models.Abstractions.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Services.Abstractions\CS2Toolkit.Services.Abstractions.csproj" />
   </ItemGroup>

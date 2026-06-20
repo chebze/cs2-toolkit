@@ -295,7 +295,7 @@ Each feature: logic in Services, mapping already in Game, config from `IActiveCo
 | 7.3.1 | Keybind → feature registry | **Done** |
 | 7.3.2 | Teammate overlay | **Done** |
 | 7.3.3 | Bomb overlay | **Done** |
-| 7.3.4 | Enemy ESP (last seen → full) | Not started |
+| 7.3.4 | Enemy ESP (last seen → full) | **Done** |
 | 7.3.5 | Sound ESP | Not started |
 | 7.3.6 | Grenade arc | Not started |
 | 7.3.7 | Triggerbot + autostop | Stub service only |
@@ -514,7 +514,7 @@ Only Runtime references implementation projects.
 | Phase 4 — Game pipeline | **Mostly done** (reader split + sound/grenade deferred) |
 | Phase 5 — Maps and visibility | **Done** |
 | Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
-| Phase 7 — Services core | **Done** (feature migration 7.3.2+ pending) |
+| Phase 7 — Services core | **Done** (feature migration 7.3.5+ pending) |
 | Phases 8–10 | Not started |
 
-Next step: **Phase 7.3.4** — enemy ESP (last seen → full).
+Next step: **Phase 7.3.5** — sound ESP.

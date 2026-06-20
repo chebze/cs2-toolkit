@@ -30,6 +30,9 @@ internal sealed class LegacyPlayerInfo
     public bool IsAlive { get; init; }
     public bool IsLocalPlayer { get; init; }
     public Vector3? WorldPosition { get; init; }
+    public PlayerBones? Bones { get; set; }
+    public bool IsSpottedByTeam { get; set; }
+    public bool IsVisibleToLocalPlayer { get; set; }
 }
 
 internal sealed class LegacyRoundInfo

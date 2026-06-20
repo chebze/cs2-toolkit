@@ -37,4 +37,30 @@ public sealed record PlayerBones(IReadOnlyList<BonePosition> Bones)
     ];
 
     public static PlayerBones Empty { get; } = new(Array.Empty<BonePosition>());
+
+    public bool HasValidSkeleton =>
+        TryGetBone((int)BoneId.Pelvis, out _)
+        && TryGetBone((int)BoneId.Neck, out _)
+        && TryGetBone((int)BoneId.Head, out _);
+
+    public bool TryGetBone(int index, out Vector3 position)
+    {
+        foreach (var bone in Bones)
+        {
+            if (bone.Index != index)
+                continue;
+
+            if (bone.IsValid)
+            {
+                position = bone.Position;
+                return true;
+            }
+
+            position = default;
+            return false;
+        }
+
+        position = default;
+        return false;
+    }
 }

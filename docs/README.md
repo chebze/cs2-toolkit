@@ -75,5 +75,11 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 | `TeammateStatsOverlayPresenter` | [TeammateStatsOverlayPresenter.md](TeammateStatsOverlayPresenter.md) |
 | `BombStatusOverlayPresenter` | [BombStatusOverlayPresenter.md](BombStatusOverlayPresenter.md) |
+| `EnemyEspOverlayPresenter` | [EnemyEspOverlayPresenter.md](EnemyEspOverlayPresenter.md) |
+| `EnemyEspTracker` | [EnemyEspTracker.md](EnemyEspTracker.md) |
+| `EnemyEspDrawBuilder` | [EnemyEspDrawBuilder.md](EnemyEspDrawBuilder.md) |
+| `BoneReader` | [BoneReader.md](BoneReader.md) |
+| `Player` | [Player.md](Player.md) |
+| `PlayerBones` | [PlayerBones.md](PlayerBones.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

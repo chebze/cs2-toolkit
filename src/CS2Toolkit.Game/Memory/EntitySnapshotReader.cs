@@ -42,6 +42,7 @@ internal sealed class EntitySnapshotReader
             return UnmatchedState(localPawn, localController, localTeam, round);
 
         var players = CollectPlayers(entityList, localController);
+        EnrichPlayerEspData(entityList, localTeam, players);
         var stats = ResolveStats(clientBase, localController, localTeam, players);
         var bombSites = BombSiteHelper.TryReadSites(_memory, _offsets, entityList);
         var bomb = ResolveLegacyBombInfo(clientBase, entityList, players, bombSites);
@@ -598,6 +599,75 @@ internal sealed class EntitySnapshotReader
         }
 
         return nint.Zero;
+    }
+
+    private void EnrichPlayerEspData(nint entityList, int localTeam, List<LegacyPlayerInfo> players)
+    {
+        if (localTeam is not (GameOffsets.TeamTerrorist or GameOffsets.TeamCounterTerrorist))
+            return;
+
+        var friendlyIndices = new HashSet<int>();
+        var localPlayerIndex = -1;
+
+        foreach (var player in players)
+        {
+            if (player.IsLocalPlayer)
+                localPlayerIndex = player.Index;
+
+            if (player.Team == localTeam)
+                friendlyIndices.Add(player.Index);
+        }
+
+        foreach (var player in players)
+        {
+            if (!player.IsAlive)
+                continue;
+
+            var pawn = ResolvePawnForPlayer(entityList, player.Index);
+            if (pawn == nint.Zero)
+                continue;
+
+            player.Bones = BoneReader.TryReadSkeleton(_memory, _offsets, pawn);
+            player.IsSpottedByTeam = IsSpottedByFriendlyTeam(pawn, friendlyIndices);
+            player.IsVisibleToLocalPlayer = IsSpottedByPlayer(pawn, localPlayerIndex);
+        }
+    }
+
+    private bool IsSpottedByPlayer(nint pawn, int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= 64 || _offsets.M_entitySpottedState == nint.Zero)
+            return false;
+
+        var spottedState = pawn + _offsets.M_entitySpottedState;
+        var maskIndex = playerIndex / 32;
+        var bit = playerIndex % 32;
+        var mask = _memory.Read<uint>(spottedState + GameOffsets.EntitySpottedState_bSpottedByMask + (nint)(maskIndex * 4));
+        return (mask & (1u << bit)) != 0;
+    }
+
+    private bool IsSpottedByFriendlyTeam(nint pawn, HashSet<int> friendlyIndices)
+    {
+        if (_offsets.M_entitySpottedState == nint.Zero)
+            return false;
+
+        var spottedState = pawn + _offsets.M_entitySpottedState;
+
+        if (_memory.Read<byte>(spottedState + GameOffsets.EntitySpottedState_bSpotted) != 0)
+            return true;
+
+        foreach (var index in friendlyIndices)
+        {
+            if (index < 0 || index >= 64)
+                continue;
+
+            var maskIndex = index / 32;
+            var bit = index % 32;
+            var mask = _memory.Read<uint>(spottedState + GameOffsets.EntitySpottedState_bSpottedByMask + (nint)(maskIndex * 4));
+            if ((mask & (1u << bit)) != 0)
+                return true;
+        }
+
+        return false;
     }
 
     private (int EnemiesAlive, int EnemiesDead, int TeammatesAlive, int TeammatesDead) ResolveStats(

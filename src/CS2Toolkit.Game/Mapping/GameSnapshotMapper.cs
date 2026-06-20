@@ -42,7 +42,10 @@ internal static class GameSnapshotMapper
         player.Health,
         player.IsAlive,
         player.IsLocalPlayer,
-        player.WorldPosition);
+        player.WorldPosition,
+        player.Bones,
+        player.IsSpottedByTeam,
+        player.IsVisibleToLocalPlayer);
 
     private static Team MapTeam(int team) => team switch
     {

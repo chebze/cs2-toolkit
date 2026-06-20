@@ -7,4 +7,7 @@ public sealed record Player(
     int Health,
     bool IsAlive,
     bool IsLocalPlayer,
-    Vector3? WorldPosition);
+    Vector3? WorldPosition,
+    PlayerBones? Bones = null,
+    bool IsSpottedByTeam = false,
+    bool IsVisibleToLocalPlayer = false);
