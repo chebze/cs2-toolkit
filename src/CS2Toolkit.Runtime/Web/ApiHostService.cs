@@ -4,6 +4,7 @@ using CS2Toolkit.API.Abstractions;
 using CS2Toolkit.API.Endpoints;
 using CS2Toolkit.API.StaticFiles;
 using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Runtime.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +19,7 @@ public sealed class ApiHostService : IHostedService
     private readonly IConfigurationStore _configurationStore;
     private readonly IHostEnvironment _environment;
     private readonly ToolkitHostSettings _options;
+    private readonly IRuntimeOrchestrator _orchestrator;
     private readonly ILogger<ApiHostService> _logger;
     private WebApplication? _app;
     private CancellationTokenSource? _cts;
@@ -27,17 +29,20 @@ public sealed class ApiHostService : IHostedService
         IConfigurationStore configurationStore,
         IHostEnvironment environment,
         IOptions<ToolkitHostSettings> options,
+        IRuntimeOrchestrator orchestrator,
         ILogger<ApiHostService> logger)
     {
         _rootServices = rootServices;
         _configurationStore = configurationStore;
         _environment = environment;
         _options = options.Value;
+        _orchestrator = orchestrator;
         _logger = logger;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Maps, cancellationToken);
         var store = _configurationStore.GetStore();
         var port = NetworkAccess.FindAvailablePort(store.WebPort);
         if (port != store.WebPort)
@@ -73,7 +78,7 @@ public sealed class ApiHostService : IHostedService
         if (_options.OpenConfigUiOnStart)
             TryOpenBrowser(urls.FirstOrDefault() ?? $"http://localhost:{port}");
 
-        return Task.CompletedTask;
+        _orchestrator.CompletePhase(StartupPhase.Api);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

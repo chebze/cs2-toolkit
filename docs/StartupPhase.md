@@ -19,7 +19,7 @@ Enumerates ordered startup phases for the CS2 Toolkit v2 host orchestrator.
 
 ## Dependencies
 
-Used by `CS2Toolkit.Runtime` orchestration (Phase 9).
+Used by `IRuntimeOrchestrator` and gated hosted services across Game, Input, Services, and Runtime.
 
 ## Configuration
 

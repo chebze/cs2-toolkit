@@ -37,8 +37,6 @@ public static class DependencyInjection
         services.TryAddSingleton<MapVisibilityService>();
         services.TryAddSingleton<IMapVisibility>(sp => sp.GetRequiredService<MapVisibilityService>());
 
-        services.AddHostedService<OffsetBootstrapHostedService>();
-        services.AddHostedService<MapPreloadHostedService>();
         services.AddHostedService<GameMemoryLoop>();
 
         return services;

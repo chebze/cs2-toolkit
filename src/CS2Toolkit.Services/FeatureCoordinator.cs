@@ -1,4 +1,5 @@
 using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Runtime.Abstractions;
 using CS2Toolkit.Drawing.Abstractions;
 using CS2Toolkit.Input.Abstractions;
 using CS2Toolkit.Models.Abstractions;
@@ -19,6 +20,7 @@ internal sealed class FeatureCoordinator : BackgroundService
     private readonly IOverlayFrameSink _frameSink;
     private readonly IOverlayViewport _viewport;
     private readonly ToolkitHostSettings _options;
+    private readonly IRuntimeOrchestrator _orchestrator;
     private readonly ILogger<FeatureCoordinator> _logger;
 
     public FeatureCoordinator(
@@ -30,6 +32,7 @@ internal sealed class FeatureCoordinator : BackgroundService
         IOverlayFrameSink frameSink,
         IOverlayViewport viewport,
         IOptions<ToolkitHostSettings> options,
+        IRuntimeOrchestrator orchestrator,
         ILogger<FeatureCoordinator> logger)
     {
         _gameState = gameState;
@@ -40,13 +43,17 @@ internal sealed class FeatureCoordinator : BackgroundService
         _frameSink = frameSink;
         _viewport = viewport;
         _options = options.Value;
+        _orchestrator = orchestrator;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Attach, stoppingToken);
+
         var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
         _logger.LogInformation("Feature coordinator started — tick interval {Interval}ms", intervalMs);
+        _orchestrator.CompletePhase(StartupPhase.Features);
 
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
 

@@ -9,6 +9,17 @@ public sealed class LegacySettingsMigrator
 {
     private const string LegacySectionName = "Toolkit";
 
+    public ConfigurationStore? TryMigrateLegacyStore(IHostEnvironment environment)
+    {
+        var legacyStorePath = Path.Combine(environment.ContentRootPath, "_old", "data", "configs", "store.json");
+        if (!File.Exists(legacyStorePath))
+            return null;
+
+        var json = File.ReadAllText(legacyStorePath);
+        var store = JsonSerializer.Deserialize<ConfigurationStore>(json, ConfigurationJson.Options);
+        return store is { Profiles.Count: > 0 } ? store : null;
+    }
+
     public ConfigurationStore MigrateFromLegacyAppSettings(IHostEnvironment environment)
     {
         var appSettingsPath = Path.Combine(environment.ContentRootPath, "appsettings.json");

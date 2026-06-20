@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CS2Toolkit.Configuration.Abstractions\CS2Toolkit.Configuration.Abstractions.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Input.Abstractions\CS2Toolkit.Input.Abstractions.csproj" />
+    <ProjectReference Include="..\CS2Toolkit.Runtime.Abstractions\CS2Toolkit.Runtime.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using CS2Toolkit.Game.Mapping;
 using CS2Toolkit.Game.Offsets;
 using CS2Toolkit.Game.Process;
 using CS2Toolkit.Models.Abstractions;
+using CS2Toolkit.Runtime.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ internal sealed class GameMemoryLoop : BackgroundService
     private readonly MapVisibilityChecker _mapChecker;
     private readonly GrenadeSimulationOptions _grenadeOptions;
     private readonly ToolkitHostSettings _options;
+    private readonly IRuntimeOrchestrator _orchestrator;
     private readonly ILogger<GameMemoryLoop> _logger;
     private string? _activeMapName;
 
@@ -30,6 +32,7 @@ internal sealed class GameMemoryLoop : BackgroundService
         MapVisibilityService mapVisibility,
         MapVisibilityChecker mapChecker,
         IOptions<ToolkitHostSettings> options,
+        IRuntimeOrchestrator orchestrator,
         ILogger<GameMemoryLoop> logger)
     {
         _memory = memory;
@@ -39,11 +42,14 @@ internal sealed class GameMemoryLoop : BackgroundService
         _mapChecker = mapChecker;
         _grenadeOptions = GrenadeSimulationOptionsFactory.FromSettings(options.Value.Grenade);
         _options = options.Value;
+        _orchestrator = orchestrator;
         _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Attach, stoppingToken);
+
         while (_offsetDownloader.Offsets is null && !stoppingToken.IsCancellationRequested)
             await Task.Delay(50, stoppingToken);
 
@@ -58,6 +64,7 @@ internal sealed class GameMemoryLoop : BackgroundService
             _options.Clairvoyance);
         var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
         _logger.LogInformation("Game memory loop started — interval {Interval}ms", intervalMs);
+        _orchestrator.CompletePhase(StartupPhase.GameLoop);
 
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
         var lastSummaryLog = DateTimeOffset.MinValue;

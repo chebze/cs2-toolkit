@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.TryAddSingleton<StatusToastStore>();
         services.TryAddSingleton<IStatusToastPublisher>(sp => sp.GetRequiredService<StatusToastStore>());
         services.TryAddSingleton<IFeatureState, FeatureRuntimeState>();
+        services.TryAddSingleton<ProfileSettingsSaver>();
         services.TryAddSingleton<FeatureRegistry>();
         services.TryAddSingleton<IFeatureRegistry>(sp => sp.GetRequiredService<FeatureRegistry>());
         services.AddHostedService(sp => sp.GetRequiredService<FeatureRegistry>());

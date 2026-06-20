@@ -1,5 +1,6 @@
 using System.Windows.Forms;
 using CS2Toolkit.Input.Abstractions;
+using CS2Toolkit.Runtime.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -8,11 +9,18 @@ namespace CS2Toolkit.Input;
 public sealed class Win32InputListener : BackgroundService, IInputListener, IInputState
 {
     private readonly ILogger<Win32InputListener> _logger;
+    private readonly IRuntimeOrchestrator _orchestrator;
     private readonly HashSet<int> _heldKeys = new();
     private readonly HashSet<MouseButtons> _heldMouseButtons = new();
     private MouseButton _pressedMouseButtons;
 
-    public Win32InputListener(ILogger<Win32InputListener> logger) => _logger = logger;
+    public Win32InputListener(
+        ILogger<Win32InputListener> logger,
+        IRuntimeOrchestrator orchestrator)
+    {
+        _logger = logger;
+        _orchestrator = orchestrator;
+    }
 
     public event EventHandler<KeyInputEvent>? KeyDown;
     public event EventHandler<KeyInputEvent>? KeyUp;
@@ -29,6 +37,7 @@ public sealed class Win32InputListener : BackgroundService, IInputListener, IInp
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Overlay, stoppingToken);
         _logger.LogInformation("Win32 input listener started");
         var previousMousePosition = Win32InputNative.GetCursorPosition();
 

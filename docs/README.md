@@ -114,5 +114,12 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `IRadarStreamSource` | [IRadarStreamSource.md](IRadarStreamSource.md) |
 | `DashboardInfoProvider` | [DashboardInfoProvider.md](DashboardInfoProvider.md) |
 | `ApiHostService` | [ApiHostService.md](ApiHostService.md) |
+| `IRuntimeOrchestrator` | [IRuntimeOrchestrator.md](IRuntimeOrchestrator.md) |
+| `IStartupPhase` | [IStartupPhase.md](IStartupPhase.md) |
+| `IToolkitModule` | [IToolkitModule.md](IToolkitModule.md) |
+| `RuntimeOrchestratorHostedService` | [RuntimeOrchestratorHostedService.md](RuntimeOrchestratorHostedService.md) |
+| `ProfileSettingsSaver` | [ProfileSettingsSaver.md](ProfileSettingsSaver.md) |
+
+Parity checklist: [PARITY.md](PARITY.md)
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

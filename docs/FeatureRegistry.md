@@ -19,8 +19,8 @@ Implements `IFeatureRegistry` and `IHostedService`.
 | `aimhelper-toggle` | Toggle aim helper |
 | `triggerbot-auto-strafe` | Toggle TB auto-stop |
 | `menu-toggle` | Toggle menu feature |
-| `panic` | Disable all combat features |
-| `save-settings` | Logged stub (persistence deferred) |
+| `panic` | Detach, disable combat features, shutdown host |
+| `save-settings` | Persist runtime toggles to active profile via `ProfileSettingsSaver` |
 
 Inject/attach remains in Runtime `InjectKeybindOrchestrator`.
 
@@ -28,6 +28,9 @@ Inject/attach remains in Runtime `InjectKeybindOrchestrator`.
 
 - `IFeatureState`
 - `IKeybindDispatcher`
+- `ProfileSettingsSaver`
+- `IRuntimeOrchestrator`
+- `IGameAttachment`
 - Registered `IFeatureService` instances
 
 ## Configuration

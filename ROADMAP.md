@@ -368,39 +368,39 @@ Port endpoints from `_old/Web/ConfigWebHostService.cs`:
 
 ### 9.1 `CS2Toolkit.Runtime.Abstractions`
 
-- [ ] `IStartupPhase` — ordered gates
-- [ ] `IRuntimeOrchestrator`
-- [ ] Optional `IToolkitModule` for future plugins
-- [ ] `docs/` entries
+- [x] `IStartupPhase` — ordered gates
+- [x] `IRuntimeOrchestrator`
+- [x] Optional `IToolkitModule` for future plugins
+- [x] `docs/` entries
 
 ### 9.2 `CS2Toolkit.Runtime` — startup sequence
 
 Replace `_old/ToolkitRuntime` + `RuntimeGate`:
 
-1. [ ] Download offsets (fatal on failure)
-2. [ ] Parse/preload map collision meshes
-3. [ ] Start overlay renderer (UI thread)
-4. [ ] Signal overlay ready
-5. [ ] Wait for CS2 + user attach (F9)
-6. [ ] Start `GameMemoryLoop`
-7. [ ] Start `KeybindDispatcher`
-8. [ ] Start `FeatureCoordinator`
-9. [ ] Start API host + open config UI
+1. [x] Download offsets (fatal on failure)
+2. [x] Parse/preload map collision meshes
+3. [x] Start overlay renderer (UI thread)
+4. [x] Signal overlay ready
+5. [x] Wait for CS2 + user attach (F9)
+6. [x] Start `GameMemoryLoop`
+7. [x] Start `KeybindDispatcher`
+8. [x] Start `FeatureCoordinator`
+9. [x] Start API host + open config UI
 
-- [ ] `AddRuntimeOrchestration()` DI extension
-- [ ] Panic shutdown (F10), save hotkey behavior defined (prefer profile store over legacy `appsettings.json`)
+- [x] `AddRuntimeOrchestration()` DI extension
+- [x] Panic shutdown (F10), save hotkey behavior defined (prefer profile store over legacy `appsettings.json`)
 
 ### 9.3 Migration and parity
 
-- [ ] `LegacySettingsMigrator` imports `_old` `store.json` and `appsettings.json` formats
-- [ ] Side-by-side parity checklist vs `_old` for each feature
-- [ ] Remove reliance on `_old` for daily development
+- [x] `LegacySettingsMigrator` imports `_old` `store.json` and `appsettings.json` formats
+- [x] Side-by-side parity checklist vs `_old` for each feature
+- [x] Remove reliance on `_old` for daily development
 
 ### 9.4 Validation
 
 - [ ] Stress: renderer blocked 100 ms → game loop stays at target interval
 - [ ] Stress: slow presenter → triggerbot/RCS still fire on time
-- [ ] Dependency analyzer passes on CI
+- [x] Dependency analyzer passes on CI
 - [ ] Full in-game manual test pass
 
 ---
@@ -516,6 +516,7 @@ Only Runtime references implementation projects.
 | Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
 | Phase 7 — Services core | **Done** |
 | Phase 8 — API and Frontend | **Done** (in-game radar SSE validation deferred) |
-| Phases 9–10 | Not started |
+| Phase 9 — Runtime orchestration | **Done** (stress + manual validation deferred) |
+| Phase 10 | Not started |
 
-Next step: **Phase 9** — Runtime orchestration and cutover.
+Next step: **Phase 10** — Documentation and polish.

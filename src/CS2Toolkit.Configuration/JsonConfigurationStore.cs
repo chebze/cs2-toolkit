@@ -186,6 +186,13 @@ public sealed class JsonConfigurationStore : IConfigurationStore, IConfiguration
                 return store;
         }
 
+        var legacyStore = _migrator.TryMigrateLegacyStore(environment);
+        if (legacyStore is not null)
+        {
+            SaveStore(legacyStore);
+            return legacyStore;
+        }
+
         var migrated = _migrator.MigrateFromLegacyAppSettings(environment);
         SaveStore(migrated);
         return migrated;
