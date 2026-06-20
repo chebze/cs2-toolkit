@@ -1,0 +1,510 @@
+# CS2 Toolkit v2 — Roadmap
+
+This document is the complete implementation checklist for rebuilding CS2 Toolkit from scratch. The legacy monolith lives in [`_old/`](_old/) for reference only and is excluded from the solution.
+
+---
+
+## Architecture goals
+
+- **Abstractions-first**: every capability area has `{Library}.Abstractions` (contracts) and `{Library}` (default implementation). Consumers reference abstractions only; `CS2Toolkit.Runtime` wires implementations.
+- **Mapped game state**: `CS2Toolkit.Game` reads memory and maps to `CS2Toolkit.Models`. Services never parse offsets or raw structs.
+- **Input is separate**: `CS2Toolkit.Input` listens and simulates keyboard/mouse. Services decide *when*; Input performs *how*.
+- **Rendering never blocks the pipeline**: the hot path (read → map → services → input) never waits on WinForms/GDI+. Overlays consume immutable `OverlayFrame` via a latest-wins mailbox; dropped frames are acceptable.
+- **Unified configuration**: one persistence model and one runtime resolution path. No `appsettings.json` vs `store.json` split.
+- **DRY features**: shared toggle/registry pattern instead of per-feature `*State` + `*ToggleService` + `*StatusOverlay` copies.
+
+---
+
+## Target solution layout
+
+```
+CS2Toolkit.slnx
+src/
+├── CS2Toolkit.Models.Abstractions/
+├── CS2Toolkit.Models/
+├── CS2Toolkit.Configuration.Abstractions/
+├── CS2Toolkit.Configuration/
+├── CS2Toolkit.Input.Abstractions/
+├── CS2Toolkit.Input/
+├── CS2Toolkit.Game.Abstractions/
+├── CS2Toolkit.Game/
+├── CS2Toolkit.Drawing.Abstractions/
+├── CS2Toolkit.Drawing.WinForms/
+├── CS2Toolkit.Services.Abstractions/
+├── CS2Toolkit.Services/
+├── CS2Toolkit.API.Abstractions/
+├── CS2Toolkit.API/
+├── CS2Toolkit.Runtime.Abstractions/
+├── CS2Toolkit.Runtime/
+└── CS2Toolkit.Frontend/          # React + shadcn/ui (no .Abstractions pair)
+docs/                             # v2 class documentation
+_old/                             # legacy reference (not in solution)
+```
+
+### Dependency rules
+
+| Rule | Detail |
+|------|--------|
+| Services → Game/Input | **Forbidden** (abstractions only) |
+| API → Services | **Forbidden** (use `Services.Abstractions`) |
+| Abstractions → implementations | **Forbidden** |
+| Runtime | **Only** project referencing all implementations |
+| Pipeline → WinForms | **Forbidden** (no `Graphics`, `Control.Invoke`, `PresentFrame` on hot path) |
+
+---
+
+## Phase 0 — Archive and repository scaffold
+
+- [x] Move entire legacy codebase to `_old/`
+- [x] Add `_old/README.md` (reference only, not built)
+- [x] Create empty `CS2Toolkit.slnx` excluding `_old/`
+- [x] Update root `.gitignore` for v2 layout
+- [x] Add root `README.md` with architecture overview and link to this roadmap
+- [ ] Add `Directory.Build.props` (TFM `net9.0-windows` where needed, nullable, analyzers)
+- [ ] Add `global.json` pinning .NET SDK if required by CI
+- [ ] Add dependency guard script or analyzer: fail build if `CS2Toolkit.Services` references `CS2Toolkit.Game` or `CS2Toolkit.Input`
+
+---
+
+## Phase 1 — Solution skeleton and abstractions stubs
+
+Create all 16 .NET projects with correct `ProjectReference` edges. Each implementation project gets a `DependencyInjection/ServiceCollectionExtensions.cs` stub.
+
+### 1.1 Create projects
+
+- [ ] `src/CS2Toolkit.Models.Abstractions`
+- [ ] `src/CS2Toolkit.Models`
+- [ ] `src/CS2Toolkit.Configuration.Abstractions`
+- [ ] `src/CS2Toolkit.Configuration`
+- [ ] `src/CS2Toolkit.Input.Abstractions`
+- [ ] `src/CS2Toolkit.Input`
+- [ ] `src/CS2Toolkit.Game.Abstractions`
+- [ ] `src/CS2Toolkit.Game`
+- [ ] `src/CS2Toolkit.Drawing.Abstractions`
+- [ ] `src/CS2Toolkit.Drawing.WinForms` (`UseWindowsForms`)
+- [ ] `src/CS2Toolkit.Services.Abstractions`
+- [ ] `src/CS2Toolkit.Services`
+- [ ] `src/CS2Toolkit.API.Abstractions`
+- [ ] `src/CS2Toolkit.API` (`FrameworkReference` ASP.NET Core)
+- [ ] `src/CS2Toolkit.Runtime.Abstractions`
+- [ ] `src/CS2Toolkit.Runtime` (`OutputType` WinExe)
+- [ ] `src/CS2Toolkit.Frontend` (Vite + React + TypeScript + shadcn/ui scaffold)
+
+### 1.2 Wire solution
+
+- [ ] Add all projects to `CS2Toolkit.slnx`
+- [ ] Verify `_old/Cs2Toolkit.csproj` is **not** in solution
+- [ ] Solution builds with empty/stub types
+
+### 1.3 Runtime boots
+
+- [ ] `CS2Toolkit.Runtime/Program.cs` — `Host.CreateDefaultBuilder`, call stub `Add*` extensions
+- [ ] Log "CS2 Toolkit v2 ready" on startup
+- [ ] Exit criteria: `dotnet build` succeeds; `dotnet run --project src/CS2Toolkit.Runtime` starts host
+
+### 1.4 Documentation
+
+- [ ] Create `docs/README.md` index for v2
+- [ ] Document stub extension methods as classes are added
+
+---
+
+## Phase 2 — Models and Configuration
+
+### 2.1 `CS2Toolkit.Models.Abstractions`
+
+- [ ] `IGameStateSource` — async stream or observable of snapshots
+- [ ] `IReadOnlyGameState` — latest snapshot accessor
+- [ ] `IGameLifecycle` — attach, detach, readiness (or keep on `Game.Abstractions` if preferred)
+- [ ] Identifiers and enums: `PlayerId`, `WeaponId`, `Team`, `BoneId`, `WeaponType`, `WeaponCategory`, `SoundKind`, `BombStatus`, `EnemyEspMode`
+- [ ] `docs/` entries for public interfaces
+
+### 2.2 `CS2Toolkit.Models`
+
+- [ ] `GameSnapshot` — immutable per-tick state (central contract)
+- [ ] `Player`, `LocalPlayer`, `Weapon`, `PlayerBones`
+- [ ] `RoundState`, `BombState`, `BombSitesInfo`
+- [ ] `Vector3`, `ViewMatrix`, `ScreenPoint`
+- [ ] `SoundEvent`, `GrenadeState`, `GrenadeTrajectory`, `RadarSnapshot`
+- [ ] Feature-ready views: `EspTarget`, `AimTarget`, `TriggerbotEvaluation`
+- [ ] No offsets, Win32, or JSON attributes in this project
+- [ ] `docs/` for each public type
+
+### 2.3 `CS2Toolkit.Configuration.Abstractions`
+
+- [ ] Serializable DTOs: `ToolkitSettings`, `ConfigProfile`, `ProfileSettings`, layered weapon settings
+- [ ] `IConfigurationStore` — CRUD, import/export
+- [ ] `ISettingsResolver` — global → weapon type → weapon merge
+- [ ] `IActiveConfiguration` — current profile + resolved settings
+- [ ] `IConfigurationChangeNotifier` — change events
+- [ ] `IKeybindConfiguration` — hotkey definitions (storage, not listening)
+- [ ] `docs/` for interfaces and DTOs
+
+### 2.4 `CS2Toolkit.Configuration`
+
+- [ ] `JsonConfigurationStore` → `data/configs/store.json`
+- [ ] `SettingsResolver` / weapon layering (port logic from `_old/Configuration/`)
+- [ ] `ActiveConfiguration` implementing `IActiveConfiguration`
+- [ ] `LegacySettingsMigrator` — one-time import from `_old/appsettings.json` format
+- [ ] `AddConfiguration()` DI extension
+- [ ] Host `appsettings.json` — paths, port, log level only (no feature settings)
+- [ ] Exit criteria: load/save profiles; resolve layered weapon settings without game attached
+
+---
+
+## Phase 3 — Input
+
+### 3.1 `CS2Toolkit.Input.Abstractions`
+
+- [ ] `IInputListener` — key down/up, mouse move/button
+- [ ] `IInputSimulator` — key press/release, mouse move, click
+- [ ] `IInputState` — modifier/key snapshot
+- [ ] `IKeybindMatcher` — match `KeybindDefinition` to events
+- [ ] `InputEvent`, `KeyCode`, `MouseButton`, `KeybindDefinition`
+- [ ] `docs/` entries
+
+### 3.2 `CS2Toolkit.Input`
+
+- [ ] `Win32InputListener` (port from `_old/Services/ToolkitRuntime.cs` key loop + `_old/Events/`)
+- [ ] `Win32InputSimulator` (port from `_old/Utilities/NativeInput.cs`)
+- [ ] `KeybindDispatcher` — consolidated hotkey handling (replaces `*ToggleService` key logic)
+- [ ] `AddInput()` DI extension
+- [ ] Wire keybind definitions from `IActiveConfiguration`
+- [ ] Exit criteria: log hotkey press; simulate mouse move in isolation (no game)
+
+---
+
+## Phase 4 — Game pipeline
+
+### 4.1 `CS2Toolkit.Game.Abstractions`
+
+- [ ] `IMapVisibility` — line-of-sight raycast
+- [ ] `IMapCatalog` — parsed map metadata, current map
+- [ ] `IOffsetProvider` — resolved offsets metadata (not raw layout)
+- [ ] `IGameAttachment` — process attach state
+- [ ] `docs/` entries
+
+### 4.2 `CS2Toolkit.Game` — process and offsets
+
+- [ ] `ProcessMemory` — attach, module bases, read primitives (port `_old/Memory/ProcessMemory.cs`)
+- [ ] `OffsetDownloader` — remote fetch (port `_old/Offsets/`)
+- [ ] Internal `GameOffsets` — never public outside Game
+- [ ] `AddGame()` DI extension (stubs first, then implementations)
+
+### 4.3 `CS2Toolkit.Game` — readers and mappers
+
+Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
+
+- [ ] `PlayerReader`
+- [ ] `BombReader`
+- [ ] `RoundReader`
+- [ ] `ViewMatrixReader`
+- [ ] `MapNameReader`
+- [ ] `WeaponReader`
+- [ ] `SoundReader` — raw → `SoundEvent` mapping
+- [ ] `GrenadeReader`
+- [ ] `GameSnapshotMapper` — assembles `GameSnapshot`
+- [ ] `GameStatePublisher` implements `IGameStateSource`
+
+### 4.4 `CS2Toolkit.Game` — loop
+
+- [ ] `GameMemoryLoop` as `IHostedService`
+- [ ] Configurable poll interval (`MemoryReadIntervalMs`, default 5)
+- [ ] High-resolution timing option (`PeriodicTimer` / `timeBeginPeriod`) so 5 ms is reliable
+- [ ] Publish snapshot without synchronous multicast events
+- [ ] Exit criteria: attach to CS2; log snapshot summary (player count, map, local weapon)
+- [ ] Optional: diff logging vs `_old` `EntityResolver` output for regression
+
+---
+
+## Phase 5 — Maps and visibility
+
+- [ ] Port `_old/Maps/` — `Cs2InstallLocator`, `MapPhysicsParser`, `MapDataService`
+- [ ] `MapRaycastIndex` / BVH (port from `_old/`)
+- [ ] `MapVisibility` implements `IMapVisibility`
+- [ ] Cache under `data/maps/`
+- [ ] Preload maps at startup (orchestrated by Runtime)
+- [ ] Exit criteria: LOS queries work on parsed map geometry
+
+---
+
+## Phase 6 — Drawing (non-blocking)
+
+### 6.1 `CS2Toolkit.Drawing.Abstractions`
+
+- [ ] `DrawCommand` hierarchy — line, rect, circle, text, polyline, image
+- [ ] `OverlayFrame` — immutable `Sequence`, `ProducedAt`, `IReadOnlyList<DrawCommand>`
+- [ ] `IOverlayFrameSink.Publish(OverlayFrame)` — overwrites previous; never blocks
+- [ ] `IOverlayFrameSource.TryGetLatest(out OverlayFrame)`
+- [ ] `IWorldProjector` — world → screen from `ViewMatrix`
+- [ ] `IOverlayRenderer` — `IHostedService`; UI thread only
+- [ ] **No** `System.Drawing` in abstractions
+- [ ] `docs/` entries
+
+### 6.2 `CS2Toolkit.Drawing.WinForms`
+
+- [ ] `LatestFrameOverlaySink` — lock-free single-slot (`Interlocked.Exchange`)
+- [ ] `WinFormsOverlayHost` — transparent topmost window (port `_old/Overlay/ScreenOverlayManager.cs`)
+- [ ] `WinFormsOverlayRenderer` — consumes `IOverlayFrameSource` only; executes `DrawCommand`s
+- [ ] Back-buffer + layered blit
+- [ ] `AddDrawingWinForms()` DI extension
+- [ ] Renderer drops/skips frames when behind; never signals back to pipeline
+
+### 6.3 Pipeline integration
+
+- [ ] `IOverlayComposer` in Services merges layer commands by z-index into one `OverlayFrame`
+- [ ] Pipeline publishes frame after combat services run (order: read → services → input → compose → publish)
+- [ ] Debug presenter: player boxes from `GameSnapshot` only
+- [ ] Exit criteria: on-screen debug boxes; game loop interval unchanged when renderer sleeps 100 ms (stress test)
+
+---
+
+## Phase 7 — Services core
+
+### 7.1 `CS2Toolkit.Services.Abstractions`
+
+- [ ] `IFeatureService` — `FeatureId`, `IsEnabled`, `OnSnapshot(GameSnapshot, ResolvedFeatureSettings)`
+- [ ] `IFeatureRegistry` — enable/disable, list features
+- [ ] `IOverlayComposer` — `Compose(...) → OverlayFrame`
+- [ ] `IOverlayPresenter` — per-feature `IReadOnlyList<DrawCommand>`
+- [ ] Optional per-feature ports: `ITriggerbotService`, `IRadarService`, etc.
+- [ ] `FeatureContext` — snapshot + resolved settings bundle
+- [ ] `docs/` entries
+
+### 7.2 `CS2Toolkit.Services` — infrastructure
+
+- [ ] `FeatureCoordinator` — subscribes to `IGameStateSource`, fans out to features
+- [ ] `FeatureRegistry` — wired to `KeybindDispatcher` from Input
+- [ ] `OverlayComposer` — merges presenter outputs
+- [ ] Per-tick order: combat services + `IInputSimulator` **before** overlay composition
+- [ ] Presenter time budget (e.g. 1 ms/layer); over budget → skip layer, log warning
+- [ ] Presenter exceptions caught; publish empty/partial frame; never stop game loop
+- [ ] `AddToolkitServices()` DI extension
+- [ ] Analyzer: no `System.Drawing`, `System.Windows.Forms`, or Game/Input implementation refs
+
+### 7.3 Feature migration (ordered)
+
+Each feature: logic in Services, mapping already in Game, config from `IActiveConfiguration`, draw via `IOverlayPresenter`, docs updated.
+
+| # | Feature | Abstractions used | Port from `_old/` |
+|---|---------|-------------------|-------------------|
+| 7.3.1 | Keybind → feature registry | Input, Configuration | `*ToggleService` |
+| 7.3.2 | Teammate overlay | Drawing | `TeammateOverlay` |
+| 7.3.3 | Bomb overlay | Drawing | `BombOverlay` |
+| 7.3.4 | Enemy ESP (last seen → full) | Drawing | `EnemyOverlay`, `EnemyLastSeenTracker` |
+| 7.3.5 | Sound ESP | Drawing | `EnemyNoiseOverlay`, `EnemySoundTracker` |
+| 7.3.6 | Grenade arc | Drawing, `IMapVisibility` | `GrenadeOverlay`, `GrenadeTrajectory*` |
+| 7.3.7 | Triggerbot + autostop | `IInputSimulator`, `IMapVisibility` | `Triggerbot`, `AutoStopper` |
+| 7.3.8 | RCS | `IInputSimulator` | `RecoilCompensator` |
+| 7.3.9 | Aim helper | `IInputSimulator`, `IMapVisibility` | `AimHelper` |
+| 7.3.10 | Clairvoyance | Drawing | `ClairvoyanceOverlay`, `ClairvoyanceAdvisor` |
+| 7.3.11 | Radar state | API.Abstractions | `RadarTracker`, `RadarState` |
+| 7.3.12 | In-game menu overlay | Drawing | `MenuOverlay` |
+| 7.3.13 | Status toasts / system messages | Drawing | `SettingsSaveService`, `ToolkitRuntime` prompts |
+
+Per-feature checklist:
+
+- [ ] No `CS2Toolkit.Game` or `CS2Toolkit.Input` implementation imports
+- [ ] Works from fabricated `GameSnapshot` in isolation (manual or test)
+- [ ] `docs/{ClassName}.md` written/updated
+- [ ] `docs/README.md` index updated
+
+---
+
+## Phase 8 — API and Frontend
+
+### 8.1 `CS2Toolkit.API.Abstractions`
+
+- [ ] `IRadarStreamSource` / `IRadarSnapshotProvider`
+- [ ] `IDashboardInfoProvider`
+- [ ] API-specific request/response records if not reused from Configuration DTOs
+- [ ] `docs/` entries
+
+### 8.2 `CS2Toolkit.API`
+
+Port endpoints from `_old/Web/ConfigWebHostService.cs`:
+
+- [ ] `GET/POST/PUT/DELETE /api/configs*`
+- [ ] `GET/PUT /api/keybinds`
+- [ ] `GET /api/weapons`
+- [ ] `GET /api/dashboard`
+- [ ] `GET /api/radar/snapshot`
+- [ ] `GET /api/radar/stream` (SSE)
+- [ ] Static files from `wwwroot/`
+- [ ] `AddToolkitApi()` — register endpoints only; no host start
+- [ ] `docs/ConfigWebHostService.md` equivalent for v2 API host types
+
+### 8.3 `CS2Toolkit.Runtime` — API host
+
+- [ ] `ApiHostService` — starts Kestrel (`0.0.0.0:8080+`), uses API middleware
+- [ ] Auto-open browser on start (optional, match `_old` behavior)
+
+### 8.4 `CS2Toolkit.Frontend`
+
+- [ ] Vite + React 19 + TypeScript + Tailwind + shadcn/ui
+- [ ] MSBuild/npm build → copy `dist/` to `wwwroot/`
+- [ ] Pages (port from `_old/ConfigUI/src/`):
+
+| Route | Page |
+|-------|------|
+| `/` | Dashboard |
+| `/configs` | Profile CRUD, import/export |
+| `/triggerbot`, `/rcs`, `/aimhelper` | Layered weapon settings |
+| `/esp`, `/visuals`, `/sound` | Visual tuning |
+| `/keybinds` | Global hotkeys |
+| `/radar` | Live minimap (SSE) |
+
+- [ ] API client (`fetch` to same origin)
+- [ ] Live config: `PUT` → `IConfigurationChangeNotifier` → services rebind
+- [ ] Exit criteria: edit profile in browser; radar SSE works
+
+---
+
+## Phase 9 — Runtime orchestration and cutover
+
+### 9.1 `CS2Toolkit.Runtime.Abstractions`
+
+- [ ] `IStartupPhase` — ordered gates
+- [ ] `IRuntimeOrchestrator`
+- [ ] Optional `IToolkitModule` for future plugins
+- [ ] `docs/` entries
+
+### 9.2 `CS2Toolkit.Runtime` — startup sequence
+
+Replace `_old/ToolkitRuntime` + `RuntimeGate`:
+
+1. [ ] Download offsets (fatal on failure)
+2. [ ] Parse/preload map collision meshes
+3. [ ] Start overlay renderer (UI thread)
+4. [ ] Signal overlay ready
+5. [ ] Wait for CS2 + user attach (F9)
+6. [ ] Start `GameMemoryLoop`
+7. [ ] Start `KeybindDispatcher`
+8. [ ] Start `FeatureCoordinator`
+9. [ ] Start API host + open config UI
+
+- [ ] `AddRuntimeOrchestration()` DI extension
+- [ ] Panic shutdown (F10), save hotkey behavior defined (prefer profile store over legacy `appsettings.json`)
+
+### 9.3 Migration and parity
+
+- [ ] `LegacySettingsMigrator` imports `_old` `store.json` and `appsettings.json` formats
+- [ ] Side-by-side parity checklist vs `_old` for each feature
+- [ ] Remove reliance on `_old` for daily development
+
+### 9.4 Validation
+
+- [ ] Stress: renderer blocked 100 ms → game loop stays at target interval
+- [ ] Stress: slow presenter → triggerbot/RCS still fire on time
+- [ ] Dependency analyzer passes on CI
+- [ ] Full in-game manual test pass
+
+---
+
+## Phase 10 — Documentation and polish
+
+- [ ] Root `README.md` — build, run, architecture diagram
+- [ ] `docs/README.md` — index of all v2 class docs
+- [ ] Every new/changed C# class has `docs/{ClassName}.md` per workspace rules
+- [ ] Architecture decision record (ADR) for: abstractions split, non-blocking render, snapshot model
+- [ ] Contributor guide: how to add a new feature service
+
+---
+
+## DI registration pattern
+
+Each implementation project exposes:
+
+```csharp
+public static IServiceCollection AddXxx(this IServiceCollection services);
+```
+
+`CS2Toolkit.Runtime/Program.cs` target shape:
+
+```csharp
+Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services => services
+        .AddToolkitModels()
+        .AddConfiguration()
+        .AddInput()
+        .AddGame()
+        .AddDrawingWinForms()
+        .AddToolkitServices()
+        .AddToolkitApi()
+        .AddRuntimeOrchestration());
+```
+
+Only Runtime references implementation projects.
+
+---
+
+## Non-blocking render contract (mandatory)
+
+| DO | DON'T |
+|----|-------|
+| Build immutable `OverlayFrame` on pipeline thread | Call `Graphics` / GDI+ on pipeline thread |
+| `IOverlayFrameSink.Publish()` — O(1), overwrite latest | Unbounded queue of frames |
+| Renderer reads `IOverlayFrameSource` only | Renderer reads `GameSnapshot` or trackers |
+| Drop frames when behind | Block pipeline waiting for present |
+| Run combat + `IInputSimulator` before compose | Compose overlays before triggerbot fires |
+| Catch presenter errors; continue loop | Let presenter exception stop game loop |
+
+---
+
+## Swappability matrix (future implementations)
+
+| Abstraction | Default | Alternatives |
+|-------------|---------|--------------|
+| `IInputListener` | Win32 hook/poll | Raw Input, window-scoped listener |
+| `IInputSimulator` | Win32 SendInput | Driver-level injection |
+| `IGameStateSource` | Live publisher | Replay/file provider for tests |
+| `IMapVisibility` | BVH raycast | Simplified grid |
+| `IOverlayRenderer` | WinForms | DirectX, WPF |
+| `IConfigurationStore` | JSON file | SQLite, cloud sync |
+| API host | In-process Kestrel | Out-of-process |
+
+---
+
+## Open decisions (confirm before or during Phase 1)
+
+| # | Question | Recommendation |
+|---|----------|----------------|
+| 1 | Namespace: `CS2Toolkit` vs `Cs2Toolkit`? | `CS2Toolkit` (match project names) |
+| 2 | DTOs in `.Abstractions` or implementation only? | DTOs in `.Abstractions` for Configuration and API |
+| 3 | Input listener scope: global vs CS2-window only? | Global (match `_old` behavior) |
+| 4 | Frontend: full shadcn redesign vs port `_old/ConfigUI`? | Port pages incrementally, restyle with shadcn |
+| 5 | Dedicated `CS2Toolkit.Logging` project? | Fold into Runtime initially |
+| 6 | Test projects in Phase 1? | Add after Phase 7 Services core |
+
+---
+
+## Legacy reference map
+
+| `_old/` path | v2 destination |
+|--------------|----------------|
+| `Utilities/NativeInput.cs` | `CS2Toolkit.Input` |
+| `Events/ToolkitEventBus` (keys) | `CS2Toolkit.Input` |
+| `Events/ToolkitEventBus` (memory) | `IGameStateSource` |
+| `Memory/ProcessMemory`, `EntityResolver` | `CS2Toolkit.Game` |
+| `Memory/Triggerbot`, `AimHelper`, `RecoilCompensator` | `CS2Toolkit.Services` |
+| `Maps/*` | `CS2Toolkit.Game` |
+| `Configuration/*` | `Configuration.Abstractions` + `Configuration` |
+| `Models/*` (domain) | `CS2Toolkit.Models` |
+| `Models/GameOffsets` | `CS2Toolkit.Game` (internal) |
+| `Overlay/*` | `Drawing.Abstractions` + `Drawing.WinForms` |
+| `Web/*` | `API.Abstractions` + `API` + Runtime host |
+| `ConfigUI/*` | `CS2Toolkit.Frontend` |
+| `Program.cs`, `ToolkitRuntime` | `CS2Toolkit.Runtime` |
+| `Services/*Overlay`, `*Toggle` | `CS2Toolkit.Services` + `Input` |
+
+---
+
+## Current status
+
+| Item | Status |
+|------|--------|
+| Phase 0 — Archive | **Done** |
+| Phase 1 — Skeleton | Not started |
+| Phases 2–10 | Not started |
+
+Next step: **Phase 1.1** — create `src/` project structure and wire the solution.
