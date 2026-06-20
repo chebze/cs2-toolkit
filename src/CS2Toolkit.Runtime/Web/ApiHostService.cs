@@ -6,6 +6,7 @@ using CS2Toolkit.API.StaticFiles;
 using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Runtime.Abstractions;
 using Microsoft.AspNetCore.Builder;
+using CS2Toolkit.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -75,6 +76,7 @@ public sealed class ApiHostService : IHostedService
         builder.Services.AddSingleton(_rootServices.GetRequiredService<IConfigurationStore>());
         builder.Services.AddSingleton(_rootServices.GetRequiredService<IDashboardInfoProvider>());
         builder.Services.AddSingleton(_rootServices.GetRequiredService<IRadarStreamSource>());
+        builder.Services.AddSingleton(_rootServices.GetRequiredService<IActiveProfileSwitcher>());
 
         _app = builder.Build();
         var wwwroot = ToolkitStaticFileExtensions.ResolveWwwRootPath(_environment.ContentRootPath);

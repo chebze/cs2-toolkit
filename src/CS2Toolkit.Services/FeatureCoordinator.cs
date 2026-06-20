@@ -52,11 +52,13 @@ internal sealed class FeatureCoordinator : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _orchestrator.WaitForPhaseAsync(StartupPhase.Attach, stoppingToken);
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Overlay, stoppingToken);
 
         var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
         _logger.LogInformation("Feature coordinator started — tick interval {Interval}ms", intervalMs);
-        _orchestrator.CompletePhase(StartupPhase.Features);
+
+        var attachPhase = _orchestrator.GetPhase(StartupPhase.Attach);
+        var featuresPhaseComplete = false;
 
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
 
@@ -64,6 +66,18 @@ internal sealed class FeatureCoordinator : BackgroundService
         {
             try
             {
+                if (!attachPhase.IsComplete)
+                {
+                    PublishPreAttachFrame();
+                    continue;
+                }
+
+                if (!featuresPhaseComplete)
+                {
+                    _orchestrator.CompletePhase(StartupPhase.Features);
+                    featuresPhaseComplete = true;
+                }
+
                 ProcessTick(_gameState.Latest ?? GameSnapshot.Detached);
             }
             catch (Exception ex)
@@ -71,6 +85,12 @@ internal sealed class FeatureCoordinator : BackgroundService
                 _logger.LogWarning(ex, "Feature coordinator tick failed");
             }
         }
+    }
+
+    private void PublishPreAttachFrame()
+    {
+        var frame = _composer.Compose(GameSnapshot.Detached, _viewport.Width, _viewport.Height);
+        _frameSink.Publish(frame);
     }
 
     private void ProcessTick(GameSnapshot snapshot)

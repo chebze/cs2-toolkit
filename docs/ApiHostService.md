@@ -17,7 +17,7 @@ Implements `IHostedService`:
 
 - Binds to `127.0.0.1:{port}` when `Toolkit:BindApiToLocalhostOnly` is `true` (default); otherwise `0.0.0.0:{port}`.
 - If the requested port is taken, scans up to 100 ports and persists the chosen port via `IConfigurationStore.UpdateWebPort`.
-- Forwards `IConfigurationStore`, `IDashboardInfoProvider`, and `IRadarStreamSource` from the root host DI container into the web app.
+- Forwards `IConfigurationStore`, `IDashboardInfoProvider`, `IRadarStreamSource`, and `IActiveProfileSwitcher` from the root host DI container into the web app.
 - Serves static files from `{AppContext.BaseDirectory}/wwwroot` when `index.html` exists (built from `CS2Toolkit.Frontend` during `dotnet build`).
 - Opens the config UI in the default browser when `ToolkitHostSettings.OpenConfigUiOnStart` is true (default).
 

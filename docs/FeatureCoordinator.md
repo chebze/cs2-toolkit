@@ -10,7 +10,9 @@ Internal `BackgroundService` registered in `AddToolkitServices()`.
 
 ## Behavior
 
-- Waits for `IRuntimeOrchestrator` **Attach** phase before ticking
+- Waits for `IRuntimeOrchestrator` **Overlay** phase, then begins ticking
+- Before **Attach** completes: publishes toast-only overlay frames from a detached snapshot (map-parse and inject prompts)
+- After **Attach**: runs features and full overlay composition; marks `StartupPhase.Features` complete on first post-attach tick
 - Polls at `MemoryReadIntervalMs` (same cadence as game memory loop)
 - Order per tick: acquire `IProfileRuntimeSync` → build `FeatureContext` → `IFeatureService.OnSnapshot` → `IOverlayComposer.Compose` → `IOverlayFrameSink.Publish`
 - Profile switch / toggle apply blocks ticks until the runtime sync lock is released
