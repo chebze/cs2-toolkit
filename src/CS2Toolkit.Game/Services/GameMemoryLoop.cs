@@ -1,0 +1,78 @@
+using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Game.Offsets;
+using CS2Toolkit.Game.Process;
+using CS2Toolkit.Models.Abstractions;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace CS2Toolkit.Game.Services;
+
+internal sealed class GameMemoryLoop : BackgroundService
+{
+    private readonly ProcessMemory _memory;
+    private readonly OffsetDownloader _offsetDownloader;
+    private readonly GameStatePublisher _publisher;
+    private readonly ToolkitHostSettings _options;
+    private readonly ILogger<GameMemoryLoop> _logger;
+
+    public GameMemoryLoop(
+        ProcessMemory memory,
+        OffsetDownloader offsetDownloader,
+        GameStatePublisher publisher,
+        IOptions<ToolkitHostSettings> options,
+        ILogger<GameMemoryLoop> logger)
+    {
+        _memory = memory;
+        _offsetDownloader = offsetDownloader;
+        _publisher = publisher;
+        _options = options.Value;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (_offsetDownloader.Offsets is null && !stoppingToken.IsCancellationRequested)
+            await Task.Delay(50, stoppingToken);
+
+        if (_offsetDownloader.Offsets is null)
+            return;
+
+        var factory = new GameSnapshotFactory(_memory, _offsetDownloader.Offsets);
+        var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
+        _logger.LogInformation("Game memory loop started — interval {Interval}ms", intervalMs);
+
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
+        var lastSummaryLog = DateTimeOffset.MinValue;
+
+        while (await timer.WaitForNextTickAsync(stoppingToken))
+        {
+            try
+            {
+                var snapshot = factory.Create();
+                _publisher.Publish(snapshot);
+
+                if (_memory.IsAttached && DateTimeOffset.UtcNow - lastSummaryLog > TimeSpan.FromSeconds(1))
+                {
+                    lastSummaryLog = DateTimeOffset.UtcNow;
+                    LogSnapshotSummary(snapshot);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Memory read failed");
+            }
+        }
+    }
+
+    private void LogSnapshotSummary(GameSnapshot snapshot)
+    {
+        var weapon = snapshot.LocalPlayer?.ActiveWeaponName ?? "none";
+        _logger.LogInformation(
+            "Snapshot: map={Map} players={PlayerCount} localWeapon={Weapon} inMatch={InMatch}",
+            snapshot.MapName ?? "unknown",
+            snapshot.Players.Count,
+            weapon,
+            snapshot.IsInMatch);
+    }
+}

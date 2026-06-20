@@ -1,4 +1,6 @@
 using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Game.Abstractions;
+using CS2Toolkit.Input.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -10,7 +12,51 @@ public static class DependencyInjection
     public static IServiceCollection AddRuntimeOrchestration(this IServiceCollection services)
     {
         services.AddHostedService<StartupLoggerHostedService>();
+        services.AddHostedService<InjectKeybindOrchestrator>();
         return services;
+    }
+}
+
+internal sealed class InjectKeybindOrchestrator : IHostedService
+{
+    private readonly IKeybindDispatcher _keybindDispatcher;
+    private readonly IGameAttachment _gameAttachment;
+    private readonly ILogger<InjectKeybindOrchestrator> _logger;
+
+    public InjectKeybindOrchestrator(
+        IKeybindDispatcher keybindDispatcher,
+        IGameAttachment gameAttachment,
+        ILogger<InjectKeybindOrchestrator> logger)
+    {
+        _keybindDispatcher = keybindDispatcher;
+        _gameAttachment = gameAttachment;
+        _logger = logger;
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _keybindDispatcher.KeybindActivated += OnKeybindActivated;
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _keybindDispatcher.KeybindActivated -= OnKeybindActivated;
+        return Task.CompletedTask;
+    }
+
+    private void OnKeybindActivated(object? sender, KeybindActivatedEventArgs e)
+    {
+        if (e.Match.ActionId != ToolkitKeybindActions.Inject)
+            return;
+
+        if (_gameAttachment.IsAttached)
+        {
+            _logger.LogInformation("Already attached to CS2");
+            return;
+        }
+
+        _gameAttachment.TryAttach("cs2");
     }
 }
 

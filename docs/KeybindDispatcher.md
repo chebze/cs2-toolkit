@@ -14,7 +14,7 @@ Raises `KeybindActivated` when a configured binding is pressed.
 
 - Subscribes to `IInputListener.KeyDown`
 - Uses `IKeybindMatcher` for action lookup
-- Logs activated bindings; feature registry wiring arrives in Phase 7
+- Logs activated bindings; inject key is wired to `IGameAttachment.TryAttach()` in Runtime
 
 ## Dependencies
 

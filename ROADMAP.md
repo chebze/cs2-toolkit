@@ -115,7 +115,7 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 
 - [x] `IGameStateSource` — async stream or observable of snapshots
 - [x] `IReadOnlyGameState` — latest snapshot accessor
-- [ ] `IGameLifecycle` — deferred to Phase 4 (`CS2Toolkit.Game.Abstractions`)
+- [x] `IGameLifecycle` — `CS2Toolkit.Game.Abstractions` (Phase 4)
 - [x] Identifiers and enums: `PlayerId`, `WeaponId`, `Team`, `BoneId`, `WeaponType`, `WeaponCategory`, `SoundKind`, `BombStatus`, `EnemyEspMode`
 - [x] `docs/` entries for public interfaces (key types; expand as needed)
 
@@ -178,42 +178,44 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 
 ### 4.1 `CS2Toolkit.Game.Abstractions`
 
-- [ ] `IMapVisibility` — line-of-sight raycast
-- [ ] `IMapCatalog` — parsed map metadata, current map
-- [ ] `IOffsetProvider` — resolved offsets metadata (not raw layout)
-- [ ] `IGameAttachment` — process attach state
-- [ ] `docs/` entries
+- [x] `IMapVisibility` — line-of-sight raycast (stub returns true until Phase 5)
+- [x] `IMapCatalog` — current map name
+- [x] `IOffsetProvider` — resolved offsets metadata (not raw layout)
+- [x] `IGameAttachment` — process attach state
+- [x] `IGameLifecycle` — offset/attach lifecycle
+- [x] `docs/` entries
 
 ### 4.2 `CS2Toolkit.Game` — process and offsets
 
-- [ ] `ProcessMemory` — attach, module bases, read primitives (port `_old/Memory/ProcessMemory.cs`)
-- [ ] `OffsetDownloader` — remote fetch (port `_old/Offsets/`)
-- [ ] Internal `GameOffsets` — never public outside Game
-- [ ] `AddGame()` DI extension (stubs first, then implementations)
+- [x] `ProcessMemory` — attach, module bases, read primitives (port `_old/Memory/ProcessMemory.cs`)
+- [x] `OffsetDownloader` — remote fetch (port `_old/Offsets/`)
+- [x] Internal `GameOffsets` — never public outside Game
+- [x] `AddToolkitGame()` DI extension
 
 ### 4.3 `CS2Toolkit.Game` — readers and mappers
 
 Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 
-- [ ] `PlayerReader`
-- [ ] `BombReader`
-- [ ] `RoundReader`
-- [ ] `ViewMatrixReader`
-- [ ] `MapNameReader`
-- [ ] `WeaponReader`
+- [ ] `PlayerReader` — still inside `EntitySnapshotReader` (interim monolith)
+- [ ] `BombReader` — still inside `EntitySnapshotReader`
+- [ ] `RoundReader` — still inside `EntitySnapshotReader`
+- [x] `ViewMatrixReader`
+- [x] `MapNameReader`
+- [x] `LocalPlayerReader` (weapon + pose; interim `WeaponReader`)
 - [ ] `SoundReader` — raw → `SoundEvent` mapping
 - [ ] `GrenadeReader`
-- [ ] `GameSnapshotMapper` — assembles `GameSnapshot`
-- [ ] `GameStatePublisher` implements `IGameStateSource`
+- [x] `GameSnapshotMapper` — assembles `GameSnapshot`
+- [x] `GameStatePublisher` implements `IGameStateSource`
 
 ### 4.4 `CS2Toolkit.Game` — loop
 
-- [ ] `GameMemoryLoop` as `IHostedService`
-- [ ] Configurable poll interval (`MemoryReadIntervalMs`, default 5)
-- [ ] High-resolution timing option (`PeriodicTimer` / `timeBeginPeriod`) so 5 ms is reliable
-- [ ] Publish snapshot without synchronous multicast events
-- [ ] Exit criteria: attach to CS2; log snapshot summary (player count, map, local weapon)
+- [x] `GameMemoryLoop` as `IHostedService`
+- [x] Configurable poll interval (`MemoryReadIntervalMs`, default 5)
+- [x] `PeriodicTimer` poll loop (high-resolution `timeBeginPeriod` deferred)
+- [x] Publish snapshot without synchronous multicast events (channel + latest slot)
+- [x] Exit criteria: attach to CS2; log snapshot summary (player count, map, local weapon)
 - [ ] Optional: diff logging vs `_old` `EntityResolver` output for regression
+- [x] Inject keybind → `IGameAttachment.TryAttach()` via Runtime orchestration
 
 ---
 
@@ -507,6 +509,7 @@ Only Runtime references implementation projects.
 | Phase 1 — Skeleton | **Done** |
 | Phase 2 — Models + Configuration | **Done** |
 | Phase 3 — Input | **Done** |
-| Phases 4–10 | Not started |
+| Phase 4 — Game pipeline | **Mostly done** (reader split + sound/grenade deferred) |
+| Phases 5–10 | Not started |
 
-Next step: **Phase 4.1** — `IMapVisibility`, `IGameLifecycle`, and game abstractions.
+Next step: **Phase 5** — port `_old/Maps/` for real `IMapVisibility`, then split `EntitySnapshotReader` readers.

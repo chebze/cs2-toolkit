@@ -52,5 +52,13 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `Win32InputSimulator` | [Win32InputSimulator.md](Win32InputSimulator.md) |
 | `KeybindDispatcher` | [KeybindDispatcher.md](KeybindDispatcher.md) |
 | `IInputSimulator` | [IInputSimulator.md](IInputSimulator.md) |
+| `GameStatePublisher` | [GameStatePublisher.md](GameStatePublisher.md) |
+| `GameAttachmentService` | [GameAttachmentService.md](GameAttachmentService.md) |
+| `GameMemoryLoop` | [GameMemoryLoop.md](GameMemoryLoop.md) |
+| `IGameAttachment` | [IGameAttachment.md](IGameAttachment.md) |
+| `IGameLifecycle` | [IGameLifecycle.md](IGameLifecycle.md) |
+| `IOffsetProvider` | [IOffsetProvider.md](IOffsetProvider.md) |
+| `IMapCatalog` | [IMapCatalog.md](IMapCatalog.md) |
+| `IMapVisibility` | [IMapVisibility.md](IMapVisibility.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

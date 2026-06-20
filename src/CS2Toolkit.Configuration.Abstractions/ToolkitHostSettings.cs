@@ -14,8 +14,11 @@ public sealed class ToolkitHostSettings
 
 public sealed class OffsetSettings
 {
-    public string ClientDllUrl { get; set; } = "";
-    public string ClientDllClassesUrl { get; set; } = "";
+    public string OffsetsUrl { get; set; } =
+        "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/offsets.json";
+
+    public string ClientDllUrl { get; set; } =
+        "https://raw.githubusercontent.com/a2x/cs2-dumper/main/output/client_dll.json";
 }
 
 public sealed class MapHostSettings
