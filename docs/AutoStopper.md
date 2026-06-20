@@ -2,14 +2,19 @@
 
 ## Purpose
 
-Counter-strafes the local player to near-zero velocity before triggerbot fires when auto-stop is enabled.
+Counter-strafes movement keys to stop the local player before synthetic triggerbot fire.
 
-## Behavior
+## Key API
 
-- Reads local pawn velocity from memory
-- Sends opposite movement keys via `SendInput` when speed exceeds threshold
-- Used by [Triggerbot.md](Triggerbot.md) when `TbState.IsAutoStopEnabled` is true
+| Member | Description |
+|--------|-------------|
+| `TryEnsureStopped(input, triggerbot, options)` | Holds opposite WASD keys until speed is below threshold |
+| `Reset(input)` | Releases all held counter keys |
+
+## Dependencies
+
+- `IInputSimulator`, `TriggerbotState`, `TriggerbotHostSettings`
 
 ## Configuration
 
-`Toolkit:Tb:AutoStopEnabled`, `AutoStopSpeedThreshold`, `AutoStrafeKey`
+`ToolkitHostSettings.Triggerbot.AutoStopSpeedThreshold` (default `15`).

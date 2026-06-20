@@ -2,26 +2,25 @@
 
 ## Purpose
 
-Tick-based grenade physics simulation with map collision bounces.
+Physics simulator for CS2 grenade throws with map collision raycasts.
 
 ## Key API
 
-| Method | Description |
+| Member | Description |
 |--------|-------------|
-| `Simulate(...)` | Full arc from throw state to rest |
-| `TryComputeThrowState(...)` | Static helper for initial velocity from view angles |
+| `TrySimulate(mapChecker, start, velocity, ...)` | Produces arc points, segments, bounce points, and landing |
+| `TryComputeThrowState(...)` | Computes throw start and velocity from eye position and angles |
 
 ## Behavior
 
-- Integrates velocity with gravity each tick (`TickIntervalSeconds`, default 1/64s)
-- Sub-step raycasts along motion against map meshes
-- Applies bounce elasticity and stop velocity threshold
-- Respects `MaxSimulationTicks`, `MaxBounces`, trail point limits
-
-## Configuration
-
-`Toolkit:Grenade` — gravity, bounce, raycast steps, spacing, throw speed scales.
+- Tick-based simulation with gravity, bounce elasticity, and substeps
+- Uses `MapVisibilityChecker.TryRaycast` for wall/floor collisions
+- Records trajectory points with minimum spacing from options
 
 ## Dependencies
 
-- `MapVisibilityChecker` — line and ground queries
+- `MapVisibilityChecker`, `GrenadeSimulationOptions`, `GameOffsets`
+
+## Configuration
+
+`GrenadeSimulationOptions` (gravity, bounce, raycast substeps, throw speed scales, etc.).

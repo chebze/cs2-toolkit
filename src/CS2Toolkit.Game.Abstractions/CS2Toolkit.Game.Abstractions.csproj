@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CS2Toolkit.Models.Abstractions\CS2Toolkit.Models.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

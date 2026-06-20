@@ -1,8 +1,25 @@
+# Build output
 bin/
 obj/
+
+# Runtime data
 logs/
 data/maps/
 data/configs/
-ConfigUI/node_modules/
-ConfigUI/dist/
 wwwroot/
+
+# Node
+node_modules/
+dist/
+
+# Legacy (reference only — still ignore its build artifacts)
+_old/**/bin/
+_old/**/obj/
+_old/ConfigUI/node_modules/
+_old/ConfigUI/dist/
+_old/logs/
+_old/data/
+
+# v2 frontend
+src/CS2Toolkit.Frontend/node_modules/
+src/CS2Toolkit.Frontend/dist/

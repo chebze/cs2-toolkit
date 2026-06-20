@@ -1,0 +1,32 @@
+---
+description: Keep ROADMAP.md in sync when implementing the v2 plan
+alwaysApply: true
+---
+
+# Roadmap Sync
+
+When work follows `ROADMAP.md`, treat it as a living checklist — not a static doc.
+
+## When to update
+
+- **Completed step** → change `- [ ]` to `- [x]` for that item
+- **Scope change** → add, remove, or rewrite affected steps so the roadmap stays accurate
+- **New phase or decision** → document it in the roadmap before finishing the turn
+- **Status section** → update "Current status" and "Next step" at the bottom
+
+## What to update
+
+| Change | Roadmap action |
+|--------|----------------|
+| Finished a checklist item | Mark it done |
+| Partial progress on a step | Add sub-bullets or split the step; mark only what is done |
+| Blocked or deferred work | Note the blocker and adjust "Next step" |
+| Architecture decision | Add under "Open decisions" or the relevant phase |
+
+## Checklist before finishing
+
+- [ ] Every roadmap item addressed this session is reflected in `ROADMAP.md`
+- [ ] "Current status" and "Next step" match reality
+- [ ] No completed work left with unchecked boxes
+
+If the session did not touch roadmap-tracked work, no update is required.
