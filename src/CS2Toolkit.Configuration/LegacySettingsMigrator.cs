@@ -126,6 +126,16 @@ public sealed class LegacySettingsMigrator
             s.Visuals.BombStatus.FontSize = bomb.FontSize ?? s.Visuals.BombStatus.FontSize;
         }
 
+        if (options.Overlay?.Clairvoyance is not null)
+        {
+            var clairvoyance = options.Overlay.Clairvoyance;
+            s.Visuals.Clairvoyance.Enabled = clairvoyance.Enabled ?? s.Visuals.Clairvoyance.Enabled;
+            s.Visuals.Clairvoyance.X = clairvoyance.X ?? s.Visuals.Clairvoyance.X;
+            s.Visuals.Clairvoyance.Y = clairvoyance.Y ?? s.Visuals.Clairvoyance.Y;
+            s.Visuals.Clairvoyance.Color = clairvoyance.Color ?? s.Visuals.Clairvoyance.Color;
+            s.Visuals.Clairvoyance.FontSize = clairvoyance.FontSize ?? s.Visuals.Clairvoyance.FontSize;
+        }
+
         return profile;
     }
 
@@ -220,6 +230,7 @@ public sealed class LegacySettingsMigrator
         public LegacyGrenadeOverlayOptions? GrenadeTrajectory { get; set; }
         public LegacyTextPanelOverlayOptions? TeammateStats { get; set; }
         public LegacyTextPanelOverlayOptions? BombStatus { get; set; }
+        public LegacyTextPanelOverlayOptions? Clairvoyance { get; set; }
     }
 
     private sealed class LegacyTextPanelOverlayOptions

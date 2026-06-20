@@ -55,6 +55,11 @@ public sealed class VisualProfileOptions
         Y = 220,
         Color = "#FFD166"
     };
+    public TextPanelOverlayOptions Clairvoyance { get; set; } = new()
+    {
+        Y = 320,
+        Color = "#B794F4"
+    };
 }
 
 public sealed class ProfileSettings

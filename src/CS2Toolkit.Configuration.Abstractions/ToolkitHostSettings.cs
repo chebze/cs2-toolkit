@@ -1,5 +1,12 @@
 namespace CS2Toolkit.Configuration.Abstractions;
 
+public sealed class ClairvoyanceSettings
+{
+    public int LowAmmoClipThreshold { get; set; } = 3;
+    public float EnemyCloseDistanceUnits { get; set; } = 600f;
+    public float BombsiteEnemyRadiusUnits { get; set; } = 1500f;
+}
+
 public sealed class ToolkitHostSettings
 {
     public const string SectionName = "Toolkit";
@@ -9,6 +16,7 @@ public sealed class ToolkitHostSettings
     public OffsetSettings Offsets { get; set; } = new();
     public MapHostSettings Maps { get; set; } = new();
     public GrenadePhysicsSettings Grenade { get; set; } = new();
+    public ClairvoyanceSettings Clairvoyance { get; set; } = new();
     public TriggerbotHostSettings Triggerbot { get; set; } = new();
     public RcsHostSettings Rcs { get; set; } = new();
     public AimHelperHostSettings AimHelper { get; set; } = new();

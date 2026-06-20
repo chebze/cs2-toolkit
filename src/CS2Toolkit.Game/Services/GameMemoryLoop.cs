@@ -50,7 +50,12 @@ internal sealed class GameMemoryLoop : BackgroundService
         if (_offsetDownloader.Offsets is null)
             return;
 
-        var factory = new GameSnapshotFactory(_memory, _offsetDownloader.Offsets, _mapChecker, _grenadeOptions);
+        var factory = new GameSnapshotFactory(
+            _memory,
+            _offsetDownloader.Offsets,
+            _mapChecker,
+            _grenadeOptions,
+            _options.Clairvoyance);
         var intervalMs = Math.Max(1, _options.MemoryReadIntervalMs);
         _logger.LogInformation("Game memory loop started — interval {Interval}ms", intervalMs);
 

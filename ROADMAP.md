@@ -301,7 +301,7 @@ Each feature: logic in Services, mapping already in Game, config from `IActiveCo
 | 7.3.7 | Triggerbot + autostop | **Done** |
 | 7.3.8 | RCS | **Done** |
 | 7.3.9 | Aim helper | **Done** |
-| 7.3.10 | Clairvoyance | Not started |
+| 7.3.10 | Clairvoyance | **Done** |
 | 7.3.11 | Radar state | Not started |
 | 7.3.12 | In-game menu overlay | Stub service only |
 | 7.3.13 | Status toasts / system messages | Not started |

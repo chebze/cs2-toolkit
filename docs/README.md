@@ -75,6 +75,8 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 | `TeammateStatsOverlayPresenter` | [TeammateStatsOverlayPresenter.md](TeammateStatsOverlayPresenter.md) |
 | `BombStatusOverlayPresenter` | [BombStatusOverlayPresenter.md](BombStatusOverlayPresenter.md) |
+| `ClairvoyanceAdvisor` | [ClairvoyanceAdvisor.md](ClairvoyanceAdvisor.md) |
+| `ClairvoyanceOverlayPresenter` | [ClairvoyanceOverlayPresenter.md](ClairvoyanceOverlayPresenter.md) |
 | `EnemyEspOverlayPresenter` | [EnemyEspOverlayPresenter.md](EnemyEspOverlayPresenter.md) |
 | `EnemyEspTracker` | [EnemyEspTracker.md](EnemyEspTracker.md) |
 | `EnemyEspDrawBuilder` | [EnemyEspDrawBuilder.md](EnemyEspDrawBuilder.md) |

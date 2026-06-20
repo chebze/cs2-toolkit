@@ -1,3 +1,4 @@
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Game.Internal;
 using CS2Toolkit.Game.Process;
 using CS2Toolkit.Models.Abstractions;
@@ -12,14 +13,14 @@ internal sealed class EntitySnapshotReader
 
     private readonly ProcessMemory _memory;
     private readonly GameOffsets _offsets;
-    private readonly ClairvoyanceAdvisorStub _clairvoyanceAdvisor;
+    private readonly ClairvoyanceAdvisor _clairvoyanceAdvisor;
     private readonly SoundEventReader _soundEventReader;
 
-    internal EntitySnapshotReader(ProcessMemory memory, GameOffsets offsets, ClairvoyanceOptionsStub clairvoyanceOptions)
+    internal EntitySnapshotReader(ProcessMemory memory, GameOffsets offsets, ClairvoyanceSettings clairvoyanceOptions)
     {
         _memory = memory;
         _offsets = offsets;
-        _clairvoyanceAdvisor = new ClairvoyanceAdvisorStub(memory, offsets, clairvoyanceOptions);
+        _clairvoyanceAdvisor = new ClairvoyanceAdvisor(memory, offsets, clairvoyanceOptions);
         _soundEventReader = new SoundEventReader(memory, offsets);
     }
 

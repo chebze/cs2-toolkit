@@ -56,11 +56,12 @@ internal sealed class GameSnapshotFactory
         ProcessMemory memory,
         GameOffsets offsets,
         MapVisibilityChecker mapChecker,
-        GrenadeSimulationOptions grenadeOptions)
+        GrenadeSimulationOptions grenadeOptions,
+        ClairvoyanceSettings clairvoyanceOptions)
     {
         _memory = memory;
         _offsets = offsets;
-        _entityReader = new EntitySnapshotReader(memory, offsets, new ClairvoyanceOptionsStub());
+        _entityReader = new EntitySnapshotReader(memory, offsets, clairvoyanceOptions);
         _mapNameReader = new MapNameReader();
         _viewMatrixReader = new ViewMatrixReader();
         _localPlayerReader = new LocalPlayerReader();
