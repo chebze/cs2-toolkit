@@ -11,7 +11,19 @@ public sealed class ToolkitHostSettings
     public GrenadePhysicsSettings Grenade { get; set; } = new();
     public TriggerbotHostSettings Triggerbot { get; set; } = new();
     public RcsHostSettings Rcs { get; set; } = new();
+    public AimHelperHostSettings AimHelper { get; set; } = new();
     public FileLoggingSettings FileLogging { get; set; } = new();
+}
+
+public sealed class AimHelperHostSettings
+{
+    public int StatusFontSize { get; set; } = 16;
+    public int StatusMargin { get; set; } = 16;
+    public string EnabledColor { get; set; } = "#22C55E";
+    public string DisabledColor { get; set; } = "#EF4444";
+    public string FovCircleColor { get; set; } = "#38BDF8";
+    public float FovCircleLineWidth { get; set; } = 1.5f;
+    public float AssumedHorizontalFovDegrees { get; set; } = 90f;
 }
 
 public sealed class RcsHostSettings

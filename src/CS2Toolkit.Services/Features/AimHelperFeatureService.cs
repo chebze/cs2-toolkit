@@ -2,14 +2,26 @@ using CS2Toolkit.Services.Abstractions;
 
 namespace CS2Toolkit.Services.Features;
 
-internal sealed class AimHelperFeatureService : FeatureServiceBase
+internal sealed class AimHelperFeatureService : IFeatureService
 {
-    public AimHelperFeatureService(IFeatureState state) : base(state, FeatureIds.AimHelper)
+    private readonly IFeatureState _state;
+    private readonly AimHelperController _controller;
+
+    public AimHelperFeatureService(IFeatureState state, AimHelperController controller)
     {
+        _state = state;
+        _controller = controller;
     }
 
-    public override void OnSnapshot(FeatureContext context)
+    public FeatureId Id => FeatureIds.AimHelper;
+
+    public bool IsEnabled => true;
+
+    public void OnSnapshot(FeatureContext context)
     {
-        // Aim logic arrives in Phase 7.3.9.
+        if (!_state.IsEnabled(Id))
+            return;
+
+        _controller.Process(context);
     }
 }

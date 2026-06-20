@@ -50,6 +50,7 @@ internal sealed class GameSnapshotFactory
     private readonly GrenadeTrajectoryReader _grenadeReader;
     private readonly TriggerbotReader _triggerbotReader;
     private readonly RcsReader _rcsReader;
+    private readonly AimHelperReader _aimHelperReader;
 
     public GameSnapshotFactory(
         ProcessMemory memory,
@@ -66,6 +67,7 @@ internal sealed class GameSnapshotFactory
         _grenadeReader = new GrenadeTrajectoryReader(memory, offsets, mapChecker, grenadeOptions);
         _triggerbotReader = new TriggerbotReader(memory, offsets, mapChecker);
         _rcsReader = new RcsReader(memory, offsets);
+        _aimHelperReader = new AimHelperReader(memory, offsets, mapChecker);
     }
 
     public GameSnapshot Create()
@@ -77,7 +79,9 @@ internal sealed class GameSnapshotFactory
         var grenade = _grenadeReader.Read(legacy.IsInMatch);
         var triggerbot = _triggerbotReader.Read(legacy);
         var rcs = _rcsReader.Read(legacy.IsInMatch);
-        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer, grenade, triggerbot, rcs);
+        var viewAngles = localPlayer?.ViewAngles ?? default;
+        var aimHelper = _aimHelperReader.Read(legacy, triggerbot.EyePosition, viewAngles);
+        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer, grenade, triggerbot, rcs, aimHelper);
     }
 }
 

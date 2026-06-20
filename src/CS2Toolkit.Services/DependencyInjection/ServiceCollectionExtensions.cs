@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.TryAddSingleton<SoundEspWaveTracker>();
         services.TryAddSingleton<TriggerbotController>();
         services.TryAddSingleton<RcsController>();
+        services.TryAddSingleton<AimHelperController>();
         services.TryAddSingleton<IFeatureState, FeatureRuntimeState>();
         services.TryAddSingleton<FeatureRegistry>();
         services.TryAddSingleton<IFeatureRegistry>(sp => sp.GetRequiredService<FeatureRegistry>());
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, GrenadeArcOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, TriggerbotOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, RcsOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, AimHelperOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
 

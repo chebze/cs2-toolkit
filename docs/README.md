@@ -97,5 +97,8 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `RcsReader` | [RcsReader.md](RcsReader.md) |
 | `RcsController` | [RcsController.md](RcsController.md) |
 | `RcsOverlayPresenter` | [RcsOverlayPresenter.md](RcsOverlayPresenter.md) |
+| `AimHelperReader` | [AimHelperReader.md](AimHelperReader.md) |
+| `AimHelperController` | [AimHelperController.md](AimHelperController.md) |
+| `AimHelperOverlayPresenter` | [AimHelperOverlayPresenter.md](AimHelperOverlayPresenter.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).
