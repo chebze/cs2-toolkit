@@ -13,6 +13,7 @@ Implements `IOverlayRenderer` and `IHostedService`.
 ## Behavior
 
 - STA UI thread with transparent click-through layered window aligned to CS2 client bounds
+- Disables click-through when `OverlayFrame.Interactive` is true (in-game menu open)
 - 60 FPS present cap; skips frames when sequence unchanged
 - Back-buffer render + `UpdateLayeredWindow` alpha blit
 - Never signals back to the game memory loop

@@ -60,6 +60,16 @@ public sealed class VisualProfileOptions
         Y = 320,
         Color = "#B794F4"
     };
+    public MenuOverlayOptions Menu { get; set; } = new();
+}
+
+public sealed class MenuOverlayOptions
+{
+    public int X { get; set; } = 16;
+    public int Y { get; set; } = 16;
+    public string BackgroundColor { get; set; } = "#CC1E1E2E";
+    public string TextColor { get; set; } = "#FFFFFFFF";
+    public float FontSize { get; set; } = 13f;
 }
 
 public sealed class ProfileSettings

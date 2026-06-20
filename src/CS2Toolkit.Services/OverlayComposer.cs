@@ -12,22 +12,29 @@ public sealed class OverlayComposer : IOverlayComposer
 
     private readonly IReadOnlyList<IOverlayPresenter> _presenters;
     private readonly IWorldProjector _projector;
+    private readonly IFeatureState _featureState;
     private readonly ILogger<OverlayComposer> _logger;
     private long _sequence;
 
     public OverlayComposer(
         IEnumerable<IOverlayPresenter> presenters,
         IWorldProjector projector,
+        IFeatureState featureState,
         ILogger<OverlayComposer> logger)
     {
         _presenters = presenters.ToList();
         _projector = projector;
+        _featureState = featureState;
         _logger = logger;
     }
 
     public OverlayFrame Compose(GameSnapshot snapshot, int screenWidth, int screenHeight)
     {
-        if (!snapshot.IsAttached || !snapshot.IsInMatch)
+        var menuVisible = _featureState.IsEnabled(FeatureIds.Menu);
+        if (!snapshot.IsAttached)
+            return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
+
+        if (!snapshot.IsInMatch && !menuVisible)
             return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
 
         var commands = new List<DrawCommand>();
@@ -54,6 +61,10 @@ public sealed class OverlayComposer : IOverlayComposer
         }
 
         commands.Sort(static (a, b) => a.ZIndex.CompareTo(b.ZIndex));
-        return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, commands);
+        return new OverlayFrame(
+            Interlocked.Increment(ref _sequence),
+            DateTimeOffset.UtcNow,
+            commands,
+            menuVisible);
     }
 }

@@ -94,6 +94,7 @@ public sealed class WinFormsOverlayRenderer : IOverlayRenderer
             return;
 
         _lastConsumedSequence = frame.Sequence;
+        _form.SetClickThrough(!frame.Interactive);
         _form.PresentFrame(frame);
 
         _topMostRefreshTicks++;

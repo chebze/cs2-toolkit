@@ -2,14 +2,14 @@ using CS2Toolkit.Services.Abstractions;
 
 namespace CS2Toolkit.Services.Features;
 
-internal sealed class MenuFeatureService : FeatureServiceBase
+internal sealed class MenuFeatureService : IFeatureService
 {
-    public MenuFeatureService(IFeatureState state) : base(state, FeatureIds.Menu)
-    {
-    }
+    public FeatureId Id => FeatureIds.Menu;
 
-    public override void OnSnapshot(FeatureContext context)
+    public bool IsEnabled => true;
+
+    public void OnSnapshot(FeatureContext context)
     {
-        // In-game menu overlay arrives in Phase 7.3.12.
+        // Menu rendering and interactivity are handled by MenuOverlayPresenter and OverlayFrame.Interactive.
     }
 }

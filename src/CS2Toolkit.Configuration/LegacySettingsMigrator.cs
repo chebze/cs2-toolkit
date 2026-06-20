@@ -136,6 +136,16 @@ public sealed class LegacySettingsMigrator
             s.Visuals.Clairvoyance.FontSize = clairvoyance.FontSize ?? s.Visuals.Clairvoyance.FontSize;
         }
 
+        if (options.Overlay?.Menu is not null)
+        {
+            var menu = options.Overlay.Menu;
+            s.Visuals.Menu.X = menu.X ?? s.Visuals.Menu.X;
+            s.Visuals.Menu.Y = menu.Y ?? s.Visuals.Menu.Y;
+            s.Visuals.Menu.BackgroundColor = menu.BackgroundColor ?? s.Visuals.Menu.BackgroundColor;
+            s.Visuals.Menu.TextColor = menu.TextColor ?? s.Visuals.Menu.TextColor;
+            s.Visuals.Menu.FontSize = menu.FontSize ?? s.Visuals.Menu.FontSize;
+        }
+
         return profile;
     }
 
@@ -231,6 +241,16 @@ public sealed class LegacySettingsMigrator
         public LegacyTextPanelOverlayOptions? TeammateStats { get; set; }
         public LegacyTextPanelOverlayOptions? BombStatus { get; set; }
         public LegacyTextPanelOverlayOptions? Clairvoyance { get; set; }
+        public LegacyMenuOverlayOptions? Menu { get; set; }
+    }
+
+    private sealed class LegacyMenuOverlayOptions
+    {
+        public int? X { get; set; }
+        public int? Y { get; set; }
+        public string? BackgroundColor { get; set; }
+        public string? TextColor { get; set; }
+        public float? FontSize { get; set; }
     }
 
     private sealed class LegacyTextPanelOverlayOptions

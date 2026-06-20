@@ -80,6 +80,7 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `RadarReader` | [RadarReader.md](RadarReader.md) |
 | `RadarState` | [RadarState.md](RadarState.md) |
 | `IRadarSnapshotProvider` | [IRadarSnapshotProvider.md](IRadarSnapshotProvider.md) |
+| `MenuOverlayPresenter` | [MenuOverlayPresenter.md](MenuOverlayPresenter.md) |
 | `EnemyEspOverlayPresenter` | [EnemyEspOverlayPresenter.md](EnemyEspOverlayPresenter.md) |
 | `EnemyEspTracker` | [EnemyEspTracker.md](EnemyEspTracker.md) |
 | `EnemyEspDrawBuilder` | [EnemyEspDrawBuilder.md](EnemyEspDrawBuilder.md) |

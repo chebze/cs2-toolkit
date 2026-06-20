@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, TriggerbotOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, RcsOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, AimHelperOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, MenuOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
         services.AddHostedService<RadarStateUpdater>();
