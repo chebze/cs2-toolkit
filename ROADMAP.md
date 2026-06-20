@@ -319,35 +319,35 @@ Per-feature checklist:
 
 ### 8.1 `CS2Toolkit.API.Abstractions`
 
-- [ ] `IRadarStreamSource` / `IRadarSnapshotProvider`
-- [ ] `IDashboardInfoProvider`
-- [ ] API-specific request/response records if not reused from Configuration DTOs
-- [ ] `docs/` entries
+- [x] `IRadarStreamSource` / `IRadarSnapshotProvider`
+- [x] `IDashboardInfoProvider`
+- [x] API-specific request/response records if not reused from Configuration DTOs
+- [x] `docs/` entries
 
 ### 8.2 `CS2Toolkit.API`
 
 Port endpoints from `_old/Web/ConfigWebHostService.cs`:
 
-- [ ] `GET/POST/PUT/DELETE /api/configs*`
-- [ ] `GET/PUT /api/keybinds`
-- [ ] `GET /api/weapons`
-- [ ] `GET /api/dashboard`
-- [ ] `GET /api/radar/snapshot`
-- [ ] `GET /api/radar/stream` (SSE)
-- [ ] Static files from `wwwroot/`
-- [ ] `AddToolkitApi()` — register endpoints only; no host start
-- [ ] `docs/ConfigWebHostService.md` equivalent for v2 API host types
+- [x] `GET/POST/PUT/DELETE /api/configs*`
+- [x] `GET/PUT /api/keybinds`
+- [x] `GET /api/weapons`
+- [x] `GET /api/dashboard`
+- [x] `GET /api/radar/snapshot`
+- [x] `GET /api/radar/stream` (SSE)
+- [x] Static files from `wwwroot/`
+- [x] `AddToolkitApi()` — register endpoints only; no host start
+- [x] `docs/ConfigWebHostService.md` equivalent for v2 API host types
 
 ### 8.3 `CS2Toolkit.Runtime` — API host
 
-- [ ] `ApiHostService` — starts Kestrel (`0.0.0.0:8080+`), uses API middleware
-- [ ] Auto-open browser on start (optional, match `_old` behavior)
+- [x] `ApiHostService` — starts Kestrel (`0.0.0.0:8080+`), uses API middleware
+- [x] Auto-open browser on start (optional, match `_old` behavior)
 
 ### 8.4 `CS2Toolkit.Frontend`
 
-- [ ] Vite + React 19 + TypeScript + Tailwind + shadcn/ui
-- [ ] MSBuild/npm build → copy `dist/` to `wwwroot/`
-- [ ] Pages (port from `_old/ConfigUI/src/`):
+- [x] Vite + React 19 + TypeScript + Tailwind + shadcn/ui
+- [x] MSBuild/npm build → copy `dist/` to `wwwroot/`
+- [x] Pages (port from `_old/ConfigUI/src/`):
 
 | Route | Page |
 |-------|------|
@@ -358,9 +358,9 @@ Port endpoints from `_old/Web/ConfigWebHostService.cs`:
 | `/keybinds` | Global hotkeys |
 | `/radar` | Live minimap (SSE) |
 
-- [ ] API client (`fetch` to same origin)
-- [ ] Live config: `PUT` → `IConfigurationChangeNotifier` → services rebind
-- [ ] Exit criteria: edit profile in browser; radar SSE works
+- [x] API client (`fetch` to same origin)
+- [x] Live config: `PUT` → `IConfigurationChangeNotifier` → services rebind
+- [ ] Exit criteria: edit profile in browser; radar SSE works (manual in-game validation)
 
 ---
 
@@ -514,7 +514,8 @@ Only Runtime references implementation projects.
 | Phase 4 — Game pipeline | **Mostly done** (reader split deferred) |
 | Phase 5 — Maps and visibility | **Done** |
 | Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
-| Phase 7 — Services core | **Done** (feature migration 7.3.13 pending) |
-| Phases 8–10 | Not started |
+| Phase 7 — Services core | **Done** |
+| Phase 8 — API and Frontend | **Done** (in-game radar SSE validation deferred) |
+| Phases 9–10 | Not started |
 
-Next step: **Phase 7.3.13** — Status toasts / system messages.
+Next step: **Phase 9** — Runtime orchestration and cutover.

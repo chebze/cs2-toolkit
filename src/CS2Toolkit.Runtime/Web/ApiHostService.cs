@@ -1,0 +1,99 @@
+using System.Diagnostics;
+using CS2Toolkit.API;
+using CS2Toolkit.API.Abstractions;
+using CS2Toolkit.API.Endpoints;
+using CS2Toolkit.API.StaticFiles;
+using CS2Toolkit.Configuration.Abstractions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace CS2Toolkit.Runtime.Web;
+
+public sealed class ApiHostService : IHostedService
+{
+    private readonly IServiceProvider _rootServices;
+    private readonly IConfigurationStore _configurationStore;
+    private readonly IHostEnvironment _environment;
+    private readonly ToolkitHostSettings _options;
+    private readonly ILogger<ApiHostService> _logger;
+    private WebApplication? _app;
+    private CancellationTokenSource? _cts;
+
+    public ApiHostService(
+        IServiceProvider rootServices,
+        IConfigurationStore configurationStore,
+        IHostEnvironment environment,
+        IOptions<ToolkitHostSettings> options,
+        ILogger<ApiHostService> logger)
+    {
+        _rootServices = rootServices;
+        _configurationStore = configurationStore;
+        _environment = environment;
+        _options = options.Value;
+        _logger = logger;
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        var store = _configurationStore.GetStore();
+        var port = NetworkAccess.FindAvailablePort(store.WebPort);
+        if (port != store.WebPort)
+        {
+            _configurationStore.UpdateWebPort(port);
+            _logger.LogWarning("Port {Requested} unavailable, using {Port}", store.WebPort, port);
+        }
+
+        Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
+
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            Args = [],
+            ContentRootPath = _environment.ContentRootPath
+        });
+
+        builder.Logging.ClearProviders();
+        builder.Services.AddSingleton(_rootServices.GetRequiredService<IConfigurationStore>());
+        builder.Services.AddSingleton(_rootServices.GetRequiredService<IDashboardInfoProvider>());
+        builder.Services.AddSingleton(_rootServices.GetRequiredService<IRadarStreamSource>());
+
+        _app = builder.Build();
+        var wwwroot = ToolkitStaticFileExtensions.ResolveWwwRootPath(_environment.ContentRootPath);
+        _app.MapToolkitApi();
+        _app.MapToolkitStaticFiles(wwwroot, _logger);
+
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _ = _app.RunAsync(_cts.Token);
+
+        var urls = NetworkAccess.GetAccessUrls(port);
+        _logger.LogInformation("Config UI available at {Urls}", string.Join(", ", urls));
+
+        if (_options.OpenConfigUiOnStart)
+            TryOpenBrowser(urls.FirstOrDefault() ?? $"http://localhost:{port}");
+
+        return Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_cts is not null)
+            await _cts.CancelAsync();
+
+        if (_app is not null)
+            await _app.StopAsync(cancellationToken);
+    }
+
+    private static void TryOpenBrowser(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            // Browser launch is best-effort.
+        }
+    }
+}

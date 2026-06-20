@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.4" />
   </ItemGroup>
@@ -27,5 +28,17 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="BuildFrontend" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend/package.json')">
+    <Exec Command="npm ci" WorkingDirectory="$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend" />
+  </Target>
+
+  <Target Name="CopyFrontend" AfterTargets="BuildFrontend" Condition="Exists('$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend/dist/index.html')">
+    <ItemGroup>
+      <FrontendFiles Include="$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend/dist/**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FrontendFiles)" DestinationFolder="$(OutDir)wwwroot\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

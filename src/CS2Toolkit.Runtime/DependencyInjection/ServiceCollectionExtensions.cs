@@ -1,6 +1,7 @@
 using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Game.Abstractions;
 using CS2Toolkit.Input.Abstractions;
+using CS2Toolkit.Runtime.Web;
 using CS2Toolkit.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +15,7 @@ public static class DependencyInjection
     {
         services.AddHostedService<StartupLoggerHostedService>();
         services.AddHostedService<InjectKeybindOrchestrator>();
+        services.AddHostedService<ApiHostService>();
         return services;
     }
 }

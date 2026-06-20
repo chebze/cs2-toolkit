@@ -21,6 +21,7 @@ public sealed class ToolkitHostSettings
     public RcsHostSettings Rcs { get; set; } = new();
     public AimHelperHostSettings AimHelper { get; set; } = new();
     public FileLoggingSettings FileLogging { get; set; } = new();
+    public bool OpenConfigUiOnStart { get; set; } = true;
 }
 
 public sealed class AimHelperHostSettings

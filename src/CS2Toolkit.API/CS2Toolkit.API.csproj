@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CS2Toolkit.API.Abstractions\CS2Toolkit.API.Abstractions.csproj" />
+    <ProjectReference Include="..\CS2Toolkit.Configuration\CS2Toolkit.Configuration.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Configuration.Abstractions\CS2Toolkit.Configuration.Abstractions.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Models\CS2Toolkit.Models.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Services.Abstractions\CS2Toolkit.Services.Abstractions.csproj" />

@@ -110,5 +110,9 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `AimHelperReader` | [AimHelperReader.md](AimHelperReader.md) |
 | `AimHelperController` | [AimHelperController.md](AimHelperController.md) |
 | `AimHelperOverlayPresenter` | [AimHelperOverlayPresenter.md](AimHelperOverlayPresenter.md) |
+| `IDashboardInfoProvider` | [IDashboardInfoProvider.md](IDashboardInfoProvider.md) |
+| `IRadarStreamSource` | [IRadarStreamSource.md](IRadarStreamSource.md) |
+| `DashboardInfoProvider` | [DashboardInfoProvider.md](DashboardInfoProvider.md) |
+| `ApiHostService` | [ApiHostService.md](ApiHostService.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).
