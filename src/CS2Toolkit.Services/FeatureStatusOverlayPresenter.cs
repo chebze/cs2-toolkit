@@ -18,7 +18,7 @@ public sealed class FeatureStatusOverlayPresenter : IOverlayPresenter
         int screenWidth,
         int screenHeight)
     {
-        if (!snapshot.IsAttached)
+        if (!snapshot.IsAttached || !snapshot.IsInMatch)
             return [];
 
         var lines = new List<string>();

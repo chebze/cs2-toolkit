@@ -60,6 +60,16 @@ internal sealed class ProfileSwitchHostedService : IHostedService
             if (key.IsNone)
                 continue;
 
+            if (map.TryGetValue(key.VirtualKey, out var existingProfileId))
+            {
+                _logger.LogWarning(
+                    "Duplicate profile switch hotkey {Hotkey} for profiles {ExistingProfileId} and {ProfileId}; keeping {ProfileId}",
+                    profile.SwitchHotkey,
+                    existingProfileId,
+                    profile.Id,
+                    profile.Id);
+            }
+
             map[key.VirtualKey] = profile.Id;
         }
 

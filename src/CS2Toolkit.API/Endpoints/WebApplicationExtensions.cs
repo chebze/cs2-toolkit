@@ -2,6 +2,7 @@ using CS2Toolkit.API.Abstractions;
 using CS2Toolkit.API.Json;
 using CS2Toolkit.Configuration;
 using CS2Toolkit.Configuration.Abstractions;
+using CS2Toolkit.Services.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -33,12 +34,15 @@ public static class WebApplicationExtensions
             return Results.Json(profile, json);
         });
 
-        app.MapPut("/api/configs/{id}", (string id, ConfigProfile profile, IConfigurationStore store) =>
+        app.MapPut("/api/configs/{id}", (string id, ConfigProfile profile, IConfigurationStore store, IFeatureState featureState) =>
         {
             if (id != profile.Id)
                 return Results.BadRequest("Profile id mismatch.");
 
             var updated = store.UpdateProfile(profile);
+            if (store.GetActiveProfile().Id == id)
+                featureState.ApplyFromProfile(updated.Settings);
+
             return Results.Json(updated, json);
         });
 
