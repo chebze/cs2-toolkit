@@ -203,7 +203,7 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 - [x] `MapNameReader`
 - [x] `LocalPlayerReader` (weapon + pose; interim `WeaponReader`)
 - [x] `SoundReader` — `SoundEventReader` maps pawn sound state → `SoundEvent` on snapshot
-- [ ] `GrenadeReader`
+- [x] `GrenadeReader` — `GrenadeTrajectoryReader` maps resolver output → `GrenadeState`
 - [x] `GameSnapshotMapper` — assembles `GameSnapshot`
 - [x] `GameStatePublisher` implements `IGameStateSource`
 
