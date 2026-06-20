@@ -48,5 +48,9 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `JsonConfigurationStore` | [JsonConfigurationStore.md](JsonConfigurationStore.md) |
 | `ActiveConfiguration` | [ActiveConfiguration.md](ActiveConfiguration.md) |
 | `SettingsResolver` | [SettingsResolver.md](SettingsResolver.md) |
+| `Win32InputListener` | [Win32InputListener.md](Win32InputListener.md) |
+| `Win32InputSimulator` | [Win32InputSimulator.md](Win32InputSimulator.md) |
+| `KeybindDispatcher` | [KeybindDispatcher.md](KeybindDispatcher.md) |
+| `IInputSimulator` | [IInputSimulator.md](IInputSimulator.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

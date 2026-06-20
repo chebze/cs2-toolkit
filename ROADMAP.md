@@ -156,21 +156,21 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 
 ### 3.1 `CS2Toolkit.Input.Abstractions`
 
-- [ ] `IInputListener` — key down/up, mouse move/button
-- [ ] `IInputSimulator` — key press/release, mouse move, click
-- [ ] `IInputState` — modifier/key snapshot
-- [ ] `IKeybindMatcher` — match `KeybindDefinition` to events
-- [ ] `InputEvent`, `KeyCode`, `MouseButton`, `KeybindDefinition`
-- [ ] `docs/` entries
+- [x] `IInputListener` — key down/up, mouse move/button
+- [x] `IInputSimulator` — key press/release, mouse move, click
+- [x] `IInputState` — modifier/key snapshot
+- [x] `IKeybindMatcher` — match `KeybindDefinition` to events
+- [x] `InputEvent`, `KeyCode`, `MouseButton`, `KeybindDefinition`
+- [x] `docs/` entries
 
 ### 3.2 `CS2Toolkit.Input`
 
-- [ ] `Win32InputListener` (port from `_old/Services/ToolkitRuntime.cs` key loop + `_old/Events/`)
-- [ ] `Win32InputSimulator` (port from `_old/Utilities/NativeInput.cs`)
-- [ ] `KeybindDispatcher` — consolidated hotkey handling (replaces `*ToggleService` key logic)
-- [ ] `AddInput()` DI extension
-- [ ] Wire keybind definitions from `IActiveConfiguration`
-- [ ] Exit criteria: log hotkey press; simulate mouse move in isolation (no game)
+- [x] `Win32InputListener` (port from `_old/Services/ToolkitRuntime.cs` key loop + `_old/Events/`)
+- [x] `Win32InputSimulator` (port from `_old/Utilities/NativeInput.cs`)
+- [x] `KeybindDispatcher` — consolidated hotkey handling (replaces `*ToggleService` key logic)
+- [x] `AddToolkitInput()` DI extension
+- [x] Wire keybind definitions from `IActiveConfiguration`
+- [x] Exit criteria: log hotkey press; simulate mouse move in isolation (no game)
 
 ---
 
@@ -506,6 +506,7 @@ Only Runtime references implementation projects.
 | Phase 0 — Archive | **Done** |
 | Phase 1 — Skeleton | **Done** |
 | Phase 2 — Models + Configuration | **Done** |
-| Phases 3–10 | Not started |
+| Phase 3 — Input | **Done** |
+| Phases 4–10 | Not started |
 
-Next step: **Phase 3.1** — `IInputListener`, `IInputSimulator`, and input abstractions.
+Next step: **Phase 4.1** — `IMapVisibility`, `IGameLifecycle`, and game abstractions.
