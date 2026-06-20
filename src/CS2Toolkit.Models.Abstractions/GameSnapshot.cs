@@ -1,0 +1,42 @@
+namespace CS2Toolkit.Models.Abstractions;
+
+public sealed record GameSnapshot(
+    DateTimeOffset Timestamp,
+    bool IsAttached,
+    bool IsInGame,
+    bool IsInMatch,
+    string? MapName,
+    LocalPlayer? LocalPlayer,
+    IReadOnlyList<Player> Players,
+    RoundState Round,
+    BombState Bomb,
+    BombSitesInfo BombSites,
+    ViewMatrix ViewMatrix,
+    IReadOnlyList<SoundEvent> RecentSounds,
+    IReadOnlyList<GrenadeState> Grenades,
+    IReadOnlyList<string> ClairvoyanceTips,
+    int EnemiesAlive,
+    int EnemiesDead,
+    int TeammatesAlive,
+    int TeammatesDead)
+{
+    public static GameSnapshot Detached { get; } = new(
+        DateTimeOffset.UtcNow,
+        false,
+        false,
+        false,
+        null,
+        null,
+        [],
+        RoundState.Empty,
+        BombState.Hidden,
+        BombSitesInfo.Empty,
+        new ViewMatrix(stackalloc float[ViewMatrix.FloatCount]),
+        [],
+        [],
+        [],
+        0,
+        0,
+        0,
+        0);
+}

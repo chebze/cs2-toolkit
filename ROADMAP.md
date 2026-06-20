@@ -113,42 +113,42 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 
 ### 2.1 `CS2Toolkit.Models.Abstractions`
 
-- [ ] `IGameStateSource` — async stream or observable of snapshots
-- [ ] `IReadOnlyGameState` — latest snapshot accessor
-- [ ] `IGameLifecycle` — attach, detach, readiness (or keep on `Game.Abstractions` if preferred)
-- [ ] Identifiers and enums: `PlayerId`, `WeaponId`, `Team`, `BoneId`, `WeaponType`, `WeaponCategory`, `SoundKind`, `BombStatus`, `EnemyEspMode`
-- [ ] `docs/` entries for public interfaces
+- [x] `IGameStateSource` — async stream or observable of snapshots
+- [x] `IReadOnlyGameState` — latest snapshot accessor
+- [ ] `IGameLifecycle` — deferred to Phase 4 (`CS2Toolkit.Game.Abstractions`)
+- [x] Identifiers and enums: `PlayerId`, `WeaponId`, `Team`, `BoneId`, `WeaponType`, `WeaponCategory`, `SoundKind`, `BombStatus`, `EnemyEspMode`
+- [x] `docs/` entries for public interfaces (key types; expand as needed)
 
 ### 2.2 `CS2Toolkit.Models`
 
-- [ ] `GameSnapshot` — immutable per-tick state (central contract)
-- [ ] `Player`, `LocalPlayer`, `Weapon`, `PlayerBones`
-- [ ] `RoundState`, `BombState`, `BombSitesInfo`
-- [ ] `Vector3`, `ViewMatrix`, `ScreenPoint`
-- [ ] `SoundEvent`, `GrenadeState`, `GrenadeTrajectory`, `RadarSnapshot`
-- [ ] Feature-ready views: `EspTarget`, `AimTarget`, `TriggerbotEvaluation`
-- [ ] No offsets, Win32, or JSON attributes in this project
-- [ ] `docs/` for each public type
+- [x] `GameSnapshot` — in `Models.Abstractions` (shared contract for `IGameStateSource`)
+- [x] `Player`, `LocalPlayer`, `Weapon`, `PlayerBones` — core records in `Models.Abstractions`
+- [x] `RoundState`, `BombState`, `BombSitesInfo` — in `Models.Abstractions`
+- [x] `Vector3`, `ViewMatrix` in `Models.Abstractions`; `ScreenPoint` in `Models`
+- [x] `SoundEvent`, `GrenadeState`, `RadarSnapshot` — in `Models.Abstractions`
+- [x] Feature-ready views: `EspTarget`, `AimTarget`, `TriggerbotEvaluation`
+- [x] No offsets, Win32, or JSON attributes in model projects
+- [x] `docs/` for key public types (expand incrementally)
 
 ### 2.3 `CS2Toolkit.Configuration.Abstractions`
 
-- [ ] Serializable DTOs: `ToolkitSettings`, `ConfigProfile`, `ProfileSettings`, layered weapon settings
-- [ ] `IConfigurationStore` — CRUD, import/export
-- [ ] `ISettingsResolver` — global → weapon type → weapon merge
-- [ ] `IActiveConfiguration` — current profile + resolved settings
-- [ ] `IConfigurationChangeNotifier` — change events
-- [ ] `IKeybindConfiguration` — hotkey definitions (storage, not listening)
-- [ ] `docs/` for interfaces and DTOs
+- [x] Serializable DTOs: `ToolkitSettings`, `ConfigProfile`, `ProfileSettings`, layered weapon settings
+- [x] `IConfigurationStore` — CRUD, import/export
+- [x] `ISettingsResolver` — global → weapon type → weapon merge
+- [x] `IActiveConfiguration` — current profile + resolved settings
+- [x] `IConfigurationChangeNotifier` — change events
+- [x] `IKeybindConfiguration` — hotkey definitions (storage, not listening)
+- [x] `docs/` for interfaces and DTOs (key types)
 
 ### 2.4 `CS2Toolkit.Configuration`
 
-- [ ] `JsonConfigurationStore` → `data/configs/store.json`
-- [ ] `SettingsResolver` / weapon layering (port logic from `_old/Configuration/`)
-- [ ] `ActiveConfiguration` implementing `IActiveConfiguration`
-- [ ] `LegacySettingsMigrator` — one-time import from `_old/appsettings.json` format
-- [ ] `AddConfiguration()` DI extension
-- [ ] Host `appsettings.json` — paths, port, log level only (no feature settings)
-- [ ] Exit criteria: load/save profiles; resolve layered weapon settings without game attached
+- [x] `JsonConfigurationStore` → `data/configs/store.json`
+- [x] `SettingsResolver` / weapon layering (port logic from `_old/Configuration/`)
+- [x] `ActiveConfiguration` implementing `IActiveConfiguration`
+- [x] `LegacySettingsMigrator` — one-time import from legacy `appsettings.json` format
+- [x] `AddToolkitConfiguration()` DI extension
+- [x] Host `appsettings.json` — host paths, offsets URLs, log level (no feature profile settings)
+- [x] Exit criteria: load/save profiles; resolve layered weapon settings without game attached
 
 ---
 
@@ -505,6 +505,7 @@ Only Runtime references implementation projects.
 |------|--------|
 | Phase 0 — Archive | **Done** |
 | Phase 1 — Skeleton | **Done** |
-| Phases 2–10 | Not started |
+| Phase 2 — Models + Configuration | **Done** |
+| Phases 3–10 | Not started |
 
-Next step: **Phase 2.1** — `IGameStateSource`, domain enums, and `GameSnapshot` in Models.
+Next step: **Phase 3.1** — `IInputListener`, `IInputSimulator`, and input abstractions.

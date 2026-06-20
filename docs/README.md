@@ -6,8 +6,8 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 
 | Project | Purpose |
 |---------|---------|
-| `CS2Toolkit.Models.Abstractions` | Domain contracts and enums |
-| `CS2Toolkit.Models` | Immutable domain records (`GameSnapshot`, etc.) |
+| `CS2Toolkit.Models.Abstractions` | Domain contracts, enums, `GameSnapshot`, core records |
+| `CS2Toolkit.Models` | Feature views (`EspTarget`, `AimTarget`) and parsers |
 | `CS2Toolkit.Configuration.Abstractions` | Settings DTOs and store contracts |
 | `CS2Toolkit.Configuration` | JSON persistence and profile resolution |
 | `CS2Toolkit.Input.Abstractions` | Keyboard/mouse listen and simulate contracts |
@@ -43,5 +43,10 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | Class | Doc |
 |-------|-----|
 | `StartupPhase` | [StartupPhase.md](StartupPhase.md) |
+| `GameSnapshot` | [GameSnapshot.md](GameSnapshot.md) |
+| `IGameStateSource` | [IGameStateSource.md](IGameStateSource.md) |
+| `JsonConfigurationStore` | [JsonConfigurationStore.md](JsonConfigurationStore.md) |
+| `ActiveConfiguration` | [ActiveConfiguration.md](ActiveConfiguration.md) |
+| `SettingsResolver` | [SettingsResolver.md](SettingsResolver.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

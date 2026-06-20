@@ -22,4 +22,10 @@
     <ProjectReference Include="..\CS2Toolkit.Services\CS2Toolkit.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

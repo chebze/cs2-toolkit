@@ -1,5 +1,6 @@
 using CS2Toolkit.API;
 using CS2Toolkit.Configuration;
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Drawing.WinForms;
 using CS2Toolkit.Game;
 using CS2Toolkit.Input;
@@ -20,8 +21,11 @@ internal static class Program
         ApplicationConfiguration.Initialize();
 
         var host = Host.CreateDefaultBuilder(args)
-            .ConfigureServices(services =>
+            .ConfigureServices((context, services) =>
             {
+                services.Configure<CS2Toolkit.Configuration.Abstractions.ToolkitHostSettings>(
+                    context.Configuration.GetSection(CS2Toolkit.Configuration.Abstractions.ToolkitHostSettings.SectionName));
+
                 services
                     .AddToolkitModels()
                     .AddToolkitConfiguration()
