@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, DebugPlayerBoxPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, FeatureStatusOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, TeammateStatsOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, BombStatusOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
 

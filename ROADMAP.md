@@ -294,7 +294,7 @@ Each feature: logic in Services, mapping already in Game, config from `IActiveCo
 |---|---------|--------|
 | 7.3.1 | Keybind → feature registry | **Done** |
 | 7.3.2 | Teammate overlay | **Done** |
-| 7.3.3 | Bomb overlay | Not started |
+| 7.3.3 | Bomb overlay | **Done** |
 | 7.3.4 | Enemy ESP (last seen → full) | Not started |
 | 7.3.5 | Sound ESP | Not started |
 | 7.3.6 | Grenade arc | Not started |
@@ -517,4 +517,4 @@ Only Runtime references implementation projects.
 | Phase 7 — Services core | **Done** (feature migration 7.3.2+ pending) |
 | Phases 8–10 | Not started |
 
-Next step: **Phase 7.3.3** — bomb overlay.
+Next step: **Phase 7.3.4** — enemy ESP (last seen → full).

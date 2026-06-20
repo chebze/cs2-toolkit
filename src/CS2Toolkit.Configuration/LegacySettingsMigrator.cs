@@ -115,6 +115,16 @@ public sealed class LegacySettingsMigrator
             s.Visuals.TeammateStats.FontSize = teammate.FontSize ?? s.Visuals.TeammateStats.FontSize;
         }
 
+        if (options.Overlay?.BombStatus is not null)
+        {
+            var bomb = options.Overlay.BombStatus;
+            s.Visuals.BombStatus.Enabled = bomb.Enabled ?? s.Visuals.BombStatus.Enabled;
+            s.Visuals.BombStatus.X = bomb.X ?? s.Visuals.BombStatus.X;
+            s.Visuals.BombStatus.Y = bomb.Y ?? s.Visuals.BombStatus.Y;
+            s.Visuals.BombStatus.Color = bomb.Color ?? s.Visuals.BombStatus.Color;
+            s.Visuals.BombStatus.FontSize = bomb.FontSize ?? s.Visuals.BombStatus.FontSize;
+        }
+
         return profile;
     }
 
@@ -207,6 +217,7 @@ public sealed class LegacySettingsMigrator
         public LegacySkeletonOverlayOptions? EnemyLastSeen { get; set; }
         public LegacyGrenadeOverlayOptions? GrenadeTrajectory { get; set; }
         public LegacyTextPanelOverlayOptions? TeammateStats { get; set; }
+        public LegacyTextPanelOverlayOptions? BombStatus { get; set; }
     }
 
     private sealed class LegacyTextPanelOverlayOptions

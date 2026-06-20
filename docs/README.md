@@ -74,5 +74,6 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `FeatureCoordinator` | [FeatureCoordinator.md](FeatureCoordinator.md) |
 | `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 | `TeammateStatsOverlayPresenter` | [TeammateStatsOverlayPresenter.md](TeammateStatsOverlayPresenter.md) |
+| `BombStatusOverlayPresenter` | [BombStatusOverlayPresenter.md](BombStatusOverlayPresenter.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

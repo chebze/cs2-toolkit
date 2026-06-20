@@ -48,6 +48,11 @@ public sealed class VisualProfileOptions
 {
     public GrenadeVisualOptions Grenade { get; set; } = new();
     public TextPanelOverlayOptions TeammateStats { get; set; } = new();
+    public TextPanelOverlayOptions BombStatus { get; set; } = new()
+    {
+        Y = 220,
+        Color = "#FFD166"
+    };
 }
 
 public sealed class ProfileSettings
