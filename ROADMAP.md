@@ -221,12 +221,12 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 
 ## Phase 5 — Maps and visibility
 
-- [ ] Port `_old/Maps/` — `Cs2InstallLocator`, `MapPhysicsParser`, `MapDataService`
-- [ ] `MapRaycastIndex` / BVH (port from `_old/`)
-- [ ] `MapVisibility` implements `IMapVisibility`
-- [ ] Cache under `data/maps/`
-- [ ] Preload maps at startup (orchestrated by Runtime)
-- [ ] Exit criteria: LOS queries work on parsed map geometry
+- [x] Port `_old/Maps/` — `Cs2InstallLocator`, `MapPhysicsParser`, `MapDataService`
+- [x] `MapRaycastIndex` / BVH (port from `_old/`)
+- [x] `MapVisibilityService` implements `IMapVisibility`
+- [x] Cache under `data/maps/`
+- [x] Preload maps at startup (`MapPreloadHostedService` via `AddToolkitGame()`)
+- [x] Exit criteria: LOS queries work on parsed map geometry (when meshes loaded)
 
 ---
 
@@ -510,6 +510,7 @@ Only Runtime references implementation projects.
 | Phase 2 — Models + Configuration | **Done** |
 | Phase 3 — Input | **Done** |
 | Phase 4 — Game pipeline | **Mostly done** (reader split + sound/grenade deferred) |
-| Phases 5–10 | Not started |
+| Phase 5 — Maps and visibility | **Done** |
+| Phases 6–10 | Not started |
 
-Next step: **Phase 5** — port `_old/Maps/` for real `IMapVisibility`, then split `EntitySnapshotReader` readers.
+Next step: **Phase 6** — non-blocking drawing (`OverlayFrame`, `IOverlayFrameSink`, WinForms renderer).

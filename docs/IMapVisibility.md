@@ -10,12 +10,13 @@ Line-of-sight queries between world positions for ESP and aim features.
 
 ## Behavior
 
-Phase 4 registers `MapVisibilityStub`, which always returns `true`. Real BVH raycasting is implemented in Phase 5.
+Implemented by `MapVisibilityService` using `MapRaycastIndex` BVH grids built from parsed collision meshes. Returns `true` when no mesh is available for the active map.
 
 ## Dependencies
 
-Phase 5: parsed map geometry and `MapRaycastIndex`.
+- `MapDataService` preload at startup
+- Active map set by `GameMemoryLoop` when attached
 
 ## Configuration
 
-`Toolkit:Maps` host settings (Phase 5).
+`Toolkit:Maps:CacheDirectory` and optional `Toolkit:Maps:MapsDirectory`.

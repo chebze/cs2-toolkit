@@ -1,4 +1,5 @@
 using CS2Toolkit.Game.Abstractions;
+using CS2Toolkit.Game.Maps;
 using CS2Toolkit.Game.Offsets;
 using CS2Toolkit.Game.Process;
 using CS2Toolkit.Game.Services;
@@ -29,10 +30,15 @@ public static class DependencyInjection
 
         services.TryAddSingleton<MapCatalogService>();
         services.TryAddSingleton<IMapCatalog>(sp => sp.GetRequiredService<MapCatalogService>());
-        services.TryAddSingleton<MapVisibilityStub>();
-        services.TryAddSingleton<IMapVisibility>(sp => sp.GetRequiredService<MapVisibilityStub>());
+
+        services.TryAddSingleton<MapVisibilityChecker>();
+        services.TryAddSingleton<MapPhysicsParser>();
+        services.TryAddSingleton<MapDataService>();
+        services.TryAddSingleton<MapVisibilityService>();
+        services.TryAddSingleton<IMapVisibility>(sp => sp.GetRequiredService<MapVisibilityService>());
 
         services.AddHostedService<OffsetBootstrapHostedService>();
+        services.AddHostedService<MapPreloadHostedService>();
         services.AddHostedService<GameMemoryLoop>();
 
         return services;

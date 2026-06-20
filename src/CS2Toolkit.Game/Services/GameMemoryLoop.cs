@@ -13,19 +13,23 @@ internal sealed class GameMemoryLoop : BackgroundService
     private readonly ProcessMemory _memory;
     private readonly OffsetDownloader _offsetDownloader;
     private readonly GameStatePublisher _publisher;
+    private readonly MapVisibilityService _mapVisibility;
     private readonly ToolkitHostSettings _options;
     private readonly ILogger<GameMemoryLoop> _logger;
+    private string? _activeMapName;
 
     public GameMemoryLoop(
         ProcessMemory memory,
         OffsetDownloader offsetDownloader,
         GameStatePublisher publisher,
+        MapVisibilityService mapVisibility,
         IOptions<ToolkitHostSettings> options,
         ILogger<GameMemoryLoop> logger)
     {
         _memory = memory;
         _offsetDownloader = offsetDownloader;
         _publisher = publisher;
+        _mapVisibility = mapVisibility;
         _options = options.Value;
         _logger = logger;
     }
@@ -51,6 +55,7 @@ internal sealed class GameMemoryLoop : BackgroundService
             {
                 var snapshot = factory.Create();
                 _publisher.Publish(snapshot);
+                UpdateActiveMap(snapshot.MapName);
 
                 if (_memory.IsAttached && DateTimeOffset.UtcNow - lastSummaryLog > TimeSpan.FromSeconds(1))
                 {
@@ -63,6 +68,15 @@ internal sealed class GameMemoryLoop : BackgroundService
                 _logger.LogWarning(ex, "Memory read failed");
             }
         }
+    }
+
+    private void UpdateActiveMap(string? mapName)
+    {
+        if (string.Equals(_activeMapName, mapName, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        _activeMapName = mapName;
+        _mapVisibility.SetActiveMap(mapName);
     }
 
     private void LogSnapshotSummary(GameSnapshot snapshot)

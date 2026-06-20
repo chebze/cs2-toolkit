@@ -60,5 +60,8 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `IOffsetProvider` | [IOffsetProvider.md](IOffsetProvider.md) |
 | `IMapCatalog` | [IMapCatalog.md](IMapCatalog.md) |
 | `IMapVisibility` | [IMapVisibility.md](IMapVisibility.md) |
+| `MapDataService` | [MapDataService.md](MapDataService.md) |
+| `MapVisibilityService` | [MapVisibilityService.md](MapVisibilityService.md) |
+| `MapPhysicsParser` | [MapPhysicsParser.md](MapPhysicsParser.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

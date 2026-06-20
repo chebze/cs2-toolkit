@@ -10,6 +10,8 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4" />
+    <PackageReference Include="ValvePak" Version="4.0.0.142" />
+    <PackageReference Include="ValveResourceFormat" Version="14.0.4733" />
   </ItemGroup>
 
   <ItemGroup>

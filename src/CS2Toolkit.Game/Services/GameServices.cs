@@ -150,8 +150,3 @@ internal sealed class MapCatalogService : IMapCatalog
             ? _mapNameReader.ReadCurrentMap(_memory, _offsets.Offsets)
             : null;
 }
-
-internal sealed class MapVisibilityStub : IMapVisibility
-{
-    public bool HasLineOfSight(Vector3 from, Vector3 to) => true;
-}
