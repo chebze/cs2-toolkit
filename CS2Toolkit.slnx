@@ -17,4 +17,10 @@
     <Project Path="src/CS2Toolkit.Runtime.Abstractions/CS2Toolkit.Runtime.Abstractions.csproj" />
     <Project Path="src/CS2Toolkit.Runtime/CS2Toolkit.Runtime.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CS2Toolkit.Models.Tests/CS2Toolkit.Models.Tests.csproj" />
+    <Project Path="tests/CS2Toolkit.Configuration.Tests/CS2Toolkit.Configuration.Tests.csproj" />
+    <Project Path="tests/CS2Toolkit.Services.Tests/CS2Toolkit.Services.Tests.csproj" />
+    <Project Path="tests/CS2Toolkit.API.Tests/CS2Toolkit.API.Tests.csproj" />
+  </Folder>
 </Solution>
