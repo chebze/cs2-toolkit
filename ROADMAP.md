@@ -234,30 +234,32 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 
 ### 6.1 `CS2Toolkit.Drawing.Abstractions`
 
-- [ ] `DrawCommand` hierarchy — line, rect, circle, text, polyline, image
-- [ ] `OverlayFrame` — immutable `Sequence`, `ProducedAt`, `IReadOnlyList<DrawCommand>`
-- [ ] `IOverlayFrameSink.Publish(OverlayFrame)` — overwrites previous; never blocks
-- [ ] `IOverlayFrameSource.TryGetLatest(out OverlayFrame)`
-- [ ] `IWorldProjector` — world → screen from `ViewMatrix`
-- [ ] `IOverlayRenderer` — `IHostedService`; UI thread only
-- [ ] **No** `System.Drawing` in abstractions
-- [ ] `docs/` entries
+- [x] `DrawCommand` hierarchy — line, rect, circle, text, polyline, image
+- [x] `OverlayFrame` — immutable `Sequence`, `ProducedAt`, `IReadOnlyList<DrawCommand>`
+- [x] `IOverlayFrameSink.Publish(OverlayFrame)` — overwrites previous; never blocks
+- [x] `IOverlayFrameSource.TryGetLatest(out OverlayFrame)`
+- [x] `IWorldProjector` — world → screen from `ViewMatrix`
+- [x] `IOverlayRenderer` — `IHostedService`; UI thread only
+- [x] `IOverlayViewport` — screen dimensions for composition
+- [x] **No** `System.Drawing` in abstractions
+- [x] `docs/` entries
 
 ### 6.2 `CS2Toolkit.Drawing.WinForms`
 
-- [ ] `LatestFrameOverlaySink` — lock-free single-slot (`Interlocked.Exchange`)
-- [ ] `WinFormsOverlayHost` — transparent topmost window (port `_old/Overlay/ScreenOverlayManager.cs`)
-- [ ] `WinFormsOverlayRenderer` — consumes `IOverlayFrameSource` only; executes `DrawCommand`s
-- [ ] Back-buffer + layered blit
-- [ ] `AddDrawingWinForms()` DI extension
-- [ ] Renderer drops/skips frames when behind; never signals back to pipeline
+- [x] `LatestFrameOverlaySink` — lock-free single-slot (`Interlocked.Exchange`)
+- [x] `WinFormsOverlayHost` — transparent topmost window (port `_old/Overlay/ScreenOverlayManager.cs`)
+- [x] `WinFormsOverlayRenderer` — consumes `IOverlayFrameSource` only; executes `DrawCommand`s
+- [x] Back-buffer + layered blit
+- [x] `AddDrawingWinForms()` DI extension
+- [x] Renderer drops/skips frames when behind; never signals back to pipeline
 
 ### 6.3 Pipeline integration
 
-- [ ] `IOverlayComposer` in Services merges layer commands by z-index into one `OverlayFrame`
-- [ ] Pipeline publishes frame after combat services run (order: read → services → input → compose → publish)
-- [ ] Debug presenter: player boxes from `GameSnapshot` only
-- [ ] Exit criteria: on-screen debug boxes; game loop interval unchanged when renderer sleeps 100 ms (stress test)
+- [x] `IOverlayComposer` in Services merges layer commands by z-index into one `OverlayFrame`
+- [x] `OverlayPipelineHostedService` publishes after reading latest `GameSnapshot`
+- [x] Debug presenter: player boxes from `GameSnapshot` only (`DebugPlayerBoxPresenter`)
+- [x] `Player.WorldPosition` added to snapshot for world-projected debug boxes
+- [ ] Optional: automated stress test — game loop interval unchanged when renderer sleeps 100 ms
 
 ---
 

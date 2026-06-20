@@ -1,5 +1,7 @@
 namespace CS2Toolkit.Game.Internal;
 
+using CS2Toolkit.Models.Abstractions;
+
 internal sealed class LegacyMemoryState
 {
     public bool IsAttached { get; init; }
@@ -27,6 +29,7 @@ internal sealed class LegacyPlayerInfo
     public int Health { get; init; }
     public bool IsAlive { get; init; }
     public bool IsLocalPlayer { get; init; }
+    public Vector3? WorldPosition { get; init; }
 }
 
 internal sealed class LegacyRoundInfo

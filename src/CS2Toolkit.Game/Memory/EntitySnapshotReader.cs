@@ -1,5 +1,6 @@
 using CS2Toolkit.Game.Internal;
 using CS2Toolkit.Game.Process;
+using CS2Toolkit.Models.Abstractions;
 
 namespace CS2Toolkit.Game.Memory;
 
@@ -711,6 +712,7 @@ internal sealed class EntitySnapshotReader
 
         var (isAlive, health) = ResolveAliveState(controller, pawn);
         var isLocal = controller == localController;
+        var worldPosition = ReadPawnWorldPosition(pawn);
 
         players.Add(new LegacyPlayerInfo
         {
@@ -719,7 +721,8 @@ internal sealed class EntitySnapshotReader
             Team = team,
             Health = health,
             IsAlive = isAlive,
-            IsLocalPlayer = isLocal
+            IsLocalPlayer = isLocal,
+            WorldPosition = worldPosition
         });
 
         return true;
@@ -920,5 +923,17 @@ internal sealed class EntitySnapshotReader
             return nint.Zero;
 
         return _memory.ReadPtr(listEntry + (nint)(spacing * (pawnHandle & 0x1FF)));
+    }
+
+    private Vector3? ReadPawnWorldPosition(nint pawn)
+    {
+        if (pawn == nint.Zero || _offsets.M_vOldOrigin == nint.Zero)
+            return null;
+
+        var x = _memory.Read<float>(pawn + _offsets.M_vOldOrigin);
+        var y = _memory.Read<float>(pawn + _offsets.M_vOldOrigin + 4);
+        var z = _memory.Read<float>(pawn + _offsets.M_vOldOrigin + 8);
+        var position = new Vector3(x, y, z);
+        return position.IsValid ? position : null;
     }
 }

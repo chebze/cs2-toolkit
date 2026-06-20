@@ -5,7 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CS2Toolkit.Models\CS2Toolkit.Models.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CS2Toolkit.Models.Abstractions\CS2Toolkit.Models.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

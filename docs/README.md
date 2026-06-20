@@ -63,5 +63,10 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `MapDataService` | [MapDataService.md](MapDataService.md) |
 | `MapVisibilityService` | [MapVisibilityService.md](MapVisibilityService.md) |
 | `MapPhysicsParser` | [MapPhysicsParser.md](MapPhysicsParser.md) |
+| `OverlayFrame` | [OverlayFrame.md](OverlayFrame.md) |
+| `IOverlayFrameSink` | [IOverlayFrameSink.md](IOverlayFrameSink.md) |
+| `WinFormsOverlayRenderer` | [WinFormsOverlayRenderer.md](WinFormsOverlayRenderer.md) |
+| `OverlayComposer` | [OverlayComposer.md](OverlayComposer.md) |
+| `DebugPlayerBoxPresenter` | [DebugPlayerBoxPresenter.md](DebugPlayerBoxPresenter.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

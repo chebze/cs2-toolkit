@@ -6,4 +6,5 @@ public sealed record Player(
     Team Team,
     int Health,
     bool IsAlive,
-    bool IsLocalPlayer);
+    bool IsLocalPlayer,
+    Vector3? WorldPosition);

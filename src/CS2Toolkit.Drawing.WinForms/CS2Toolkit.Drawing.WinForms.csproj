@@ -8,11 +8,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CS2Toolkit.Drawing.Abstractions\CS2Toolkit.Drawing.Abstractions.csproj" />
-    <ProjectReference Include="..\CS2Toolkit.Models\CS2Toolkit.Models.csproj" />
   </ItemGroup>
 
 </Project>
