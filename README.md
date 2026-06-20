@@ -20,6 +20,14 @@ bash scripts/dependency-guard.sh
 dotnet run --project src/CS2Toolkit.Runtime/CS2Toolkit.Runtime.csproj
 ```
 
+### Tests (no CS2 required)
+
+Linux-friendly unit and API integration tests cover `net9.0` libraries only (Models, Configuration, Services, API):
+
+```bash
+bash scripts/run-tests.sh
+```
+
 On startup:
 
 1. Offsets download (fatal if unavailable)
