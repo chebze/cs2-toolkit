@@ -21,6 +21,7 @@ internal sealed class FeatureCoordinator : BackgroundService
     private readonly IOverlayViewport _viewport;
     private readonly ToolkitHostSettings _options;
     private readonly IRuntimeOrchestrator _orchestrator;
+    private readonly IProfileRuntimeSync _runtimeSync;
     private readonly ILogger<FeatureCoordinator> _logger;
 
     public FeatureCoordinator(
@@ -33,6 +34,7 @@ internal sealed class FeatureCoordinator : BackgroundService
         IOverlayViewport viewport,
         IOptions<ToolkitHostSettings> options,
         IRuntimeOrchestrator orchestrator,
+        IProfileRuntimeSync runtimeSync,
         ILogger<FeatureCoordinator> logger)
     {
         _gameState = gameState;
@@ -44,6 +46,7 @@ internal sealed class FeatureCoordinator : BackgroundService
         _viewport = viewport;
         _options = options.Value;
         _orchestrator = orchestrator;
+        _runtimeSync = runtimeSync;
         _logger = logger;
     }
 
@@ -72,34 +75,37 @@ internal sealed class FeatureCoordinator : BackgroundService
 
     private void ProcessTick(GameSnapshot snapshot)
     {
-        var weaponId = (ushort)(snapshot.LocalPlayer?.ActiveWeaponId.Value ?? 0);
-        var settings = _configuration.Current;
-        var weaponSettings = _configuration.ResolveWeapon(weaponId);
-
-        var context = new FeatureContext
+        using (_runtimeSync.Acquire())
         {
-            Snapshot = snapshot,
-            Settings = settings,
-            WeaponSettings = weaponSettings,
-            Input = _input
-        };
+            var weaponId = (ushort)(snapshot.LocalPlayer?.ActiveWeaponId.Value ?? 0);
+            var settings = _configuration.Current;
+            var weaponSettings = _configuration.ResolveWeapon(weaponId);
 
-        foreach (var feature in _features)
-        {
-            if (!feature.IsEnabled)
-                continue;
+            var context = new FeatureContext
+            {
+                Snapshot = snapshot,
+                Settings = settings,
+                WeaponSettings = weaponSettings,
+                Input = _input
+            };
 
-            try
+            foreach (var feature in _features)
             {
-                feature.OnSnapshot(context);
+                if (!feature.IsEnabled)
+                    continue;
+
+                try
+                {
+                    feature.OnSnapshot(context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Feature {FeatureId} failed during snapshot processing", feature.Id);
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Feature {FeatureId} failed during snapshot processing", feature.Id);
-            }
+
+            var frame = _composer.Compose(snapshot, _viewport.Width, _viewport.Height);
+            _frameSink.Publish(frame);
         }
-
-        var frame = _composer.Compose(snapshot, _viewport.Width, _viewport.Height);
-        _frameSink.Publish(frame);
     }
 }

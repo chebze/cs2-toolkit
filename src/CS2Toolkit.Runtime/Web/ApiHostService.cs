@@ -61,7 +61,9 @@ public sealed class ApiHostService : IHostedService
             _logger.LogWarning("Port {Requested} unavailable, using {Port}", requestedPort, port);
         }
 
-        Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
+        Environment.SetEnvironmentVariable(
+            "ASPNETCORE_URLS",
+            $"http://{(_options.BindApiToLocalhostOnly ? "127.0.0.1" : "0.0.0.0")}:{port}");
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -82,7 +84,7 @@ public sealed class ApiHostService : IHostedService
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _ = _app.RunAsync(_cts.Token);
 
-        var urls = NetworkAccess.GetAccessUrls(port);
+        var urls = NetworkAccess.GetAccessUrls(port, _options.BindApiToLocalhostOnly);
         _logger.LogInformation("Config UI available at {Urls}", string.Join(", ", urls));
 
         if (_options.OpenConfigUiOnStart)

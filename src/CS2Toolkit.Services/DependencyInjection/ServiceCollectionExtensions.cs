@@ -19,6 +19,9 @@ public static class DependencyInjection
         services.TryAddSingleton<StatusToastStore>();
         services.TryAddSingleton<IStatusToastPublisher>(sp => sp.GetRequiredService<StatusToastStore>());
         services.TryAddSingleton<IFeatureState, FeatureRuntimeState>();
+        services.TryAddSingleton<IProfileRuntimeSync, ProfileRuntimeSync>();
+        services.AddSingleton<ActiveProfileSwitcher>();
+        services.TryAddSingleton<IActiveProfileSwitcher>(sp => sp.GetRequiredService<ActiveProfileSwitcher>());
         services.TryAddSingleton<ProfileSettingsSaver>();
         services.TryAddSingleton<FeatureRegistry>();
         services.TryAddSingleton<IFeatureRegistry>(sp => sp.GetRequiredService<FeatureRegistry>());
@@ -49,7 +52,7 @@ public static class DependencyInjection
         services.AddHostedService<FeatureCoordinator>();
         services.AddHostedService<RadarStateUpdater>();
         services.AddHostedService<StatusToastOrchestrator>();
-        services.AddHostedService<FeatureStateHydrator>();
+        services.AddHostedService(sp => sp.GetRequiredService<ActiveProfileSwitcher>());
         services.AddHostedService<ProfileSwitchHostedService>();
 
         return services;

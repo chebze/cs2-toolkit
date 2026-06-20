@@ -12,6 +12,7 @@ internal sealed class ProfileSwitchHostedService : IHostedService
     private readonly IKeybindMatcher _keybindMatcher;
     private readonly IConfigurationStore _configurationStore;
     private readonly IConfigurationChangeNotifier _changeNotifier;
+    private readonly IActiveProfileSwitcher _profileSwitcher;
     private readonly IStatusToastPublisher _statusToasts;
     private readonly ILogger<ProfileSwitchHostedService> _logger;
     private readonly object _lock = new();
@@ -22,6 +23,7 @@ internal sealed class ProfileSwitchHostedService : IHostedService
         IKeybindMatcher keybindMatcher,
         IConfigurationStore configurationStore,
         IConfigurationChangeNotifier changeNotifier,
+        IActiveProfileSwitcher profileSwitcher,
         IStatusToastPublisher statusToasts,
         ILogger<ProfileSwitchHostedService> logger)
     {
@@ -29,6 +31,7 @@ internal sealed class ProfileSwitchHostedService : IHostedService
         _keybindMatcher = keybindMatcher;
         _configurationStore = configurationStore;
         _changeNotifier = changeNotifier;
+        _profileSwitcher = profileSwitcher;
         _statusToasts = statusToasts;
         _logger = logger;
     }
@@ -88,7 +91,7 @@ internal sealed class ProfileSwitchHostedService : IHostedService
 
         try
         {
-            _configurationStore.SetActiveProfile(profileId);
+            _profileSwitcher.SwitchTo(profileId);
             var profile = _configurationStore.GetActiveProfile();
             _statusToasts.Publish($"Profile: {profile.Name}", TimeSpan.FromSeconds(2));
             _logger.LogInformation("Switched to config profile {ProfileName} ({ProfileId})", profile.Name, profile.Id);

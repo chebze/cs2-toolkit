@@ -15,7 +15,7 @@ Implements `IHostedService`:
 
 ## Behavior
 
-- Binds to `0.0.0.0:{port}` starting from `ConfigurationStore.WebPort` (default 8080).
+- Binds to `127.0.0.1:{port}` when `Toolkit:BindApiToLocalhostOnly` is `true` (default); otherwise `0.0.0.0:{port}`.
 - If the requested port is taken, scans up to 100 ports and persists the chosen port via `IConfigurationStore.UpdateWebPort`.
 - Forwards `IConfigurationStore`, `IDashboardInfoProvider`, and `IRadarStreamSource` from the root host DI container into the web app.
 - Serves static files from `{AppContext.BaseDirectory}/wwwroot` when `index.html` exists (built from `CS2Toolkit.Frontend` during `dotnet build`).
@@ -34,4 +34,5 @@ Implements `IHostedService`:
 | Key | Default | Description |
 |-----|---------|-------------|
 | `Toolkit:OpenConfigUiOnStart` | `true` | Open browser on API host start |
+| `Toolkit:BindApiToLocalhostOnly` | `true` | Bind Kestrel to loopback only |
 | Store `webPort` | `8080` | Preferred HTTP port |

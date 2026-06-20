@@ -123,7 +123,9 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `FeatureRegistry` | [FeatureRegistry.md](FeatureRegistry.md) |
 | `FeatureContext` | [FeatureContext.md](FeatureContext.md) |
 | `FeatureCoordinator` | [FeatureCoordinator.md](FeatureCoordinator.md) |
-| `FeatureStateHydrator` | [FeatureStateHydrator.md](FeatureStateHydrator.md) |
+| `ActiveProfileSwitcher` | [ActiveProfileSwitcher.md](ActiveProfileSwitcher.md) |
+| `IProfileRuntimeSync` | [IProfileRuntimeSync.md](IProfileRuntimeSync.md) |
+| `ProfileRuntimeSync` | [ProfileRuntimeSync.md](ProfileRuntimeSync.md) |
 | `OverlayComposer` | [OverlayComposer.md](OverlayComposer.md) |
 | `DebugPlayerBoxPresenter` | [DebugPlayerBoxPresenter.md](DebugPlayerBoxPresenter.md) |
 

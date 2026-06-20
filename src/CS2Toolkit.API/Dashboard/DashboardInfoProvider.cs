@@ -1,9 +1,12 @@
 using CS2Toolkit.API.Abstractions;
 using CS2Toolkit.Configuration.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace CS2Toolkit.API.Dashboard;
 
-internal sealed class DashboardInfoProvider(IConfigurationStore configurationStore) : IDashboardInfoProvider
+internal sealed class DashboardInfoProvider(
+    IConfigurationStore configurationStore,
+    IOptions<ToolkitHostSettings> hostSettings) : IDashboardInfoProvider
 {
     public DashboardInfo GetDashboardInfo()
     {
@@ -12,7 +15,7 @@ internal sealed class DashboardInfoProvider(IConfigurationStore configurationSto
         return new DashboardInfo(
             new ActiveProfileSummary(active.Id, active.Name, active.SwitchHotkey),
             store.DefaultProfileId,
-            NetworkAccess.GetAccessUrls(store.WebPort),
+            NetworkAccess.GetAccessUrls(store.WebPort, hostSettings.Value.BindApiToLocalhostOnly),
             store.WebPort,
             "/radar");
     }

@@ -29,9 +29,27 @@
     </None>
   </ItemGroup>
 
-  <Target Name="BuildFrontend" BeforeTargets="Build" Condition="Exists('$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend/package.json')">
-    <Exec Command="npm ci" WorkingDirectory="$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend" />
-    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend" />
+  <PropertyGroup>
+    <FrontendDir>$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend</FrontendDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrontendSource Include="$(FrontendDir)/src/**" />
+    <FrontendSource Include="$(FrontendDir)/index.html" />
+    <FrontendSource Include="$(FrontendDir)/vite.config.ts" />
+    <FrontendSource Include="$(FrontendDir)/tsconfig.json" />
+    <FrontendSource Include="$(FrontendDir)/tsconfig.app.json" />
+    <FrontendSource Include="$(FrontendDir)/package.json" />
+    <FrontendSource Include="$(FrontendDir)/package-lock.json" />
+  </ItemGroup>
+
+  <Target Name="RestoreFrontendNpm" BeforeTargets="BuildFrontend" Condition="Exists('$(FrontendDir)/package.json')" Inputs="$(FrontendDir)/package.json;$(FrontendDir)/package-lock.json" Outputs="$(FrontendDir)/node_modules/.install-stamp">
+    <Exec Command="npm ci" WorkingDirectory="$(FrontendDir)" />
+    <Touch Files="$(FrontendDir)/node_modules/.install-stamp" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="BuildFrontend" BeforeTargets="Build" DependsOnTargets="RestoreFrontendNpm" Condition="Exists('$(FrontendDir)/package.json')" Inputs="@(FrontendSource)" Outputs="$(FrontendDir)/dist/index.html">
+    <Exec Command="npm run build" WorkingDirectory="$(FrontendDir)" />
   </Target>
 
   <Target Name="CopyFrontend" AfterTargets="BuildFrontend" Condition="Exists('$(MSBuildProjectDirectory)/../CS2Toolkit.Frontend/dist/index.html')">

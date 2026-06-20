@@ -23,6 +23,7 @@ public sealed class ToolkitHostSettings
     public FileLoggingSettings FileLogging { get; set; } = new();
     public bool OpenConfigUiOnStart { get; set; } = true;
     public bool ShowDebugPlayerBoxes { get; set; }
+    public bool BindApiToLocalhostOnly { get; set; } = true;
 }
 
 public sealed class AimHelperHostSettings

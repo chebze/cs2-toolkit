@@ -34,14 +34,14 @@ public static class WebApplicationExtensions
             return Results.Json(profile, json);
         });
 
-        app.MapPut("/api/configs/{id}", (string id, ConfigProfile profile, IConfigurationStore store, IFeatureState featureState) =>
+        app.MapPut("/api/configs/{id}", (string id, ConfigProfile profile, IConfigurationStore store, IActiveProfileSwitcher profileSwitcher) =>
         {
             if (id != profile.Id)
                 return Results.BadRequest("Profile id mismatch.");
 
             var updated = store.UpdateProfile(profile);
             if (store.GetActiveProfile().Id == id)
-                featureState.ApplyFromProfile(updated.Settings);
+                profileSwitcher.ApplyActiveProfileToggles(updated.Settings);
 
             return Results.Json(updated, json);
         });
@@ -52,9 +52,9 @@ public static class WebApplicationExtensions
             return Results.NoContent();
         });
 
-        app.MapPost("/api/configs/{id}/activate", (string id, IConfigurationStore store) =>
+        app.MapPost("/api/configs/{id}/activate", (string id, IActiveProfileSwitcher profileSwitcher) =>
         {
-            store.SetActiveProfile(id);
+            profileSwitcher.SwitchTo(id);
             return Results.Ok();
         });
 

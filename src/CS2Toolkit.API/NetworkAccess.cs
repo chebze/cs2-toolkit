@@ -49,9 +49,12 @@ public static class NetworkAccess
         }
     }
 
-    public static IReadOnlyList<string> GetAccessUrls(int port)
+    public static IReadOnlyList<string> GetAccessUrls(int port, bool localhostOnly = true)
     {
         var urls = new List<string> { $"http://localhost:{port}" };
+        if (localhostOnly)
+            return urls;
+
         foreach (var address in Dns.GetHostAddresses(Dns.GetHostName()))
         {
             if (address.AddressFamily == AddressFamily.InterNetwork)
