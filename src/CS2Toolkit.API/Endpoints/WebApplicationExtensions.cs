@@ -39,8 +39,13 @@ public static class WebApplicationExtensions
             if (id != profile.Id)
                 return Results.BadRequest("Profile id mismatch.");
 
+            var existing = store.GetProfile(id);
+            if (existing is null)
+                return Results.NotFound();
+
+            var togglesChanged = ProfileRuntimeToggles.Differ(existing.Settings, profile.Settings);
             var updated = store.UpdateProfile(profile);
-            if (store.GetActiveProfile().Id == id)
+            if (store.GetActiveProfile().Id == id && togglesChanged)
                 profileSwitcher.ApplyActiveProfileToggles(updated.Settings);
 
             return Results.Json(updated, json);

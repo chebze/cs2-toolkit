@@ -19,7 +19,7 @@ Also registered as `IHostedService` for startup hydration.
 - Subscribes to `ConfigurationChanged` and hydrates only when the active profile **id** changes (delete/default switch, etc.).
 - Skips re-entrant hydration while `SwitchTo` is in progress (`_applying` guard).
 - Does **not** reset runtime toggles on `UpdateProfile`, keybind edits, or F11 save.
-- Config UI `PUT /api/configs/{id}` on the active profile calls `ApplyActiveProfileToggles`.
+- Config UI `PUT /api/configs/{id}` on the active profile calls `ApplyActiveProfileToggles` only when toggle fields in the request differ from the persisted profile.
 
 ## Dependencies
 
