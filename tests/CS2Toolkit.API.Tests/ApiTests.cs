@@ -22,23 +22,35 @@ public sealed class ApiTestHost : IAsyncDisposable
     public static async Task<ApiTestHost> StartAsync(Action<IServiceCollection> configureServices)
     {
         var host = new ApiTestHost();
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        WebApplication? app = null;
+        try
         {
-            EnvironmentName = "Testing",
-            Args = ["--urls", "http://127.0.0.1:0"]
-        });
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                EnvironmentName = "Testing",
+                Args = ["--urls", "http://127.0.0.1:0"]
+            });
 
-        configureServices(builder.Services);
-        host._app = builder.Build();
-        host._app.MapToolkitApi();
-        await host._app.StartAsync();
-        host.Client = new HttpClient { BaseAddress = new Uri(host._app.Urls.First()) };
-        return host;
+            configureServices(builder.Services);
+            app = builder.Build();
+            app.MapToolkitApi();
+            await app.StartAsync();
+            host._app = app;
+            host.Client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+            return host;
+        }
+        catch
+        {
+            if (app is not null)
+                await app.DisposeAsync();
+
+            throw;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        Client.Dispose();
+        Client?.Dispose();
         if (_app is not null)
             await _app.StopAsync();
         if (_app is not null)
@@ -75,7 +87,7 @@ public sealed class ConfigsApiTests
     [Fact]
     public async Task PutActiveProfile_applies_toggles_only_when_toggle_fields_change()
     {
-        var profile = CreateProfile();
+        var profile = CreateProfile("profile-1", "Default");
         var store = CreateStore(profile);
         var switcher = new Mock<IActiveProfileSwitcher>();
 
@@ -100,9 +112,33 @@ public sealed class ConfigsApiTests
     }
 
     [Fact]
+    public async Task PutInactiveProfile_skips_runtime_toggle_apply_even_when_toggles_change()
+    {
+        var active = CreateProfile("profile-active", "Active");
+        var inactive = CreateProfile("profile-inactive", "Inactive");
+        var store = CreateStore(active, inactive);
+        var switcher = new Mock<IActiveProfileSwitcher>();
+
+        await using var host = await ApiTestHost.StartAsync(services =>
+        {
+            services.AddSingleton(store.Object);
+            services.AddSingleton(switcher.Object);
+            services.AddSingleton(Mock.Of<IDashboardInfoProvider>());
+            services.AddSingleton(Mock.Of<IRadarStreamSource>());
+        });
+
+        var toggleUpdate = CloneProfile(inactive);
+        toggleUpdate.Settings.Triggerbot.Global.Enabled = true;
+
+        var response = await host.Client.PutAsJsonAsync($"/api/configs/{inactive.Id}", toggleUpdate);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        switcher.Verify(s => s.ApplyActiveProfileToggles(It.IsAny<ProfileSettings>()), Times.Never);
+    }
+
+    [Fact]
     public async Task ActivateProfile_calls_switcher()
     {
-        var profile = CreateProfile();
+        var profile = CreateProfile("profile-1", "Default");
         var store = CreateStore(profile);
         var switcher = new Mock<IActiveProfileSwitcher>();
 
@@ -122,7 +158,7 @@ public sealed class ConfigsApiTests
     [Fact]
     public async Task GetConfigs_returns_store_snapshot()
     {
-        var profile = CreateProfile();
+        var profile = CreateProfile("profile-1", "Default");
         var store = CreateStore(profile);
 
         await using var host = await ApiTestHost.StartAsync(services =>
@@ -142,36 +178,43 @@ public sealed class ConfigsApiTests
         Assert.Equal(1, profiles.GetArrayLength());
     }
 
-    private static ConfigProfile CreateProfile() =>
-        new() { Id = "profile-1", Name = "Default" };
+    private static ConfigProfile CreateProfile(string id, string name) =>
+        new() { Id = id, Name = name };
 
-    private static Mock<IConfigurationStore> CreateStore(ConfigProfile profile)
+    private static Mock<IConfigurationStore> CreateStore(ConfigProfile activeProfile, params ConfigProfile[] profiles)
     {
         var store = new Mock<IConfigurationStore>();
-        var persisted = CloneProfile(profile);
+        var persistedProfiles = profiles.Select(CloneProfile).ToDictionary(p => p.Id);
+        if (!persistedProfiles.ContainsKey(activeProfile.Id))
+            persistedProfiles[activeProfile.Id] = CloneProfile(activeProfile);
+
         var configurationStore = new ConfigurationStore
         {
-            ActiveProfileId = profile.Id,
-            DefaultProfileId = profile.Id,
-            Profiles = [persisted]
+            ActiveProfileId = activeProfile.Id,
+            DefaultProfileId = activeProfile.Id,
+            Profiles = persistedProfiles.Values.Select(CloneProfile).ToList()
         };
 
         store.Setup(s => s.GetStore()).Returns(() =>
         {
-            configurationStore.Profiles = [CloneProfile(persisted)];
+            configurationStore.Profiles = persistedProfiles.Values.Select(CloneProfile).ToList();
             return configurationStore;
         });
-        store.Setup(s => s.GetActiveProfile()).Returns(() => CloneProfile(persisted));
-        store.Setup(s => s.GetProfile(profile.Id)).Returns(() => CloneProfile(persisted));
+        store.Setup(s => s.GetActiveProfile()).Returns(() => CloneProfile(persistedProfiles[activeProfile.Id]));
+        store.Setup(s => s.GetProfile(It.IsAny<string>()))
+            .Returns<string>(id => persistedProfiles.TryGetValue(id, out var profile) ? CloneProfile(profile) : null);
         store.Setup(s => s.UpdateProfile(It.IsAny<ConfigProfile>()))
             .Returns<ConfigProfile>(updated =>
             {
-                persisted = CloneProfile(updated);
-                return CloneProfile(persisted);
+                persistedProfiles[updated.Id] = CloneProfile(updated);
+                return CloneProfile(updated);
             });
 
         return store;
     }
+
+    private static Mock<IConfigurationStore> CreateStore(ConfigProfile profile) =>
+        CreateStore(profile, profile);
 
     private static ConfigProfile CloneProfile(ConfigProfile profile)
     {
