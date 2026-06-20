@@ -13,12 +13,14 @@ internal sealed class EntitySnapshotReader
     private readonly ProcessMemory _memory;
     private readonly GameOffsets _offsets;
     private readonly ClairvoyanceAdvisorStub _clairvoyanceAdvisor;
+    private readonly SoundEventReader _soundEventReader;
 
     internal EntitySnapshotReader(ProcessMemory memory, GameOffsets offsets, ClairvoyanceOptionsStub clairvoyanceOptions)
     {
         _memory = memory;
         _offsets = offsets;
         _clairvoyanceAdvisor = new ClairvoyanceAdvisorStub(memory, offsets, clairvoyanceOptions);
+        _soundEventReader = new SoundEventReader(memory, offsets);
     }
 
     public LegacyMemoryState ReadState()
@@ -43,6 +45,7 @@ internal sealed class EntitySnapshotReader
 
         var players = CollectPlayers(entityList, localController);
         EnrichPlayerEspData(entityList, localTeam, players);
+        var recentSounds = _soundEventReader.Detect(entityList, localPawn, localTeam, players, isInMatch: true);
         var stats = ResolveStats(clientBase, localController, localTeam, players);
         var bombSites = BombSiteHelper.TryReadSites(_memory, _offsets, entityList);
         var bomb = ResolveLegacyBombInfo(clientBase, entityList, players, bombSites);
@@ -63,7 +66,8 @@ internal sealed class EntitySnapshotReader
             Round = round,
             Bomb = bomb,
             BombSites = bombSites,
-            ClairvoyanceTips = tips
+            ClairvoyanceTips = tips,
+            RecentSounds = recentSounds
         };
     }
 

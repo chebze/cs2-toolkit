@@ -17,6 +17,7 @@ internal sealed class LegacyMemoryState
     public LegacyBombInfo Bomb { get; init; } = LegacyBombInfo.Hidden;
     public LegacyBombSitesInfo BombSites { get; init; } = LegacyBombSitesInfo.Empty;
     public IReadOnlyList<string> ClairvoyanceTips { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<SoundEvent> RecentSounds { get; init; } = Array.Empty<SoundEvent>();
 
     public static LegacyMemoryState Detached { get; } = new();
 }

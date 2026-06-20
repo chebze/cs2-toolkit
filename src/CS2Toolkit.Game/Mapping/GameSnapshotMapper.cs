@@ -26,7 +26,7 @@ internal static class GameSnapshotMapper
             MapBomb(state.Bomb),
             MapBombSites(state.BombSites),
             viewMatrix,
-            [],
+            state.RecentSounds,
             [],
             state.ClairvoyanceTips,
             state.EnemiesAlive,

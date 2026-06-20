@@ -12,7 +12,7 @@ Record properties: attachment/match flags, `LocalPlayer`, `Players` (with option
 
 ## Behavior
 
-Produced exclusively by `CS2Toolkit.Game` mappers. Services must not mutate or re-parse raw memory into this shape.
+Produced exclusively by `CS2Toolkit.Game` mappers. `RecentSounds` contains enemy noise events detected on that tick via `SoundEventReader`. Services must not mutate or re-parse raw memory into this shape.
 
 ## Dependencies
 

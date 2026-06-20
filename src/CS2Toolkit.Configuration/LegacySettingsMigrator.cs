@@ -94,6 +94,7 @@ public sealed class LegacySettingsMigrator
             s.SoundEsp.MaxWorldRadius = options.EnemyNoise.MaxWorldRadius ?? s.SoundEsp.MaxWorldRadius;
             s.SoundEsp.RingCount = options.EnemyNoise.RingCount ?? s.SoundEsp.RingCount;
             s.SoundEsp.RingSpacing = options.EnemyNoise.RingSpacing ?? s.SoundEsp.RingSpacing;
+            s.SoundEsp.MaxDistanceUnits = options.EnemyNoise.MaxDistanceUnits ?? s.SoundEsp.MaxDistanceUnits;
         }
 
         if (options.Overlay?.GrenadeTrajectory is not null)
@@ -203,6 +204,7 @@ public sealed class LegacySettingsMigrator
 
     private sealed class LegacyEnemyNoiseOptions
     {
+        public float? MaxDistanceUnits { get; set; }
         public string? WaveColor { get; set; }
         public float? WaveLineWidth { get; set; }
         public int? WaveDurationMs { get; set; }

@@ -22,6 +22,7 @@ public sealed class SoundEspProfileOptions
     public float MaxWorldRadius { get; set; } = 90f;
     public int RingCount { get; set; } = 3;
     public float RingSpacing { get; set; } = 0.22f;
+    public float MaxDistanceUnits { get; set; } = 2000f;
 }
 
 public sealed class GrenadeVisualOptions

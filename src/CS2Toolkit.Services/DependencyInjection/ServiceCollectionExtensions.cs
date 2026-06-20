@@ -10,6 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddToolkitServices(this IServiceCollection services)
     {
         services.TryAddSingleton<EnemyEspTracker>();
+        services.TryAddSingleton<SoundEspWaveTracker>();
         services.TryAddSingleton<IFeatureState, FeatureRuntimeState>();
         services.TryAddSingleton<FeatureRegistry>();
         services.TryAddSingleton<IFeatureRegistry>(sp => sp.GetRequiredService<FeatureRegistry>());
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, TeammateStatsOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, BombStatusOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, EnemyEspOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, SoundEspOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
 

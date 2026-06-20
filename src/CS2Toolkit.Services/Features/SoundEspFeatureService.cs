@@ -4,12 +4,13 @@ namespace CS2Toolkit.Services.Features;
 
 internal sealed class SoundEspFeatureService : FeatureServiceBase
 {
-    public SoundEspFeatureService(IFeatureState state) : base(state, FeatureIds.SoundEsp)
+    private readonly SoundEspWaveTracker _tracker;
+
+    public SoundEspFeatureService(IFeatureState state, SoundEspWaveTracker tracker) : base(state, FeatureIds.SoundEsp)
     {
+        _tracker = tracker;
     }
 
-    public override void OnSnapshot(FeatureContext context)
-    {
-        // Sound tracking arrives in Phase 7.3.5.
-    }
+    public override void OnSnapshot(FeatureContext context) =>
+        _tracker.Update(context.Snapshot, context.Settings.Profile.SoundEsp);
 }

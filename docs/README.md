@@ -81,5 +81,9 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `BoneReader` | [BoneReader.md](BoneReader.md) |
 | `Player` | [Player.md](Player.md) |
 | `PlayerBones` | [PlayerBones.md](PlayerBones.md) |
+| `SoundEventReader` | [SoundEventReader.md](SoundEventReader.md) |
+| `SoundEspOverlayPresenter` | [SoundEspOverlayPresenter.md](SoundEspOverlayPresenter.md) |
+| `SoundEspWaveTracker` | [SoundEspWaveTracker.md](SoundEspWaveTracker.md) |
+| `SoundEspDrawBuilder` | [SoundEspDrawBuilder.md](SoundEspDrawBuilder.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).
