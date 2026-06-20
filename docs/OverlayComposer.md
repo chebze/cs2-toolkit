@@ -11,7 +11,8 @@ Implements `IOverlayComposer.Compose(snapshot, screenWidth, screenHeight)`.
 ## Behavior
 
 - Returns empty frame when detached without active toasts
-- Composes when status toasts are active even if detached from CS2
+- When detached with active toasts, composes **system presenters only** (`LayerName` `system`) so map-parse and inject prompts render without combat status UI
+- Composes full presenter stack when attached
 - Does **not** gate composition on `IsInMatch`; individual presenters decide whether to draw in lobby/menu vs in-round
 - Status overlays (`FeatureStatusOverlayPresenter`, TB/RCS status presenters) can render while attached outside a match
 - Sets `OverlayFrame.Interactive` when the menu feature is enabled

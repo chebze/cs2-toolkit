@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CS2Toolkit.Input;
 
-public sealed class KeybindDispatcher : IHostedService, IKeybindDispatcher
+public sealed class KeybindDispatcher : BackgroundService, IKeybindDispatcher
 {
     private readonly IInputListener _inputListener;
     private readonly IKeybindMatcher _keybindMatcher;
@@ -26,19 +26,26 @@ public sealed class KeybindDispatcher : IHostedService, IKeybindDispatcher
 
     public event EventHandler<KeybindActivatedEventArgs>? KeybindActivated;
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _orchestrator.WaitForPhaseAsync(StartupPhase.Overlay, cancellationToken);
+        await _orchestrator.WaitForPhaseAsync(StartupPhase.Overlay, stoppingToken);
         _inputListener.KeyDown += OnKeyDown;
         _logger.LogInformation(
             "Keybind dispatcher ready ({Count} bindings)",
             _keybindMatcher.GetKeybinds().Count(k => !string.IsNullOrWhiteSpace(k.KeyName)));
-    }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _inputListener.KeyDown -= OnKeyDown;
-        return Task.CompletedTask;
+        try
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Host shutdown.
+        }
+        finally
+        {
+            _inputListener.KeyDown -= OnKeyDown;
+        }
     }
 
     private void OnKeyDown(object? sender, KeyInputEvent e)

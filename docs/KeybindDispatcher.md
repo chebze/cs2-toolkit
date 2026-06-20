@@ -6,13 +6,14 @@ Maps physical key presses to toolkit keybind actions using definitions from `IKe
 
 ## Key API
 
-Implements `IKeybindDispatcher` and `IHostedService`.
+Implements `IKeybindDispatcher` as a `BackgroundService`.
 
 Raises `KeybindActivated` when a configured binding is pressed.
 
 ## Behavior
 
-- Subscribes to `IInputListener.KeyDown`
+- Waits for `StartupPhase.Overlay` in `ExecuteAsync` (does not block host `StartAsync`)
+- Subscribes to `IInputListener.KeyDown` after the overlay phase completes
 - Uses `IKeybindMatcher` for action lookup
 - Logs activated bindings; feature toggles handled by `FeatureRegistry` (inject remains in Runtime)
 
@@ -20,6 +21,7 @@ Raises `KeybindActivated` when a configured binding is pressed.
 
 - `IInputListener`
 - `IKeybindMatcher`
+- `IRuntimeOrchestrator`
 - `IKeybindConfiguration` (via matcher)
 
 ## Configuration

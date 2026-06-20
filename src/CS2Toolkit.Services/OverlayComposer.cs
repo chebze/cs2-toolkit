@@ -40,6 +40,8 @@ public sealed class OverlayComposer : IOverlayComposer
         {
             if (!hasToasts)
                 return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
+
+            return ComposeDetachedSystemFrame(screenWidth, screenHeight);
         }
 
         var commands = new List<DrawCommand>();
@@ -72,4 +74,36 @@ public sealed class OverlayComposer : IOverlayComposer
             commands,
             menuVisible);
     }
+
+    private OverlayFrame ComposeDetachedSystemFrame(int screenWidth, int screenHeight)
+    {
+        var commands = new List<DrawCommand>();
+        foreach (var presenter in _presenters)
+        {
+            if (!IsDetachedSystemPresenter(presenter))
+                continue;
+
+            try
+            {
+                commands.AddRange(presenter.Present(
+                    GameSnapshot.Detached,
+                    _projector,
+                    screenWidth,
+                    screenHeight));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Overlay presenter {Layer} failed", presenter.LayerName);
+            }
+        }
+
+        commands.Sort(static (a, b) => a.ZIndex.CompareTo(b.ZIndex));
+        return new OverlayFrame(
+            Interlocked.Increment(ref _sequence),
+            DateTimeOffset.UtcNow,
+            commands);
+    }
+
+    private static bool IsDetachedSystemPresenter(IOverlayPresenter presenter) =>
+        presenter.LayerName is "system";
 }
