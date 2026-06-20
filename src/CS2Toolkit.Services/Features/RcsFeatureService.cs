@@ -2,14 +2,29 @@ using CS2Toolkit.Services.Abstractions;
 
 namespace CS2Toolkit.Services.Features;
 
-internal sealed class RcsFeatureService : FeatureServiceBase
+internal sealed class RcsFeatureService : IFeatureService
 {
-    public RcsFeatureService(IFeatureState state) : base(state, FeatureIds.Rcs)
+    private readonly IFeatureState _state;
+    private readonly RcsController _controller;
+
+    public RcsFeatureService(IFeatureState state, RcsController controller)
     {
+        _state = state;
+        _controller = controller;
     }
 
-    public override void OnSnapshot(FeatureContext context)
+    public FeatureId Id => FeatureIds.Rcs;
+
+    public bool IsEnabled => true;
+
+    public void OnSnapshot(FeatureContext context)
     {
-        // Combat logic arrives in Phase 7.3.8.
+        if (!_state.IsEnabled(Id))
+        {
+            _controller.Reset();
+            return;
+        }
+
+        _controller.Process(context);
     }
 }

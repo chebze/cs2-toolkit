@@ -94,5 +94,8 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `TriggerbotController` | [TriggerbotController.md](TriggerbotController.md) |
 | `AutoStopper` | [AutoStopper.md](AutoStopper.md) |
 | `TriggerbotOverlayPresenter` | [TriggerbotOverlayPresenter.md](TriggerbotOverlayPresenter.md) |
+| `RcsReader` | [RcsReader.md](RcsReader.md) |
+| `RcsController` | [RcsController.md](RcsController.md) |
+| `RcsOverlayPresenter` | [RcsOverlayPresenter.md](RcsOverlayPresenter.md) |
 
 Legacy documentation for the monolith is in [`_old/docs/`](../_old/docs/).

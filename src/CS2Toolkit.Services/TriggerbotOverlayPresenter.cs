@@ -37,9 +37,11 @@ public sealed class TriggerbotOverlayPresenter : IOverlayPresenter
         var enabled = _state.IsEnabled(FeatureIds.Triggerbot);
         var statusColor = enabled ? 0xFF22C55Eu : 0xFFEF4444u;
 
+        var lineHeight = _host.StatusFontSize + 6f;
+
         commands.Add(new TextDrawCommand(
             _host.StatusMargin,
-            screenHeight - _host.StatusMargin - _host.StatusFontSize - 6f,
+            screenHeight - _host.StatusMargin - lineHeight * 2f,
             "TB",
             statusColor,
             _host.StatusFontSize,

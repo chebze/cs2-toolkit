@@ -10,7 +10,16 @@ public sealed class ToolkitHostSettings
     public MapHostSettings Maps { get; set; } = new();
     public GrenadePhysicsSettings Grenade { get; set; } = new();
     public TriggerbotHostSettings Triggerbot { get; set; } = new();
+    public RcsHostSettings Rcs { get; set; } = new();
     public FileLoggingSettings FileLogging { get; set; } = new();
+}
+
+public sealed class RcsHostSettings
+{
+    public int StatusFontSize { get; set; } = 16;
+    public int StatusMargin { get; set; } = 16;
+    public string EnabledColor { get; set; } = "#22C55E";
+    public string DisabledColor { get; set; } = "#EF4444";
 }
 
 public sealed class TriggerbotHostSettings

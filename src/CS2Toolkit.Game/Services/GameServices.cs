@@ -49,6 +49,7 @@ internal sealed class GameSnapshotFactory
     private readonly LocalPlayerReader _localPlayerReader;
     private readonly GrenadeTrajectoryReader _grenadeReader;
     private readonly TriggerbotReader _triggerbotReader;
+    private readonly RcsReader _rcsReader;
 
     public GameSnapshotFactory(
         ProcessMemory memory,
@@ -64,6 +65,7 @@ internal sealed class GameSnapshotFactory
         _localPlayerReader = new LocalPlayerReader();
         _grenadeReader = new GrenadeTrajectoryReader(memory, offsets, mapChecker, grenadeOptions);
         _triggerbotReader = new TriggerbotReader(memory, offsets, mapChecker);
+        _rcsReader = new RcsReader(memory, offsets);
     }
 
     public GameSnapshot Create()
@@ -74,7 +76,8 @@ internal sealed class GameSnapshotFactory
         var localPlayer = _localPlayerReader.Read(_memory, _offsets, legacy);
         var grenade = _grenadeReader.Read(legacy.IsInMatch);
         var triggerbot = _triggerbotReader.Read(legacy);
-        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer, grenade, triggerbot);
+        var rcs = _rcsReader.Read(legacy.IsInMatch);
+        return GameSnapshotMapper.Map(legacy, mapName, viewMatrix, localPlayer, grenade, triggerbot, rcs);
     }
 }
 

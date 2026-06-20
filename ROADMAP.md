@@ -299,7 +299,7 @@ Each feature: logic in Services, mapping already in Game, config from `IActiveCo
 | 7.3.5 | Sound ESP | **Done** |
 | 7.3.6 | Grenade arc | **Done** |
 | 7.3.7 | Triggerbot + autostop | **Done** |
-| 7.3.8 | RCS | Stub service only |
+| 7.3.8 | RCS | **Done** |
 | 7.3.9 | Aim helper | Stub service only |
 | 7.3.10 | Clairvoyance | Not started |
 | 7.3.11 | Radar state | Not started |
@@ -514,7 +514,7 @@ Only Runtime references implementation projects.
 | Phase 4 — Game pipeline | **Mostly done** (reader split deferred) |
 | Phase 5 — Maps and visibility | **Done** |
 | Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
-| Phase 7 — Services core | **Done** (feature migration 7.3.7+ pending) |
+| Phase 7 — Services core | **Done** (feature migration 7.3.9+ pending) |
 | Phases 8–10 | Not started |
 
-Next step: **Phase 7.3.7** — triggerbot + autostop.
+Next step: **Phase 7.3.9** — Aim helper.
