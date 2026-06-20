@@ -13,8 +13,8 @@ One-time migration from legacy configuration formats into v2 `ConfigurationStore
 
 ## Behavior
 
-- `JsonConfigurationStore` calls `TryMigrateLegacyStore` before appsettings migration when `data/configs/store.json` does not exist.
-- Appsettings migration reads `appsettings.json` in the content root, falling back to `_old/appsettings.json`.
+- `TryMigrateLegacyStore` imports `_old/data/configs/store.json` when present
+- `MigrateFromLegacyAppSettings` prefers `_old/appsettings.json` over v2 host `appsettings.json` for feature/keybind fields
 - Produces a default profile with mapped triggerbot, RCS, aim helper, ESP, sound, overlay, and keybind fields.
 
 ## Dependencies

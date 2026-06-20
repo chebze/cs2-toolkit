@@ -1,3 +1,4 @@
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Drawing.Abstractions;
 using CS2Toolkit.Game.Abstractions;
 using CS2Toolkit.Game.Maps;
@@ -16,6 +17,7 @@ internal sealed class RuntimeOrchestratorHostedService : BackgroundService
     private readonly MapDataService _mapDataService;
     private readonly IGameLifecycle _gameLifecycle;
     private readonly IGameAttachment _gameAttachment;
+    private readonly IActiveConfiguration _configuration;
     private readonly IStatusToastPublisher _statusToasts;
     private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<RuntimeOrchestratorHostedService> _logger;
@@ -27,6 +29,7 @@ internal sealed class RuntimeOrchestratorHostedService : BackgroundService
         MapDataService mapDataService,
         IGameLifecycle gameLifecycle,
         IGameAttachment gameAttachment,
+        IActiveConfiguration configuration,
         IStatusToastPublisher statusToasts,
         IHostApplicationLifetime lifetime,
         ILogger<RuntimeOrchestratorHostedService> logger)
@@ -37,6 +40,7 @@ internal sealed class RuntimeOrchestratorHostedService : BackgroundService
         _mapDataService = mapDataService;
         _gameLifecycle = gameLifecycle;
         _gameAttachment = gameAttachment;
+        _configuration = configuration;
         _statusToasts = statusToasts;
         _lifetime = lifetime;
         _logger = logger;
@@ -61,7 +65,8 @@ internal sealed class RuntimeOrchestratorHostedService : BackgroundService
             _orchestrator.CompletePhase(StartupPhase.Maps);
 
             _orchestrator.CompletePhase(StartupPhase.Input);
-            _statusToasts.SetPersistent("Press inject key to attach to CS2");
+            var injectKey = _configuration.Current.Keybinds.InjectKey;
+            _statusToasts.SetPersistent($"Press {injectKey} to attach to CS2");
 
             await WaitForAttachAsync(stoppingToken);
             _orchestrator.CompletePhase(StartupPhase.Attach);

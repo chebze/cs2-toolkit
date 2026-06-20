@@ -44,11 +44,21 @@ public sealed class ApiHostService : IHostedService
     {
         await _orchestrator.WaitForPhaseAsync(StartupPhase.Maps, cancellationToken);
         var store = _configurationStore.GetStore();
-        var port = NetworkAccess.FindAvailablePort(store.WebPort);
-        if (port != store.WebPort)
+        var requestedPort = store.WebPort;
+        if (!NetworkAccess.TryFindAvailablePort(requestedPort, out var port))
+        {
+            _logger.LogCritical(
+                "No available TCP port in range {StartPort}–{EndPort}",
+                requestedPort,
+                requestedPort + 99);
+            throw new InvalidOperationException(
+                $"No available TCP port in range {requestedPort}–{requestedPort + 99}.");
+        }
+
+        if (port != requestedPort)
         {
             _configurationStore.UpdateWebPort(port);
-            _logger.LogWarning("Port {Requested} unavailable, using {Port}", store.WebPort, port);
+            _logger.LogWarning("Port {Requested} unavailable, using {Port}", requestedPort, port);
         }
 
         Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");

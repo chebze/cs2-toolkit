@@ -1,6 +1,8 @@
+using CS2Toolkit.Configuration.Abstractions;
 using CS2Toolkit.Drawing.Abstractions;
 using CS2Toolkit.Models.Abstractions;
 using CS2Toolkit.Services.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace CS2Toolkit.Services;
 
@@ -8,6 +10,11 @@ public sealed class DebugPlayerBoxPresenter : IOverlayPresenter
 {
     private const float EstimatedPlayerHeight = 72f;
     private const int ZIndex = 100;
+
+    private readonly ToolkitHostSettings _options;
+
+    public DebugPlayerBoxPresenter(IOptions<ToolkitHostSettings> options) =>
+        _options = options.Value;
 
     public string LayerName => "debug-player-boxes";
 
@@ -17,7 +24,7 @@ public sealed class DebugPlayerBoxPresenter : IOverlayPresenter
         int screenWidth,
         int screenHeight)
     {
-        if (!snapshot.IsInMatch)
+        if (!_options.ShowDebugPlayerBoxes || !snapshot.IsInMatch)
             return [];
 
         var commands = new List<DrawCommand>();

@@ -22,6 +22,7 @@ public sealed class ToolkitHostSettings
     public AimHelperHostSettings AimHelper { get; set; } = new();
     public FileLoggingSettings FileLogging { get; set; } = new();
     public bool OpenConfigUiOnStart { get; set; } = true;
+    public bool ShowDebugPlayerBoxes { get; set; }
 }
 
 public sealed class AimHelperHostSettings

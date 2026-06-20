@@ -10,6 +10,7 @@ Implements `IOverlayPresenter` with layer name `debug-player-boxes`.
 
 ## Behavior
 
+- Disabled unless `Toolkit:ShowDebugPlayerBoxes` is `true` (default `false`)
 - Skips local player and players without `WorldPosition`
 - Projects feet + estimated head height to screen for dynamic box size
 - Team-colored rectangle and name/health label
@@ -21,4 +22,6 @@ Implements `IOverlayPresenter` with layer name `debug-player-boxes`.
 
 ## Configuration
 
-None (always registered in Phase 6; feature toggles arrive in Phase 7).
+| Key | Default | Description |
+|-----|---------|-------------|
+| `Toolkit:ShowDebugPlayerBoxes` | `false` | Draw team-colored debug boxes for all players |

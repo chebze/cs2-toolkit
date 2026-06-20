@@ -1,7 +1,7 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using CS2Toolkit.Configuration.Abstractions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CS2Toolkit.Configuration;
 
@@ -9,14 +9,19 @@ public sealed class JsonConfigurationStore : IConfigurationStore, IConfiguration
 {
     private readonly string _storePath;
     private readonly LegacySettingsMigrator _migrator;
+    private readonly ILogger<JsonConfigurationStore> _logger;
     private readonly object _lock = new();
     private ConfigurationStore _store;
 
     public event Action? ConfigurationChanged;
 
-    public JsonConfigurationStore(IHostEnvironment environment, LegacySettingsMigrator migrator)
+    public JsonConfigurationStore(
+        IHostEnvironment environment,
+        LegacySettingsMigrator migrator,
+        ILogger<JsonConfigurationStore> logger)
     {
         _migrator = migrator;
+        _logger = logger;
         var dataDir = Path.Combine(environment.ContentRootPath, "data", "configs");
         Directory.CreateDirectory(dataDir);
         _storePath = Path.Combine(dataDir, "store.json");
@@ -180,10 +185,18 @@ public sealed class JsonConfigurationStore : IConfigurationStore, IConfiguration
     {
         if (File.Exists(_storePath))
         {
-            var json = File.ReadAllText(_storePath);
-            var store = JsonSerializer.Deserialize<ConfigurationStore>(json, ConfigurationJson.Options);
-            if (store is not null && store.Profiles.Count > 0)
-                return store;
+            try
+            {
+                var json = File.ReadAllText(_storePath);
+                var store = JsonSerializer.Deserialize<ConfigurationStore>(json, ConfigurationJson.Options);
+                if (store is not null && store.Profiles.Count > 0)
+                    return store;
+            }
+            catch (JsonException ex)
+            {
+                BackupCorruptStore();
+                _logger.LogWarning(ex, "Ignoring corrupt configuration store at {StorePath}", _storePath);
+            }
         }
 
         var legacyStore = _migrator.TryMigrateLegacyStore(environment);
@@ -196,6 +209,20 @@ public sealed class JsonConfigurationStore : IConfigurationStore, IConfiguration
         var migrated = _migrator.MigrateFromLegacyAppSettings(environment);
         SaveStore(migrated);
         return migrated;
+    }
+
+    private void BackupCorruptStore()
+    {
+        var backupPath = $"{_storePath}.corrupt.{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+        try
+        {
+            File.Move(_storePath, backupPath, overwrite: true);
+            _logger.LogWarning("Backed up corrupt store to {BackupPath}", backupPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to back up corrupt store at {StorePath}", _storePath);
+        }
     }
 
     private ConfigProfile ResolveActiveProfile()

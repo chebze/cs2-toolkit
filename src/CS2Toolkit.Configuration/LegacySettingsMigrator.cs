@@ -22,10 +22,7 @@ public sealed class LegacySettingsMigrator
 
     public ConfigurationStore MigrateFromLegacyAppSettings(IHostEnvironment environment)
     {
-        var appSettingsPath = Path.Combine(environment.ContentRootPath, "appsettings.json");
-        var legacyPath = Path.Combine(environment.ContentRootPath, "_old", "appsettings.json");
-
-        var legacy = ReadLegacyOptions(File.Exists(appSettingsPath) ? appSettingsPath : legacyPath);
+        var legacy = ReadLegacyOptionsForMigration(environment);
         var profile = MapFromLegacyOptions(legacy, "Default");
 
         return new ConfigurationStore
@@ -36,6 +33,16 @@ public sealed class LegacySettingsMigrator
             Profiles = [profile],
             WebPort = 8080
         };
+    }
+
+    private static LegacyToolkitOptions ReadLegacyOptionsForMigration(IHostEnvironment environment)
+    {
+        var oldPath = Path.Combine(environment.ContentRootPath, "_old", "appsettings.json");
+        if (File.Exists(oldPath))
+            return ReadLegacyOptions(oldPath);
+
+        var v2Path = Path.Combine(environment.ContentRootPath, "appsettings.json");
+        return ReadLegacyOptions(v2Path);
     }
 
     private static LegacyToolkitOptions ReadLegacyOptions(string path)

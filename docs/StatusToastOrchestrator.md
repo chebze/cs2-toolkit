@@ -10,14 +10,11 @@ Hosted service that manages lifecycle toasts for attachment state (inject prompt
 
 ## Behavior
 
-- When detached: sets persistent `Press {InjectKey} to inject...` toast
+- When detached: does not set inject prompts (owned by `RuntimeOrchestratorHostedService`)
+- Waits for `StartupPhase.Input` before ticking
 - When attached: clears persistent toast
 - When in match: clears all toasts (game overlays take over)
 
 ## Dependencies
 
-- `IReadOnlyGameState`, `IGameAttachment`, `IActiveConfiguration`, `IStatusToastPublisher`
-
-## Configuration
-
-Inject key from active profile keybinds.
+- `IReadOnlyGameState`, `IGameAttachment`, `IStatusToastPublisher`, `IRuntimeOrchestrator`

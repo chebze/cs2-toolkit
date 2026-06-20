@@ -5,15 +5,28 @@ namespace CS2Toolkit.API;
 
 public static class NetworkAccess
 {
-    public static int FindAvailablePort(int startPort)
+    public static bool TryFindAvailablePort(int startPort, out int port)
     {
-        for (var port = startPort; port < startPort + 100; port++)
+        for (var candidate = startPort; candidate < startPort + 100; candidate++)
         {
-            if (IsPortAvailable(port))
-                return port;
+            if (!IsPortAvailable(candidate))
+                continue;
+
+            port = candidate;
+            return true;
         }
 
-        return startPort;
+        port = startPort;
+        return false;
+    }
+
+    public static int FindAvailablePort(int startPort)
+    {
+        if (TryFindAvailablePort(startPort, out var port))
+            return port;
+
+        throw new InvalidOperationException(
+            $"No available TCP port in range {startPort}–{startPort + 99}.");
     }
 
     public static bool IsPortAvailable(int port)

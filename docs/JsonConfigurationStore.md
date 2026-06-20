@@ -10,7 +10,8 @@ Implements `IConfigurationStore` and `IConfigurationChangeNotifier`.
 
 ## Behavior
 
-- Loads existing store on startup; migrates from legacy `appsettings.json` when missing
+- Loads existing store on startup; migrates from `_old/data/configs/store.json`, then `_old/appsettings.json`, when missing
+- On corrupt `store.json`: backs up to `store.json.corrupt.{timestamp}` and falls back to migration
 - Thread-safe CRUD with atomic save (write temp + move)
 - Raises `ConfigurationChanged` after mutations
 
@@ -18,6 +19,7 @@ Implements `IConfigurationStore` and `IConfigurationChangeNotifier`.
 
 - `LegacySettingsMigrator`
 - `IHostEnvironment` for content root paths
+- `ILogger<JsonConfigurationStore>`
 
 ## Configuration
 
