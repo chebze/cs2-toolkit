@@ -146,6 +146,13 @@ public sealed class LegacySettingsMigrator
             s.Visuals.Menu.FontSize = menu.FontSize ?? s.Visuals.Menu.FontSize;
         }
 
+        if (options.Overlay?.InjectionPrompt is not null)
+        {
+            var prompt = options.Overlay.InjectionPrompt;
+            s.Visuals.SystemMessages.Color = prompt.Color ?? s.Visuals.SystemMessages.Color;
+            s.Visuals.SystemMessages.FontSize = prompt.FontSize ?? s.Visuals.SystemMessages.FontSize;
+        }
+
         return profile;
     }
 
@@ -242,6 +249,7 @@ public sealed class LegacySettingsMigrator
         public LegacyTextPanelOverlayOptions? BombStatus { get; set; }
         public LegacyTextPanelOverlayOptions? Clairvoyance { get; set; }
         public LegacyMenuOverlayOptions? Menu { get; set; }
+        public LegacyTextPanelOverlayOptions? InjectionPrompt { get; set; }
     }
 
     private sealed class LegacyMenuOverlayOptions

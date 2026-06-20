@@ -13,6 +13,7 @@ public sealed class OverlayComposer : IOverlayComposer
     private readonly IReadOnlyList<IOverlayPresenter> _presenters;
     private readonly IWorldProjector _projector;
     private readonly IFeatureState _featureState;
+    private readonly IStatusToastPublisher _statusToasts;
     private readonly ILogger<OverlayComposer> _logger;
     private long _sequence;
 
@@ -20,22 +21,30 @@ public sealed class OverlayComposer : IOverlayComposer
         IEnumerable<IOverlayPresenter> presenters,
         IWorldProjector projector,
         IFeatureState featureState,
+        IStatusToastPublisher statusToasts,
         ILogger<OverlayComposer> logger)
     {
         _presenters = presenters.ToList();
         _projector = projector;
         _featureState = featureState;
+        _statusToasts = statusToasts;
         _logger = logger;
     }
 
     public OverlayFrame Compose(GameSnapshot snapshot, int screenWidth, int screenHeight)
     {
         var menuVisible = _featureState.IsEnabled(FeatureIds.Menu);
-        if (!snapshot.IsAttached)
-            return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
+        var hasToasts = _statusToasts.HasActive;
 
-        if (!snapshot.IsInMatch && !menuVisible)
+        if (!snapshot.IsAttached)
+        {
+            if (!hasToasts)
+                return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
+        }
+        else if (!snapshot.IsInMatch && !menuVisible && !hasToasts)
+        {
             return new OverlayFrame(Interlocked.Increment(ref _sequence), DateTimeOffset.UtcNow, []);
+        }
 
         var commands = new List<DrawCommand>();
         foreach (var presenter in _presenters)

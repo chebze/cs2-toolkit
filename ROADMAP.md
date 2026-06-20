@@ -304,7 +304,7 @@ Each feature: logic in Services, mapping already in Game, config from `IActiveCo
 | 7.3.10 | Clairvoyance | **Done** |
 | 7.3.11 | Radar state | **Done** |
 | 7.3.12 | In-game menu overlay | **Done** |
-| 7.3.13 | Status toasts / system messages | Not started |
+| 7.3.13 | Status toasts / system messages | **Done** |
 
 Per-feature checklist:
 
@@ -514,7 +514,7 @@ Only Runtime references implementation projects.
 | Phase 4 — Game pipeline | **Mostly done** (reader split deferred) |
 | Phase 5 — Maps and visibility | **Done** |
 | Phase 6 — Drawing (non-blocking) | **Done** (renderer stress test deferred) |
-| Phase 7 — Services core | **Done** (feature migration 7.3.12+ pending) |
+| Phase 7 — Services core | **Done** (feature migration 7.3.13 pending) |
 | Phases 8–10 | Not started |
 
-Next step: **Phase 7.3.12** — In-game menu overlay.
+Next step: **Phase 7.3.13** — Status toasts / system messages.

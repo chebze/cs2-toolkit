@@ -10,17 +10,20 @@ public sealed class FeatureRegistry : IFeatureRegistry, IHostedService
     private readonly IReadOnlyList<IFeatureService> _features;
     private readonly IFeatureState _state;
     private readonly IKeybindDispatcher _keybindDispatcher;
+    private readonly IStatusToastPublisher _statusToasts;
     private readonly ILogger<FeatureRegistry> _logger;
 
     public FeatureRegistry(
         IEnumerable<IFeatureService> features,
         IFeatureState state,
         IKeybindDispatcher keybindDispatcher,
+        IStatusToastPublisher statusToasts,
         ILogger<FeatureRegistry> logger)
     {
         _features = features.ToList();
         _state = state;
         _keybindDispatcher = keybindDispatcher;
+        _statusToasts = statusToasts;
         _logger = logger;
     }
 
@@ -106,10 +109,12 @@ public sealed class FeatureRegistry : IFeatureRegistry, IHostedService
 
             case ToolkitKeybindActions.Panic:
                 _state.DisableAllCombatFeatures();
+                _statusToasts.Publish("Combat features disabled", TimeSpan.FromSeconds(2));
                 _logger.LogWarning("Panic pressed — all combat features disabled");
                 break;
 
             case ToolkitKeybindActions.SaveSettings:
+                _statusToasts.Publish("Settings save not wired yet", TimeSpan.FromSeconds(2));
                 _logger.LogInformation("Save settings keybind pressed (persistence wiring deferred)");
                 break;
         }

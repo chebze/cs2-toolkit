@@ -61,6 +61,14 @@ public sealed class VisualProfileOptions
         Color = "#B794F4"
     };
     public MenuOverlayOptions Menu { get; set; } = new();
+    public SystemMessageOverlayOptions SystemMessages { get; set; } = new();
+}
+
+public sealed class SystemMessageOverlayOptions
+{
+    public int Margin { get; set; } = 16;
+    public string Color { get; set; } = "#FFFFFFFF";
+    public float FontSize { get; set; } = 14f;
 }
 
 public sealed class MenuOverlayOptions

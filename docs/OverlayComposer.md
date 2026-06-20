@@ -10,7 +10,8 @@ Implements `IOverlayComposer.Compose(snapshot, screenWidth, screenHeight)`.
 
 ## Behavior
 
-- Returns empty frame when detached or not in match (unless menu is open)
+- Returns empty frame when detached without active toasts
+- Composes when status toasts are active even if detached from CS2
 - Sets `OverlayFrame.Interactive` when the menu feature is enabled
 - Assigns incrementing `Sequence` per composed frame
 
@@ -19,6 +20,7 @@ Implements `IOverlayComposer.Compose(snapshot, screenWidth, screenHeight)`.
 - `IEnumerable<IOverlayPresenter>`
 - `IWorldProjector`
 - `IFeatureState`
+- `IStatusToastPublisher`
 
 ## Configuration
 
