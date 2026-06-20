@@ -77,6 +77,9 @@ _Stub types from Phase 1 are listed below. Expand as implementation proceeds._
 | `BombStatusOverlayPresenter` | [BombStatusOverlayPresenter.md](BombStatusOverlayPresenter.md) |
 | `ClairvoyanceAdvisor` | [ClairvoyanceAdvisor.md](ClairvoyanceAdvisor.md) |
 | `ClairvoyanceOverlayPresenter` | [ClairvoyanceOverlayPresenter.md](ClairvoyanceOverlayPresenter.md) |
+| `RadarReader` | [RadarReader.md](RadarReader.md) |
+| `RadarState` | [RadarState.md](RadarState.md) |
+| `IRadarSnapshotProvider` | [IRadarSnapshotProvider.md](IRadarSnapshotProvider.md) |
 | `EnemyEspOverlayPresenter` | [EnemyEspOverlayPresenter.md](EnemyEspOverlayPresenter.md) |
 | `EnemyEspTracker` | [EnemyEspTracker.md](EnemyEspTracker.md) |
 | `EnemyEspDrawBuilder` | [EnemyEspDrawBuilder.md](EnemyEspDrawBuilder.md) |

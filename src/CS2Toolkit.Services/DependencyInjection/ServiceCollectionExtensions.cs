@@ -14,6 +14,8 @@ public static class DependencyInjection
         services.TryAddSingleton<TriggerbotController>();
         services.TryAddSingleton<RcsController>();
         services.TryAddSingleton<AimHelperController>();
+        services.TryAddSingleton<RadarState>();
+        services.TryAddSingleton<IRadarSnapshotProvider>(sp => sp.GetRequiredService<RadarState>());
         services.TryAddSingleton<IFeatureState, FeatureRuntimeState>();
         services.TryAddSingleton<FeatureRegistry>();
         services.TryAddSingleton<IFeatureRegistry>(sp => sp.GetRequiredService<FeatureRegistry>());
@@ -40,6 +42,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, AimHelperOverlayPresenter>());
 
         services.AddHostedService<FeatureCoordinator>();
+        services.AddHostedService<RadarStateUpdater>();
 
         return services;
     }

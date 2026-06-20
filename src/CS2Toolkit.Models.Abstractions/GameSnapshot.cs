@@ -21,7 +21,8 @@ public sealed record GameSnapshot(
     int TeammatesDead,
     TriggerbotState Triggerbot,
     RcsState Rcs,
-    AimHelperState AimHelper)
+    AimHelperState AimHelper,
+    RadarSnapshot Radar)
 {
     public static GameSnapshot Detached { get; } = new(
         DateTimeOffset.UtcNow,
@@ -44,5 +45,6 @@ public sealed record GameSnapshot(
         0,
         TriggerbotState.Inactive,
         RcsState.Inactive,
-        AimHelperState.Inactive);
+        AimHelperState.Inactive,
+        RadarSnapshot.Idle);
 }

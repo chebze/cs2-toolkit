@@ -13,7 +13,8 @@ internal static class GameSnapshotMapper
         GrenadeState grenade,
         TriggerbotState triggerbot,
         RcsState rcs,
-        AimHelperState aimHelper)
+        AimHelperState aimHelper,
+        RadarSnapshot radar)
     {
         if (!state.IsAttached)
             return GameSnapshot.Detached;
@@ -39,7 +40,8 @@ internal static class GameSnapshotMapper
             state.TeammatesDead,
             triggerbot,
             rcs,
-            aimHelper);
+            aimHelper,
+            radar);
     }
 
     private static Player MapPlayer(LegacyPlayerInfo player) => new(
