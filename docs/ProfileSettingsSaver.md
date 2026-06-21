@@ -13,7 +13,7 @@ Persists runtime feature toggle state into the active configuration profile (`da
 ## Behavior
 
 - Triggered by the save-settings keybind (`F11` by default) via `FeatureRegistry`.
-- Writes global-layer enabled flags, enemy ESP mode, sound ESP enabled, and triggerbot auto-stop to the active profile.
+- Writes global-layer enabled flags, enemy ESP mode, sound ESP enabled, bullet tracer enabled, and triggerbot auto-stop to the active profile.
 - Does not write to legacy `appsettings.json`.
 
 ## Dependencies

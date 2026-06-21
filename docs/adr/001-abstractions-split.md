@@ -23,7 +23,7 @@ Enforced rules:
 - `CS2Toolkit.API` must not reference `CS2Toolkit.Services` (implementation)
 - Abstractions never reference implementations
 
-`scripts/dependency-guard.sh` validates the Services and API edges in CI.
+`scripts/dependency-guard.sh` validates the Services and API edges locally.
 
 ## Consequences
 

@@ -23,6 +23,7 @@ public sealed class ProfileSettingsSaver
         profile.Settings.Rcs.Global.Enabled = _state.IsEnabled(FeatureIds.Rcs);
         profile.Settings.AimHelper.Global.Enabled = _state.IsEnabled(FeatureIds.AimHelper);
         profile.Settings.SoundEsp.Enabled = _state.IsEnabled(FeatureIds.SoundEsp);
+        profile.Settings.Visuals.BulletTracers.Enabled = _state.IsEnabled(FeatureIds.BulletTracers);
         profile.Settings.Triggerbot.Global.AutoStopEnabled = _state.TriggerbotAutoStopEnabled;
         profile.Settings.EnemyEsp.Mode = _state.EnemyEspMode switch
         {

@@ -102,6 +102,7 @@ Manual: fabricate or attach, toggle feature, confirm overlay and behavior.
 | Triggerbot | `TriggerbotFeatureService` | `TriggerbotOverlayPresenter` | `TriggerbotReader` |
 | Enemy ESP | `EnemyEspFeatureService` | `EnemyEspOverlayPresenter` | bones in entity reader |
 | Sound ESP | `SoundEspFeatureService` | `SoundEspOverlayPresenter` | `SoundEventReader` |
+| Bullet tracers | `BulletTracerFeatureService` | `BulletTracerOverlayPresenter` | `BulletTracerReader` |
 
 ## Pipeline timing
 

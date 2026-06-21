@@ -99,6 +99,10 @@ public sealed class FeatureRegistry : IFeatureRegistry, IHostedService
                 Toggle(FeatureIds.SoundEsp);
                 break;
 
+            case ToolkitKeybindActions.BulletTracersToggle:
+                Toggle(FeatureIds.BulletTracers);
+                break;
+
             case ToolkitKeybindActions.AimHelperToggle:
                 Toggle(FeatureIds.AimHelper);
                 break;

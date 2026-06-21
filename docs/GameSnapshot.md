@@ -6,13 +6,13 @@ Immutable per-tick view of mapped CS2 game state. The central contract consumed 
 
 ## Key API
 
-Record properties: attachment/match flags, `LocalPlayer`, `Players`, `Round`, `Bomb`, `ViewMatrix`, `RecentSounds`, `Grenades`, `Triggerbot`, `Rcs`, `AimHelper`, `Radar`, clairvoyance tips, team alive counts.
+Record properties: attachment/match flags, `LocalPlayer`, `Players`, `Round`, `Bomb`, `ViewMatrix`, `RecentSounds`, `RecentBulletImpacts`, `Grenades`, `Triggerbot`, `Rcs`, `AimHelper`, `Radar`, clairvoyance tips, team alive counts.
 
 `Detached` — static snapshot when not attached to the game process.
 
 ## Behavior
 
-Produced exclusively by `CS2Toolkit.Game` mappers. `RecentSounds` contains enemy noise events detected on that tick via `SoundEventReader`. Services must not mutate or re-parse raw memory into this shape.
+Produced exclusively by `CS2Toolkit.Game` mappers. `RecentSounds` contains enemy noise events detected on that tick via `SoundEventReader`. `RecentBulletImpacts` contains shot tracer segments from `BulletTracerReader`. Services must not mutate or re-parse raw memory into this shape.
 
 ## Dependencies
 

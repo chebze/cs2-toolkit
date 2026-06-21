@@ -14,7 +14,8 @@ internal static class GameSnapshotMapper
         TriggerbotState triggerbot,
         RcsState rcs,
         AimHelperState aimHelper,
-        RadarSnapshot radar)
+        RadarSnapshot radar,
+        IReadOnlyList<BulletImpactEvent> bulletImpacts)
     {
         if (!state.IsAttached)
             return GameSnapshot.Detached;
@@ -32,6 +33,7 @@ internal static class GameSnapshotMapper
             MapBombSites(state.BombSites),
             viewMatrix,
             state.RecentSounds,
+            bulletImpacts,
             grenade.IsActive ? [grenade] : [],
             state.ClairvoyanceTips,
             state.EnemiesAlive,

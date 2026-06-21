@@ -62,7 +62,7 @@ _old/                             # legacy reference (not in solution)
 - [x] Update root `.gitignore` for v2 layout
 - [x] Add root `README.md` with architecture overview and link to this roadmap
 - [x] Add `Directory.Build.props` (TFM `net9.0-windows` where needed, nullable, analyzers)
-- [x] Add `global.json` pinning .NET SDK if required by CI
+- [x] Add `global.json` pinning .NET SDK
 - [x] Add dependency guard script or analyzer: fail build if `CS2Toolkit.Services` references `CS2Toolkit.Game` or `CS2Toolkit.Input`
 
 ---
@@ -411,7 +411,7 @@ Replace `_old/ToolkitRuntime` + `RuntimeGate`:
 
 - [ ] Stress: renderer blocked 100 ms → game loop stays at target interval
 - [ ] Stress: slow presenter → triggerbot/RCS still fire on time
-- [x] Dependency analyzer passes on CI
+- [x] Dependency analyzer passes (`scripts/dependency-guard.sh`)
 - [ ] Full in-game manual test pass
 
 ---

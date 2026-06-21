@@ -61,7 +61,8 @@ internal static class GameSnapshotTestSupport
         TriggerbotState? triggerbot = null,
         RcsState? rcs = null,
         AimHelperState? aimHelper = null,
-        RoundState? round = null) =>
+        RoundState? round = null,
+        IReadOnlyList<BulletImpactEvent>? bulletImpacts = null) =>
         new(
             DateTimeOffset.UtcNow,
             IsAttached: true,
@@ -75,6 +76,7 @@ internal static class GameSnapshotTestSupport
             BombSites: BombSitesInfo.Empty,
             ViewMatrix: new ViewMatrix(stackalloc float[ViewMatrix.FloatCount]),
             RecentSounds: [],
+            RecentBulletImpacts: bulletImpacts ?? [],
             Grenades: [],
             ClairvoyanceTips: [],
             EnemiesAlive: 0,

@@ -64,6 +64,7 @@ public sealed class KeybindMatcher : IKeybindMatcher
         new(ToolkitKeybindActions.TriggerbotToggle, keybinds.TbToggleKey),
         new(ToolkitKeybindActions.EnemyEspToggle, keybinds.EnemyEspToggleKey),
         new(ToolkitKeybindActions.SoundEspToggle, keybinds.SoundEspToggleKey),
+        new(ToolkitKeybindActions.BulletTracersToggle, keybinds.BulletTracersToggleKey),
         new(ToolkitKeybindActions.AimHelperToggle, keybinds.AimHelperToggleKey),
         new(ToolkitKeybindActions.AimHelperActivation, keybinds.AimHelperActivationKey),
         new(ToolkitKeybindActions.TriggerbotAutoStrafe, keybinds.TbAutoStrafeKey)

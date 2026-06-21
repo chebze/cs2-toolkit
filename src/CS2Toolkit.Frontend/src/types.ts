@@ -67,13 +67,27 @@ export interface GrenadeVisualOptions {
   landingLineWidth: number;
 }
 
+export interface BulletTracerVisualOptions {
+  enabled: boolean;
+  showLocal: boolean;
+  showTeammates: boolean;
+  showEnemies: boolean;
+  localColor: string;
+  teammateColor: string;
+  enemyColor: string;
+  lineWidth: number;
+  durationMs: number;
+  maxDistanceUnits: number;
+  maxActiveTracers: number;
+}
+
 export interface ProfileSettings {
   triggerbot: LayeredWeaponSettings<TriggerbotLayerSettings>;
   rcs: LayeredWeaponSettings<RcsLayerSettings>;
   aimHelper: LayeredWeaponSettings<AimHelperLayerSettings>;
   enemyEsp: EnemyEspProfileOptions;
   soundEsp: SoundEspProfileOptions;
-  visuals: { grenade: GrenadeVisualOptions };
+  visuals: { grenade: GrenadeVisualOptions; bulletTracers: BulletTracerVisualOptions };
 }
 
 export interface ConfigProfile {
@@ -95,6 +109,7 @@ export interface GlobalKeybinds {
   aimHelperToggleKey: string;
   aimHelperActivationKey: string;
   tbAutoStrafeKey: string;
+  bulletTracersToggleKey: string;
 }
 
 export interface ConfigStore {
