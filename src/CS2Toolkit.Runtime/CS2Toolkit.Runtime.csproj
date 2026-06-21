@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CS2Toolkit.API\CS2Toolkit.API.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Configuration\CS2Toolkit.Configuration.csproj" />
-    <ProjectReference Include="..\CS2Toolkit.Drawing.WinForms\CS2Toolkit.Drawing.WinForms.csproj" />
+    <ProjectReference Include="..\CS2Toolkit.Drawing.Direct2D\CS2Toolkit.Drawing.Direct2D.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Game\CS2Toolkit.Game.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Input\CS2Toolkit.Input.csproj" />
     <ProjectReference Include="..\CS2Toolkit.Models\CS2Toolkit.Models.csproj" />

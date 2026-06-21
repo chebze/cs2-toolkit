@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CS2Toolkit.Drawing.Abstractions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,19 +6,14 @@ namespace CS2Toolkit.Drawing.WinForms;
 
 public sealed class WinFormsOverlayRenderer : IOverlayRenderer
 {
-    private const int TargetFps = 60;
-
     private readonly IOverlayFrameSource _frameSource;
     private readonly WinFormsOverlayHost _host = new();
     private readonly ILogger<WinFormsOverlayRenderer> _logger;
 
     private readonly System.Windows.Forms.Timer _renderTimer;
-    private readonly Stopwatch _frameClock = Stopwatch.StartNew();
-    private readonly long _minFrameTicks = Stopwatch.Frequency / TargetFps;
 
     private Thread? _uiThread;
     private OverlayForm? _form;
-    private long _lastPresentTicks;
     private int _topMostRefreshTicks;
     private long _lastConsumedSequence = -1;
 
@@ -48,7 +42,7 @@ public sealed class WinFormsOverlayRenderer : IOverlayRenderer
             _form = new OverlayForm(_host);
             _renderTimer.Start();
             IsReady = true;
-            _logger.LogInformation("WinForms overlay renderer ready ({TargetFps} FPS cap)", TargetFps);
+            _logger.LogInformation("WinForms overlay renderer ready (uncapped present rate)");
             tcs.TrySetResult();
 
             Application.Run(_form);
@@ -83,12 +77,6 @@ public sealed class WinFormsOverlayRenderer : IOverlayRenderer
     {
         if (_form is null || _form.IsDisposed)
             return;
-
-        var now = _frameClock.ElapsedTicks;
-        if (now - _lastPresentTicks < _minFrameTicks)
-            return;
-
-        _lastPresentTicks = now;
 
         if (!_frameSource.TryGetLatest(out var frame) || frame.Sequence == _lastConsumedSequence)
             return;
