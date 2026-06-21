@@ -61,7 +61,14 @@ internal sealed class BulletTracerReader
                 continue;
 
             var shotsFired = _memory.Read<int>(pawn + _offsets.M_iShotsFired);
+            var hasBaseline = _shotsFiredByPlayer.ContainsKey(player.Index);
             _shotsFiredByPlayer.TryGetValue(player.Index, out var previousShots);
+
+            if (!hasBaseline)
+            {
+                _shotsFiredByPlayer[player.Index] = shotsFired;
+                continue;
+            }
 
             if (shotsFired > previousShots
                 && TryReadEyePosition(pawn, out var eyePosition)
