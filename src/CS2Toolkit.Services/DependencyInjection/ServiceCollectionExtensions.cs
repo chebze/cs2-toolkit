@@ -11,6 +11,7 @@ public static class DependencyInjection
     {
         services.TryAddSingleton<EnemyEspTracker>();
         services.TryAddSingleton<SoundEspWaveTracker>();
+        services.TryAddSingleton<BulletTracerTracker>();
         services.TryAddSingleton<TriggerbotController>();
         services.TryAddSingleton<RcsController>();
         services.TryAddSingleton<AimHelperController>();
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, TriggerbotFeatureService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, EnemyEspFeatureService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, SoundEspFeatureService>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, BulletTracerFeatureService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, AimHelperFeatureService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IFeatureService, MenuFeatureService>());
 
@@ -42,6 +44,7 @@ public static class DependencyInjection
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, ClairvoyanceOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, EnemyEspOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, SoundEspOverlayPresenter>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, BulletTracerOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, GrenadeArcOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, TriggerbotOverlayPresenter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IOverlayPresenter, RcsOverlayPresenter>());

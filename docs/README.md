@@ -159,6 +159,10 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `SoundEspOverlayPresenter` | [SoundEspOverlayPresenter.md](SoundEspOverlayPresenter.md) |
 | `SoundEspDrawBuilder` | [SoundEspDrawBuilder.md](SoundEspDrawBuilder.md) |
 | `SoundEventReader` | [SoundEventReader.md](SoundEventReader.md) |
+| `BulletTracerReader` | [BulletTracerReader.md](BulletTracerReader.md) |
+| `BulletTracerTracker` | [BulletTracerTracker.md](BulletTracerTracker.md) |
+| `BulletTracerOverlayPresenter` | [BulletTracerOverlayPresenter.md](BulletTracerOverlayPresenter.md) |
+| `BulletImpactEvent` | [BulletImpactEvent.md](BulletImpactEvent.md) |
 | `GrenadeTrajectoryReader` | [GrenadeTrajectoryReader.md](GrenadeTrajectoryReader.md) |
 | `GrenadeTrajectoryResolver` | [GrenadeTrajectoryResolver.md](GrenadeTrajectoryResolver.md) |
 | `GrenadeTrajectorySimulator` | [GrenadeTrajectorySimulator.md](GrenadeTrajectorySimulator.md) |

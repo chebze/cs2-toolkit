@@ -14,5 +14,6 @@ public static class FeatureIds
     public static FeatureId EnemyEsp { get; } = new("enemy-esp");
     public static FeatureId SoundEsp { get; } = new("sound-esp");
     public static FeatureId AimHelper { get; } = new("aim-helper");
+    public static FeatureId BulletTracers { get; } = new("bullet-tracers");
     public static FeatureId Menu { get; } = new("menu");
 }

@@ -12,6 +12,7 @@ internal sealed class FeatureRuntimeState : IFeatureState
         [FeatureIds.Triggerbot.Value] = false,
         [FeatureIds.SoundEsp.Value] = false,
         [FeatureIds.AimHelper.Value] = false,
+        [FeatureIds.BulletTracers.Value] = false,
         [FeatureIds.Menu.Value] = false
     };
 
@@ -77,6 +78,7 @@ internal sealed class FeatureRuntimeState : IFeatureState
         _enabled[FeatureIds.Rcs.Value] = profile.Rcs.Global.Enabled ?? false;
         _enabled[FeatureIds.AimHelper.Value] = profile.AimHelper.Global.Enabled ?? false;
         _enabled[FeatureIds.SoundEsp.Value] = profile.SoundEsp.Enabled;
+        _enabled[FeatureIds.BulletTracers.Value] = profile.Visuals.BulletTracers.Enabled;
         _enabled[FeatureIds.Menu.Value] = false;
         EnemyEspMode = ParseEnemyEspMode(profile.EnemyEsp.Mode);
         TriggerbotAutoStopEnabled = profile.Triggerbot.Global.AutoStopEnabled ?? false;

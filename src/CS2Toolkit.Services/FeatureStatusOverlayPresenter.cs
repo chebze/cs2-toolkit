@@ -26,6 +26,7 @@ public sealed class FeatureStatusOverlayPresenter : IOverlayPresenter
         AppendLine(lines, "TB", _state.IsEnabled(FeatureIds.Triggerbot));
         lines.Add($"ESP: {_state.EnemyEspMode}");
         AppendLine(lines, "Sound", _state.IsEnabled(FeatureIds.SoundEsp));
+        AppendLine(lines, "Tracers", _state.IsEnabled(FeatureIds.BulletTracers));
         AppendLine(lines, "Aim", _state.IsEnabled(FeatureIds.AimHelper));
 
         if (_state.TriggerbotAutoStopEnabled)

@@ -15,6 +15,7 @@ const fields: Array<{ key: keyof GlobalKeybinds; label: string }> = [
   { key: "tbToggleKey", label: "Triggerbot toggle" },
   { key: "enemyEspToggleKey", label: "Enemy ESP toggle" },
   { key: "soundEspToggleKey", label: "Sound ESP toggle" },
+  { key: "bulletTracersToggleKey", label: "Bullet tracers toggle" },
   { key: "aimHelperToggleKey", label: "Aim helper toggle" },
   { key: "aimHelperActivationKey", label: "Aim helper activation (optional)" },
   { key: "tbAutoStrafeKey", label: "Triggerbot auto-strafe key" },

@@ -13,6 +13,7 @@ public sealed class GlobalKeybinds
     public string AimHelperToggleKey { get; set; } = "F4";
     public string AimHelperActivationKey { get; set; } = "";
     public string TbAutoStrafeKey { get; set; } = "Space";
+    public string BulletTracersToggleKey { get; set; } = "F3";
 }
 
 public sealed class ConfigurationStore

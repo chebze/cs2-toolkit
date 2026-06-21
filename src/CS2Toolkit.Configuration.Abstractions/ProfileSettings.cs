@@ -37,6 +37,21 @@ public sealed class GrenadeVisualOptions
     public int LandingRingSegments { get; set; } = 20;
 }
 
+public sealed class BulletTracerVisualOptions
+{
+    public bool Enabled { get; set; }
+    public bool ShowLocal { get; set; } = true;
+    public bool ShowTeammates { get; set; } = true;
+    public bool ShowEnemies { get; set; } = true;
+    public string LocalColor { get; set; } = "#FF4444";
+    public string TeammateColor { get; set; } = "#44AAFF";
+    public string EnemyColor { get; set; } = "#FF8800";
+    public float LineWidth { get; set; } = 1.5f;
+    public int DurationMs { get; set; } = 800;
+    public float MaxDistanceUnits { get; set; } = 5000f;
+    public int MaxActiveTracers { get; set; } = 64;
+}
+
 public sealed class TextPanelOverlayOptions
 {
     public bool Enabled { get; set; } = true;
@@ -49,6 +64,7 @@ public sealed class TextPanelOverlayOptions
 public sealed class VisualProfileOptions
 {
     public GrenadeVisualOptions Grenade { get; set; } = new();
+    public BulletTracerVisualOptions BulletTracers { get; set; } = new();
     public TextPanelOverlayOptions TeammateStats { get; set; } = new();
     public TextPanelOverlayOptions BombStatus { get; set; } = new()
     {

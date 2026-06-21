@@ -15,4 +15,5 @@ public static class ToolkitKeybindActions
     public const string AimHelperToggle = "aimhelper-toggle";
     public const string AimHelperActivation = "aimhelper-activation";
     public const string TriggerbotAutoStrafe = "triggerbot-auto-strafe";
+    public const string BulletTracersToggle = "bullet-tracers-toggle";
 }
