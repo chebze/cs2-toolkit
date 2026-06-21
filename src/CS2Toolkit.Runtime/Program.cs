@@ -1,7 +1,7 @@
 using CS2Toolkit.API;
 using CS2Toolkit.Configuration;
 using CS2Toolkit.Configuration.Abstractions;
-using CS2Toolkit.Drawing.WinForms;
+using CS2Toolkit.Drawing.Direct2D;
 using CS2Toolkit.Game;
 using CS2Toolkit.Input;
 using CS2Toolkit.Models;
@@ -31,7 +31,7 @@ internal static class Program
                     .AddToolkitConfiguration()
                     .AddToolkitInput()
                     .AddToolkitGame()
-                    .AddDrawingWinForms()
+                    .AddDrawingDirect2D()
                     .AddToolkitServices()
                     .AddToolkitApi()
                     .AddRuntimeOrchestration();

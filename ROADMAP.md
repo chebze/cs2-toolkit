@@ -30,6 +30,7 @@ src/
 ├── CS2Toolkit.Game/
 ├── CS2Toolkit.Drawing.Abstractions/
 ├── CS2Toolkit.Drawing.WinForms/
+├── CS2Toolkit.Drawing.Direct2D/
 ├── CS2Toolkit.Services.Abstractions/
 ├── CS2Toolkit.Services/
 ├── CS2Toolkit.API.Abstractions/
@@ -82,6 +83,7 @@ Create all 16 .NET projects with correct `ProjectReference` edges. Each implemen
 - [x] `src/CS2Toolkit.Game`
 - [x] `src/CS2Toolkit.Drawing.Abstractions`
 - [x] `src/CS2Toolkit.Drawing.WinForms` (`UseWindowsForms`)
+- [x] `src/CS2Toolkit.Drawing.Direct2D` (Vortice Direct2D1)
 - [x] `src/CS2Toolkit.Services.Abstractions`
 - [x] `src/CS2Toolkit.Services`
 - [x] `src/CS2Toolkit.API.Abstractions`
@@ -252,6 +254,15 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 - [x] Back-buffer + layered blit
 - [x] `AddDrawingWinForms()` DI extension
 - [x] Renderer drops/skips frames when behind; never signals back to pipeline
+
+### 6.4 `CS2Toolkit.Drawing.Direct2D`
+
+- [x] `Direct2DOverlayHost` — WIC bitmap + GDI-compatible D2D render target + `UpdateLayeredWindow`
+- [x] `Direct2DOverlayRenderer` — raw Win32 HWND overlay; 60 FPS cap; same frame contract as WinForms
+- [x] `DrawCommandExecutor` — maps `DrawCommand` records to Direct2D/DirectWrite calls
+- [x] `AddDrawingDirect2D()` DI extension
+- [x] Runtime wired to Direct2D by default (`AddDrawingDirect2D()` in `Program.cs`)
+- [x] `docs/` entries
 
 ### 6.3 Pipeline integration
 
@@ -463,7 +474,7 @@ Only Runtime references implementation projects.
 | `IInputSimulator` | Win32 SendInput | Driver-level injection |
 | `IGameStateSource` | Live publisher | Replay/file provider for tests |
 | `IMapVisibility` | BVH raycast | Simplified grid |
-| `IOverlayRenderer` | WinForms | DirectX, WPF |
+| `IOverlayRenderer` | Direct2D | WinForms (GDI+) |
 | `IConfigurationStore` | JSON file | SQLite, cloud sync |
 | API host | In-process Kestrel | Out-of-process |
 
@@ -495,7 +506,7 @@ Only Runtime references implementation projects.
 | `Configuration/*` | `Configuration.Abstractions` + `Configuration` |
 | `Models/*` (domain) | `CS2Toolkit.Models` |
 | `Models/GameOffsets` | `CS2Toolkit.Game` (internal) |
-| `Overlay/*` | `Drawing.Abstractions` + `Drawing.WinForms` |
+| `Overlay/*` | `Drawing.Abstractions` + `Drawing.Direct2D` (or `Drawing.WinForms`) |
 | `Web/*` | `API.Abstractions` + `API` + Runtime host |
 | `ConfigUI/*` | `CS2Toolkit.Frontend` |
 | `Program.cs`, `ToolkitRuntime` | `CS2Toolkit.Runtime` |

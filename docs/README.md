@@ -30,7 +30,8 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `CS2Toolkit.Game.Abstractions` | Map visibility and lifecycle contracts |
 | `CS2Toolkit.Game` | Memory reading and snapshot mapping |
 | `CS2Toolkit.Drawing.Abstractions` | Overlay frame and draw commands |
-| `CS2Toolkit.Drawing.WinForms` | WinForms overlay renderer |
+| `CS2Toolkit.Drawing.WinForms` | WinForms/GDI+ overlay renderer (fallback) |
+| `CS2Toolkit.Drawing.Direct2D` | Direct2D overlay renderer (default) |
 | `CS2Toolkit.Services.Abstractions` | Feature service contracts |
 | `CS2Toolkit.Services` | ESP, triggerbot, aim helper, etc. |
 | `CS2Toolkit.API.Abstractions` | HTTP-facing ports |
@@ -48,6 +49,7 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `AddToolkitInput()` | `CS2Toolkit.Input` |
 | `AddToolkitGame()` | `CS2Toolkit.Game` |
 | `AddDrawingWinForms()` | `CS2Toolkit.Drawing.WinForms` |
+| `AddDrawingDirect2D()` | `CS2Toolkit.Drawing.Direct2D` |
 | `AddToolkitServices()` | `CS2Toolkit.Services` |
 | `AddToolkitApi()` | `CS2Toolkit.API` |
 | `AddRuntimeOrchestration()` | `CS2Toolkit.Runtime` |
@@ -111,6 +113,8 @@ Class-level documentation for the v2 codebase. Each public C# type should have a
 | `OverlayFrame` | [OverlayFrame.md](OverlayFrame.md) |
 | `IOverlayFrameSink` | [IOverlayFrameSink.md](IOverlayFrameSink.md) |
 | `WinFormsOverlayRenderer` | [WinFormsOverlayRenderer.md](WinFormsOverlayRenderer.md) |
+| `Direct2DOverlayRenderer` | [Direct2DOverlayRenderer.md](Direct2DOverlayRenderer.md) |
+| `Direct2DOverlayHost` | [Direct2DOverlayHost.md](Direct2DOverlayHost.md) |
 
 ### Services core
 

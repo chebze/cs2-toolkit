@@ -10,6 +10,7 @@
     <Project Path="src/CS2Toolkit.Game/CS2Toolkit.Game.csproj" />
     <Project Path="src/CS2Toolkit.Drawing.Abstractions/CS2Toolkit.Drawing.Abstractions.csproj" />
     <Project Path="src/CS2Toolkit.Drawing.WinForms/CS2Toolkit.Drawing.WinForms.csproj" />
+    <Project Path="src/CS2Toolkit.Drawing.Direct2D/CS2Toolkit.Drawing.Direct2D.csproj" />
     <Project Path="src/CS2Toolkit.Services.Abstractions/CS2Toolkit.Services.Abstractions.csproj" />
     <Project Path="src/CS2Toolkit.Services/CS2Toolkit.Services.csproj" />
     <Project Path="src/CS2Toolkit.API.Abstractions/CS2Toolkit.API.Abstractions.csproj" />
