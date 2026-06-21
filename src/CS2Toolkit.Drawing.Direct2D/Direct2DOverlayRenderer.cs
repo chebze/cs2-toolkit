@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CS2Toolkit.Drawing.Abstractions;
 using Microsoft.Extensions.Hosting;
@@ -11,7 +10,6 @@ namespace CS2Toolkit.Drawing.Direct2D;
 
 public sealed class Direct2DOverlayRenderer : IOverlayRenderer
 {
-    private const int TargetFps = 60;
     private const uint WmQuit = 0x0012;
     private const uint WmTimer = 0x0113;
     private readonly IOverlayFrameSource _frameSource;
@@ -25,9 +23,6 @@ public sealed class Direct2DOverlayRenderer : IOverlayRenderer
     private Thread? _uiThread;
     private OverlayWindow? _window;
     private nint _renderTimerId;
-    private readonly Stopwatch _frameClock = Stopwatch.StartNew();
-    private readonly long _minFrameTicks = Stopwatch.Frequency / TargetFps;
-    private long _lastPresentTicks;
     private int _topMostRefreshTicks;
     private long _lastConsumedSequence = -1;
 
@@ -52,7 +47,7 @@ public sealed class Direct2DOverlayRenderer : IOverlayRenderer
             _renderTimerId = SetTimer(_window.Handle, 1, 1, nint.Zero);
 
             IsReady = true;
-            _logger.LogInformation("Direct2D overlay renderer ready ({TargetFps} FPS cap)", TargetFps);
+            _logger.LogInformation("Direct2D overlay renderer ready (uncapped present rate)");
             tcs.TrySetResult();
 
             RunMessageLoop();
@@ -101,12 +96,6 @@ public sealed class Direct2DOverlayRenderer : IOverlayRenderer
     {
         if (_window is null)
             return;
-
-        var now = _frameClock.ElapsedTicks;
-        if (now - _lastPresentTicks < _minFrameTicks)
-            return;
-
-        _lastPresentTicks = now;
 
         if (!_frameSource.TryGetLatest(out var frame) || frame.Sequence == _lastConsumedSequence)
             return;

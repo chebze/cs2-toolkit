@@ -258,7 +258,7 @@ Split `_old/Memory/EntityResolver.cs` (~925 LOC) into focused components:
 ### 6.4 `CS2Toolkit.Drawing.Direct2D`
 
 - [x] `Direct2DOverlayHost` — WIC bitmap + GDI-compatible D2D render target + `UpdateLayeredWindow`
-- [x] `Direct2DOverlayRenderer` — raw Win32 HWND overlay; 60 FPS cap; same frame contract as WinForms
+- [x] `Direct2DOverlayRenderer` — raw Win32 HWND overlay; uncapped present rate; same frame contract as WinForms
 - [x] `DrawCommandExecutor` — maps `DrawCommand` records to Direct2D/DirectWrite calls
 - [x] `AddDrawingDirect2D()` DI extension
 - [x] Runtime wired to Direct2D by default (`AddDrawingDirect2D()` in `Program.cs`)

@@ -16,7 +16,7 @@ Register via `AddDrawingDirect2D()` in `CS2Toolkit.Drawing.Direct2D`.
 
 - Raw Win32 layered HWND (no WinForms dependency in this project) aligned to CS2 client bounds
 - Disables click-through when `OverlayFrame.Interactive` is true (in-game menu open)
-- 60 FPS present cap; skips frames when sequence unchanged
+- Uncapped present rate (1 ms timer); skips frames when sequence unchanged
 - WIC bitmap + Direct2D render target with GDI-compatible `UpdateLayeredWindow` alpha blit
 - Never signals back to the game memory loop
 
@@ -29,4 +29,4 @@ Register via `AddDrawingDirect2D()` in `CS2Toolkit.Drawing.Direct2D`.
 
 ## Configuration
 
-None (target FPS constant in implementation). Switch back to WinForms by calling `AddDrawingWinForms()` instead of `AddDrawingDirect2D()` in `Program.cs`.
+None (present rate uncapped; only skips when `OverlayFrame.Sequence` is unchanged).
